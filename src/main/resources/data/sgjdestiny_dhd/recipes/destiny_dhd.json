@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "AGA",
+    "IRI",
+    "ANA"
+  ],
+  "key": {
+    "A": {
+      "tag": "forge:ingots/naquadah_alloy"
+    },
+    "G": {
+      "tag": "forge:glass_panes/black"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "R": {
+      "item": "minecraft:comparator"
+    },
+    "N": {
+      "tag": "sgjourney:pure_naquadah"
+    }
+  },
+  "result": {
+    "item": "sgjdestiny_dhd:destiny_dhd"
+  }
+}

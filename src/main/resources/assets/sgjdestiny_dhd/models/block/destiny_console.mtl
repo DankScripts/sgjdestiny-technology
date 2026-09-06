@@ -1,0 +1,51 @@
+# Minecraft texture mappings for the accepted Destiny console
+
+newmtl Aged_Destiny_green
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_hull
+
+newmtl Ancient_bronze
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_bronze
+
+newmtl Ancient_floor_socket
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_pedestal
+
+newmtl Dark_inset_alloy
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_hull_dark
+
+newmtl Destiny_dial_blue
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_dial
+
+newmtl Destiny_dial_ivory
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_dial_ivory
+
+newmtl Inactive_display
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_screen_off
+
+newmtl Ivory_controls
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_light
+
+newmtl Ribbed_perimeter_metal
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_metal
+
+newmtl Worn_green_edge
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_hull

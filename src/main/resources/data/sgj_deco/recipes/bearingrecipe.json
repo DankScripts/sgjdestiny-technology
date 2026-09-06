@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "AAA",
+    " A ",
+    " C "
+  ],
+  "key": {
+    "A": {
+      "tag": "forge:ingots/naquadah_alloy"
+    },
+    "C": {
+      "item": "sgjourney:pure_naquadah"
+    }
+  },
+  "result": {
+    "item": "sgj_deco:destiny_bearing"
+  }
+}

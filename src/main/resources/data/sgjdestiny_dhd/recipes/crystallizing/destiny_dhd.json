@@ -1,0 +1,22 @@
+{
+  "type": "sgjourney:crystallizing",
+  "crystal_base": {
+    "item": "minecraft:comparator",
+    "amount": 1
+  },
+  "primary_ingredient": {
+    "item": "minecraft:iron_ingot",
+    "amount": 2
+  },
+  "secondary_ingredient": {
+    "item": "sgjourney:naquadah_iron_alloy",
+    "amount": 4
+  },
+  "output": {
+    "item": "sgjdestiny_dhd:destiny_dhd"
+  },
+  "input_fluid": {
+    "id": "sgjourney:liquid_naquadah",
+    "amount": 1000
+  }
+}

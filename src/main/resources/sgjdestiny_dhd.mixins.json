@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.dankscripts.sgjdestiny_dhd.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "AbstractDHDEntityMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

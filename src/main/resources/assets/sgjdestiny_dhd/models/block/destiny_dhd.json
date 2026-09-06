@@ -1,0 +1,13 @@
+{
+  "loader": "forge:obj",
+  "model": "sgjdestiny_dhd:models/block/destiny_console.obj",
+  "flip_v": true,
+  "automatic_culling": false,
+  "shade_quads": true,
+  "emissive_ambient": true,
+  "render_type": "solid",
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "sgjdestiny_dhd:block/destiny_hull"
+  }
+}

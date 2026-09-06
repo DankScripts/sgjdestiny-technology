@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "sgjdestiny_dhd:block/destiny_dhd" },
+    "facing=east": { "model": "sgjdestiny_dhd:block/destiny_dhd", "y": 90 },
+    "facing=south": { "model": "sgjdestiny_dhd:block/destiny_dhd", "y": 180 },
+    "facing=west": { "model": "sgjdestiny_dhd:block/destiny_dhd", "y": 270 }
+  }
+}
