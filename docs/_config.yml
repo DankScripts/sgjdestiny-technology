@@ -1,4 +1,4 @@
-title: SGJourney Destiny DHD
+title: Stargate Journey Destiny Technology
 description: Documentation for the Destiny gate systems and Kino technology addon for Stargate Journey.
 theme: just-the-docs
 remote_theme: just-the-docs/just-the-docs
@@ -18,5 +18,4 @@ callouts:
   lore:
     title: Stargate Universe behavior
     color: purple
-footer_content: "SGJourney: Destiny DHD is an unofficial addon for Stargate Journey. Stargate is owned by MGM/Amazon."
-
+footer_content: "Stargate Journey: Destiny Technology is an unofficial addon for Stargate Journey. Stargate is owned by MGM/Amazon."
