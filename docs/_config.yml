@@ -1,4 +1,4 @@
-title: Stargate Journey Destiny Technology
+title: Destiny Technology
 description: Documentation for the Destiny gate systems and Kino technology addon for Stargate Journey.
 url: https://dankscripts.github.io
 baseurl: /sgjdestiny-technology
@@ -22,3 +22,4 @@ callouts:
     title: Stargate Universe behavior
     color: purple
 footer_content: "Stargate Journey: Destiny Technology is an unofficial addon for Stargate Journey. Stargate is owned by MGM/Amazon."
+
