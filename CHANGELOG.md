@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.96-dev
+
+- Generates and retains each custom destination's unique Stargate anchor chunk
+  before validating its gate records, ensuring a newly added Jungle Planet has
+  a registered destination gate before the first dial.
+
 ## 0.0.95-dev
 
 - Imports the Jungle Planet address region into SGJourney's saved Universe map
