@@ -1,0 +1,20 @@
+newmtl shell
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:item/kino_shell
+newmtl seam
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:item/kino_seam
+newmtl camera
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:item/kino_camera
+newmtl lens
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:item/kino_lens
+newmtl brass
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:item/kino_brass

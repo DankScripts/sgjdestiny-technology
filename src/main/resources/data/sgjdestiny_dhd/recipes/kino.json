@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":[" G ","GEG"," C "],
+  "key":{"G":{"item":"minecraft:glass"},"E":{"item":"minecraft:ender_eye"},"C":{"item":"minecraft:copper_ingot"}},
+  "result":{"item":"sgjdestiny_dhd:kino"}
+}

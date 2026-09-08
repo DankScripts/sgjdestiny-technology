@@ -12,10 +12,13 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 
 public final class LitDestinyBearingBlock extends HorizontalDirectionalBlock {
+    public static final BooleanProperty FLASHING = BooleanProperty.create("flashing");
+
     public LitDestinyBearingBlock() {
         super(BlockBehaviour.Properties.of()
                 .mapColor(MapColor.COLOR_ORANGE)
@@ -24,12 +27,14 @@ public final class LitDestinyBearingBlock extends HorizontalDirectionalBlock {
                 .noCollission()
                 .noOcclusion()
                 .lightLevel(state -> 15));
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
+        registerDefaultState(stateDefinition.any()
+                .setValue(FACING, Direction.NORTH)
+                .setValue(FLASHING, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING, FLASHING);
     }
 
     @Override

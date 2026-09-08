@@ -1,5 +1,186 @@
 # Changelog
 
+## 0.0.94-dev
+
+- Adds the humid Jungle Planet visited after the ice world, with dense jungle,
+  bamboo, vines, caves, hostile wildlife, and an overgrown Universe Stargate
+  pedestal.
+- Registers the Jungle Planet in the handheld address database with a stable
+  seven-chevron destination.
+- Adds Squigglers: fast, low-profile pack predators inspired by the venomous
+  creatures encountered by Destiny's expedition, including a poisonous bite
+  and natural jungle spawning.
+
+## 0.0.61-dev
+
+- Locates the floor chevron along the gate-to-console axis, independent of the
+  Universe gate's direction and the chevron block's stored orientation.
+- Latches the floor chevron on when the final seventh or ninth chevron locks,
+  keeps it lit through the wormhole, and clears it when the gate returns idle.
+
+## 0.0.60-dev
+
+- Fixes floor-chevron discovery for Universe gates whose direction has no
+  horizontal component. Horizontal chevrons are now selected by face orientation
+  and their position below the gate center.
+
+## 0.0.59-dev
+
+- Fixes Destiny floor-chevron discovery by identifying the chevron geometrically
+  in front of the gate instead of assuming a particular placement orientation.
+- Synchronizes its lit state without neighbor updates so the chevron's normal
+  redstone response cannot immediately cancel the connection indicator.
+
+## 0.0.58-dev
+
+- Normal seven-chevron dialing now flashes the Destiny bearing for each lock,
+  leaves it dark between locks, and holds it on after a successful connection.
+- Known nine-chevron programmed dials keep the bearing powered throughout the
+  dialing sequence while retaining the brighter lock pulses and discharge effect.
+- A horizontal SGJourney Universe chevron placed in the floor near the gate now
+  lights only while the wormhole is successfully connected.
+- Retains the exposed polished Naquadah-Copper vent body and working steam grates.
+
+## 0.0.15-dev (post-alpha)
+
+- Added a 20-tick pause after the gate becomes inactive before the first steam
+  burst and hiss, matching the slight post-shutdown delay from the show.
+- Preserves the accepted steam duration, density, coverage, angle, distance,
+  and 24-block sound radius, plus the working 0.0.14 discharge path.
+
+## 0.0.14-dev (post-alpha)
+
+- Consolidated lightning and steam client providers into the single particle
+  registration callback already proven active by the visible custom steam.
+- Removed the independently discovered nested lightning registration that was
+  the only remaining difference between the working 0.0.8 client path and the
+  later two-particle setup.
+- Added an explicit startup log confirming that both custom providers registered.
+- Retains the 0.0.8 discharge renderer and emission bytecode, persistent outgoing
+  lifecycle, bearing resolution, perfect steam visuals, and 24-block hiss radius.
+
+## 0.0.13-dev (post-alpha)
+
+- Fixed the silent server-side bearing-cache gate that could start a discharge
+  state but return before sending any lightning particles.
+- Discharge state now captures its physical bearing, re-resolves it from the
+  bounded loaded gate area when necessary, and records its first successful
+  particle emission in the log.
+- Increased the repeating steam-hiss volume to Minecraft's 24-block attenuation
+  radius in every direction without changing the accepted steam visuals.
+
+## 0.0.12-dev (post-alpha)
+
+- Restored the complete field-tested 0.0.8-dev bearing-discharge renderer and
+  endpoint geometry exactly, while retaining the current persistent outgoing
+  nine-chevron lifecycle through connection close and gate shutdown.
+- Added a repeating localized pressure hiss for the full steam-release period;
+  the accepted 0.0.11 steam visuals are unchanged.
+
+## 0.0.11-dev (post-alpha)
+
+- Expanded shutdown steam across nearly the full vent grate with parallel
+  pressure lanes and front-to-back depth instead of a narrow centerline.
+- Greatly increased sustained steam density and sprite size while preserving
+  the accepted 45-degree angle, velocity, lifetime, and travel distance.
+- Added a server-tick fallback that restores the bearing discharge whenever a
+  nine-symbol Destiny address is waiting, even if SGJourney bypasses the normal
+  symbol hook or briefly loses the cached gate during the input sequence.
+- Strengthened the lightning corona, cyan body, white core, and branches so the
+  discharge remains unmistakably visible from normal gate-room distances.
+- Fixed the bolt render plane to select the face of the Stargate that points
+  toward its linked Destiny DHD, preventing the ring and ceiling from hiding
+  an otherwise active discharge on oppositely oriented gates.
+
+## 0.0.10-dev (post-alpha)
+
+- Increased shutdown-steam density, opacity, and plume width while preserving
+  the accepted 45-degree angle and travel distance.
+- Fixed nine-chevron discharge stopping during the Universe gate's dialing
+  sequence when its engaged-chevron count briefly returns to zero.
+- Discharge now survives every active outgoing dialing phase and successful
+  outgoing connection, then stops when the gate truly returns to idle.
+
+## 0.0.9-dev (post-alpha)
+
+- Changed the bearing discharge to a true 45-degree left/right V by matching
+  each bolt's horizontal travel to its vertical drop.
+- Reworked the lightning into a fine white-hot filament, cyan body, and softer
+  outer corona with tighter natural jitter and less ribbon-like thickness.
+- Keeps the discharge active indefinitely after the ninth symbol is entered
+  while the console waits for the center engage button.
+- A successful outgoing nine-chevron connection keeps discharging until that
+  wormhole closes; incoming connections never create the discharge.
+- Replaced scattered vanilla steam puffs with smooth, growing pressure plumes
+  that leave each floor vent in a true outward 45-degree stream.
+- Converted the floor vent from a thin cover into a full solid floor block and
+  recessed its grate so the top is flush with neighboring blocks.
+
+## 0.0.8-dev (post-alpha)
+
+- Added a low-profile, directional Destiny Floor Vent block with a metal grille model,
+  survival recipe, block drop, item model, translation, and creative inventory entry.
+- Nearby floor vents now release dense white steam for several seconds when a
+  Destiny-controlled Stargate finishes shutting down and returns to idle.
+- Steam emission is bounded to loaded blocks near the gate and does not scan while idle.
+- Pulled the nine-chevron discharge forward from the gate plane, widened its
+  shoulder strike points, and strengthened its cyan sheath and white core so
+  both arcs remain visible with the bearing mounted close to the gate.
+
+## 0.0.7-dev (post-alpha)
+
+- Moved nine-chevron discharge impacts away from the Stargate's top center and
+  farther down/outward across its upper-left and upper-right rim.
+- Allows the Destiny Bearing to remain close to the gate beneath full ceiling
+  blocks while keeping both diagonal energy bolts clearly visible.
+- Preserves the accepted `0.0.6-dev` immediate renderer and all bearing timing.
+
+## 0.0.6-dev (post-alpha)
+
+- Fixed the invisible discharge regression in `0.0.5-dev`.
+- Restored the particle-relative coordinates required by Minecraft's particle
+  camera while moving the bolt draw into an immediate position/color buffer.
+- Prevents the shared level buffer from retaining camera-relative bolt geometry
+  outside the particle render call.
+
+## 0.0.5-dev (post-alpha)
+
+- Fixed the nine-chevron energy bolts following the player's camera instead of
+  remaining anchored between the Destiny Bearing and Stargate.
+- Removed the duplicate camera translation from the level-buffer lightning
+  renderer while retaining camera-facing bolt width and world-space endpoints.
+
+## 0.0.4-dev (post-alpha)
+
+- Fixed the `0.0.3-dev` server crash caused by development-name SGJourney
+  block-entity calls surviving the manual runtime remap.
+- Restored the complete proven `0.0.2-dev` bearing compatibility class and
+  transplanted only the new lightning-emission method into it.
+- Retains the jagged blue-white ribbon lightning renderer introduced for the
+  nine-chevron discharge test.
+
+## 0.0.3-dev (post-alpha)
+
+- Replaced the bubble-like nine-chevron discharge particles with continuous,
+  jagged blue-white lightning ribbons.
+- Added a bright white electrical core, cyan outer glow, and two short branches
+  to each rapidly reconnecting main bolt.
+- Generates bolt geometry locally on each client from two bounded server events,
+  preserving the accepted nine-chevron trigger and Destiny Bearing bulb behavior.
+
+## 0.0.2-dev (post-alpha)
+
+- Added a nine-chevron-only Destiny Bearing discharge prototype.
+- The effect begins as the ninth address symbol is submitted, before SGJourney
+  evaluates the final dial, with the engage action retained as a fallback.
+- Emits two rapidly reconnecting blue-white arcs plus a smaller branch from the
+  bearing's lower emitter toward varying points across the Stargate's upper rim.
+- Keeps the established bearing bulb behavior independent from the discharge.
+- Stops the discharge on connection, cancellation, failed-dial reset, loss of
+  DHD range, or a safety timeout.
+- Reuses the cached bearing position and emits at a bounded three-tick interval;
+  no additional world scan was added to the normal tick path.
+
 ## 0.0.1-alpha
 
 - Corrected a packaging/remapping error in the first performance-test artifact
@@ -67,7 +248,7 @@
   the bearing remains continuously lit through the return rotation and switches
   off after that rotation finishes.
 
-## 0.0.2-dev
+## 0.0.2-dev (pre-alpha)
 
 - Fixed the optional SGJ Deco Destiny Bearing sometimes remaining illuminated after
   a rapid or aborted dial returned the Stargate to idle.

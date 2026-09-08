@@ -1,5 +1,51 @@
 {
   "block.sgjdestiny_dhd.destiny_dhd": "Destiny DHD",
   "item.sgjdestiny_dhd.destiny_dhd": "Destiny DHD",
-  "itemGroup.sgjdestiny_dhd": "SGJourney: Destiny DHD"
+  "block.sgjdestiny_dhd.destiny_floor_vent": "Destiny Floor Vent",
+  "item.sgjdestiny_dhd.destiny_floor_vent": "Destiny Floor Vent",
+  "item.sgjdestiny_dhd.earth_gate_designator": "Earth Gate Designator",
+  "item.sgjdestiny_dhd.destiny_environmental_helmet": "Destiny Environmental Helmet",
+  "item.sgjdestiny_dhd.destiny_environmental_chestplate": "Destiny Environmental Chestplate",
+  "item.sgjdestiny_dhd.destiny_environmental_leggings": "Destiny Environmental Leggings",
+  "item.sgjdestiny_dhd.destiny_environmental_boots": "Destiny Environmental Boots",
+  "item.sgjdestiny_dhd.destiny_oxygen_tank": "Destiny Oxygen Tank",
+  "itemGroup.sgjdestiny_dhd": "Stargate Journey: Destiny Technology",
+  "screen.sgjdestiny_dhd.seed_ship_database": "SEED SHIP DESTINATION DATABASE",
+  "screen.sgjdestiny_dhd.seed_ship_subtitle": "%s UNIVERSE GATE RECORDS AVAILABLE",
+  "screen.sgjdestiny_dhd.no_destinations": "NO UNIVERSE GATE RECORDS AVAILABLE",
+  "screen.sgjdestiny_dhd.awaiting_seed_data": "AWAITING SEED SHIP NETWORK DATA",
+  "screen.sgjdestiny_dhd.engage": "ENGAGE",
+  "screen.sgjdestiny_dhd.select_destination": "SELECT DESTINATION",
+  "destination.sgjdestiny_dhd.earth": "EARTH / STARGATE COMMAND",
+  "message.sgjdestiny_dhd.earth_gate_assigned": "Earth return gate assigned: %s",
+  "message.sgjdestiny_dhd.earth_gate_invalid": "The designator must be used on an assembled Milky Way Stargate base",
+  "tooltip.sgjdestiny_dhd.earth_gate_designator": "Use on a Milky Way Stargate base to assign Destiny's Earth return gate",
+  "message.sgjdestiny_dhd.dialer_busy": "Destiny dialer is already active",
+  "message.sgjdestiny_dhd.invalid_destination": "Seed ship destination rejected",
+  "item.sgjdestiny_dhd.kino_remote": "Destiny Kino Remote",
+  "item.sgjdestiny_dhd.kino": "Kino",
+  "entity.sgjdestiny_dhd.squiggler": "Squiggler",
+  "message.sgjdestiny_dhd.remote_kino_mode": "KINO CONTROL MODE",
+  "message.sgjdestiny_dhd.remote_gate_mode": "UNIVERSE GATE MODE",
+  "message.sgjdestiny_dhd.remote_no_gate": "NO UNIVERSE GATE CONTROL LINK IN RANGE",
+  "message.sgjdestiny_dhd.kino_deployed": "KINO DEPLOYED — STANDBY",
+  "message.sgjdestiny_dhd.kino_recalled": "KINO RECALLED",
+  "message.sgjdestiny_dhd.kino_follow": "KINO FOLLOWING",
+  "message.sgjdestiny_dhd.kino_hold": "KINO HOLDING POSITION",
+  "tooltip.sgjdestiny_dhd.remote_mode_gate": "Mode: Universe Gate Database",
+  "tooltip.sgjdestiny_dhd.remote_mode_kino": "Mode: Kino Control",
+  "tooltip.sgjdestiny_dhd.remote_controls": "Sneak-use: change mode • Sprint-use: recall Kino",
+  "message.sgjdestiny_dhd.kino_required": "INSERT A KINO TO DEPLOY",
+  "message.sgjdestiny_dhd.kino_server_limit": "SERVER KINO LIMIT REACHED (%s)",
+  "screen.sgjdestiny_dhd.select": "SELECT",
+  "screen.sgjdestiny_dhd.disconnect": "DISCONNECT",
+  "screen.sgjdestiny_dhd.cancel_dial": "CANCEL DIAL",
+  "subtitles.sgjdestiny_dhd.steam_release": "Steam vents discharge"
+  ,"screen.sgjdestiny_dhd.remote_network": "GATE NETWORK"
+  ,"screen.sgjdestiny_dhd.remote_subtitle": "%s ADDRESSES IN RANGE"
+  ,"screen.sgjdestiny_dhd.kino_control": "KINO CONTROL"
+  ,"screen.sgjdestiny_dhd.kino_link_standby": "REMOTE SENSOR INTERFACE"
+  ,"screen.sgjdestiny_dhd.kino_no_link": "NO KINO LINKED"
+  ,"screen.sgjdestiny_dhd.kino_future_controls": "CONTROL CHANNEL STANDBY"
+  ,"screen.sgjdestiny_dhd.kino_ready": "KINO FLIGHT CONTROL"
 }

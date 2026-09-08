@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["III", "BBB", "III"],
+  "key": {
+    "I": { "tag": "forge:ingots/iron" },
+    "B": { "item": "minecraft:iron_bars" }
+  },
+  "result": { "item": "sgjdestiny_dhd:destiny_floor_vent", "count": 4 }
+}

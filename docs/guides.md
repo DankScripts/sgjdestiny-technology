@@ -7,5 +7,4 @@ has_children: true
 
 # Guides
 
-Detailed operating instructions for the Destiny gate system, handheld controller, and Kino.
-
+Detailed operating instructions for the Destiny gate system, handheld controller, Kino, and off-world destinations.

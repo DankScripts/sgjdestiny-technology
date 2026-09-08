@@ -1,0 +1,13 @@
+{
+  "name": "sgjourney:stargate/universe/pedestal/water_planet",
+  "fallback": "minecraft:empty",
+  "elements": [{
+    "weight": 1,
+    "element": {
+      "location": "sgjourney:stargate/universe/pedestal/end/universe_stargate_pedestal_end_1",
+      "processors": "sgjourney:water_planet_gate",
+      "projection": "rigid",
+      "element_type": "minecraft:single_pool_element"
+    }
+  }]
+}

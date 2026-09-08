@@ -1,0 +1,17 @@
+{
+  "type": "sgjourney:stargate_pedestal",
+  "start_pool": "sgjourney:stargate/universe/pedestal/water_planet",
+  "size": 1,
+  "max_distance_from_center": 80,
+  "biomes": "#sgjourney:has_structure/stargate_pedestal/water_planet",
+  "step": "strongholds",
+  "start_height": { "absolute": 64 },
+  "use_expansion_hack": false,
+  "spawn_overrides": {},
+  "terrain_adaptation": "beard_thin",
+  "stargate_modifiers": {
+    "local_point_of_origin": true,
+    "primary": true,
+    "protected": true
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": true,
+  "textures": {
+    "base": "sgjourney:block/exposed_polished_naquadah_copper_block",
+    "metal": "sgjdestiny_dhd:block/destiny_metal",
+    "particle": "sgjourney:block/exposed_polished_naquadah_copper_block"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0], "to": [16, 15, 16],
+      "faces": {
+        "down": { "texture": "#base", "cullface": "down" },
+        "up": { "texture": "#base" },
+        "north": { "texture": "#base" }, "south": { "texture": "#base" },
+        "east": { "texture": "#base" }, "west": { "texture": "#base" }
+      }
+    },
+    { "from": [0, 15, 0], "to": [16, 16, 2], "faces": { "up": { "texture": "#base" }, "north": { "texture": "#base" }, "south": { "texture": "#base" } } },
+    { "from": [0, 15, 14], "to": [16, 16, 16], "faces": { "up": { "texture": "#base" }, "north": { "texture": "#base" }, "south": { "texture": "#base" } } },
+    { "from": [0, 15, 2], "to": [2, 16, 14], "faces": { "up": { "texture": "#base" }, "east": { "texture": "#base" }, "west": { "texture": "#base" } } },
+    { "from": [14, 15, 2], "to": [16, 16, 14], "faces": { "up": { "texture": "#base" }, "east": { "texture": "#base" }, "west": { "texture": "#base" } } },
+    { "from": [3, 15, 2], "to": [4, 16, 14], "faces": { "up": { "texture": "#metal" }, "east": { "texture": "#metal" }, "west": { "texture": "#metal" } } },
+    { "from": [6, 15, 2], "to": [7, 16, 14], "faces": { "up": { "texture": "#metal" }, "east": { "texture": "#metal" }, "west": { "texture": "#metal" } } },
+    { "from": [9, 15, 2], "to": [10, 16, 14], "faces": { "up": { "texture": "#metal" }, "east": { "texture": "#metal" }, "west": { "texture": "#metal" } } },
+    { "from": [12, 15, 2], "to": [13, 16, 14], "faces": { "up": { "texture": "#metal" }, "east": { "texture": "#metal" }, "west": { "texture": "#metal" } } }
+  ]
+}

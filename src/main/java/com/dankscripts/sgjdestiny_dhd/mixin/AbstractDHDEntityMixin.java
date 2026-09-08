@@ -15,4 +15,9 @@ public abstract class AbstractDHDEntityMixin {
             callback.cancel();
         }
     }
+
+    @Inject(method = "engageStargate", at = @At("HEAD"), remap = false)
+    private void sgjdestiny$prepareNineChevronDischarge(CallbackInfo callback) {
+        DestinyDialDelay.observeEngage((AbstractDHDEntity) (Object) this);
+    }
 }

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["CBC", "RER", "CBC"],
+  "key": {
+    "C": {"item": "minecraft:copper_ingot"},
+    "B": {"item": "minecraft:blackstone"},
+    "R": {"item": "minecraft:redstone"},
+    "E": {"item": "sgjourney:communication_crystal"}
+  },
+  "result": {"item": "sgjdestiny_dhd:earth_gate_designator"}
+}

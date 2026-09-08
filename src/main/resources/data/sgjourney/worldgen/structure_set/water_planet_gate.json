@@ -1,0 +1,14 @@
+{
+  "structures": [{
+    "structure": "sgjourney:stargate/universe/pedestal/water_planet",
+    "weight": 1
+  }],
+  "placement": {
+    "salt": 171305,
+    "type": "sgjourney:unique_placement",
+    "x_chunk_offset": 0,
+    "z_chunk_offset": 0,
+    "x": 0,
+    "y": 0
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "planet.sgjourney.water_planet",
+  "point_of_origin": "sgjourney:universal",
+  "symbols": "sgjourney:universal",
+  "symbol_prefix": 26,
+  "galactic_addresses": {
+    "sgjourney:kaliem": {
+      "address": {
+        "symbols": [
+          5,
+          12,
+          19,
+          24,
+          29,
+          34
+        ],
+        "randomizable": false
+      }
+    }
+  },
+  "extragalactic_address": {
+    "symbols": [
+      6,
+      12,
+      20,
+      24,
+      28,
+      31,
+      34
+    ],
+    "randomizable": false
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "destination.sgjourney.destiny",
+  "point_of_origin": "sgjourney:universal",
+  "symbols": "sgjourney:universal",
+  "symbol_prefix": 26,
+  "galactic_addresses": {
+    "sgjourney:kaliem": {
+      "address": {
+        "symbols": [
+          1,
+          8,
+          15,
+          21,
+          30,
+          35
+        ],
+        "randomizable": false
+      }
+    }
+  },
+  "extragalactic_address": {
+    "symbols": [
+      2,
+      9,
+      16,
+      23,
+      27,
+      32,
+      35
+    ],
+    "randomizable": false
+  }
+}

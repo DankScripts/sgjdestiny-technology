@@ -1,0 +1,21 @@
+{
+  "loader": "forge:obj",
+  "model": "sgjdestiny_dhd:models/item/kino.obj",
+  "flip_v": true,
+  "automatic_culling": false,
+  "shade_quads": true,
+  "emissive_ambient": true,
+  "ambientocclusion": false,
+  "render_type": "solid",
+  "textures": {"particle": "sgjdestiny_dhd:item/kino_shell"},
+  "display": {
+    "thirdperson_righthand":{"rotation":[65,0,0],"translation":[0,3,1],"scale":[0.55,0.55,0.55]},
+    "thirdperson_lefthand":{"rotation":[65,0,0],"translation":[0,3,1],"scale":[0.55,0.55,0.55]},
+    "firstperson_righthand":{"rotation":[15,-25,0],"translation":[1,2,0],"scale":[0.65,0.65,0.65]},
+    "firstperson_lefthand":{"rotation":[15,25,0],"translation":[-1,2,0],"scale":[0.65,0.65,0.65]},
+    "gui":{"rotation":[25,-35,0],"translation":[0,0,0],"scale":[0.9,0.9,0.9]},
+    "ground":{"translation":[0,3,0],"scale":[0.45,0.45,0.45]},
+    "fixed":{"rotation":[0,180,0],"scale":[0.75,0.75,0.75]},
+    "head":{"rotation":[90,0,0],"translation":[0,0,0],"scale":[0.62,0.62,0.62]}
+  }
+}

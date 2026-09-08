@@ -31,8 +31,25 @@ ordering="AFTER"
 side="BOTH"
 
 [[dependencies.${mod_id}]]
+modId="immersive_portals"
+mandatory=true
+versionRange="[3.0.7,3.1.0)"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.${mod_id}]]
 modId="sgj_deco"
 mandatory=false
 versionRange="[1.2.0,)"
 ordering="AFTER"
 side="BOTH"
+
+# Distant Horizons discovers both SGJourney-owned planet dimensions normally.
+# Loading this mod after DH when present ensures the Water Planet's startup terrain
+# preparation is registered before a client begins building its LOD database.
+[[dependencies.${mod_id}]]
+modId="distanthorizons"
+mandatory=false
+versionRange="[2.2.0,)"
+ordering="AFTER"
+side="CLIENT"

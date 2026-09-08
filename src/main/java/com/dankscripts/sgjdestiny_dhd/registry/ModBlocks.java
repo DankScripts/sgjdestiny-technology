@@ -3,7 +3,9 @@ package com.dankscripts.sgjdestiny_dhd.registry;
 import com.dankscripts.sgjdestiny_dhd.DestinyDHD;
 import com.dankscripts.sgjdestiny_dhd.block.DestinyDHDConsoleBlock;
 import com.dankscripts.sgjdestiny_dhd.block.DestinyDHDInteractionBlock;
+import com.dankscripts.sgjdestiny_dhd.block.DestinyFloorVentBlock;
 import com.dankscripts.sgjdestiny_dhd.block.LitDestinyBearingBlock;
+import com.dankscripts.sgjdestiny_dhd.block.LitDestinyFloorChevronBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.DeferredRegister;
@@ -19,6 +21,12 @@ public final class ModBlocks {
 
     public static final RegistryObject<Block> DESTINY_DHD_INTERACTION =
             BLOCKS.register("destiny_dhd_interaction", DestinyDHDInteractionBlock::new);
+
+    public static final RegistryObject<Block> DESTINY_FLOOR_VENT =
+            BLOCKS.register("destiny_floor_vent", DestinyFloorVentBlock::new);
+
+    public static final RegistryObject<Block> LIT_DESTINY_FLOOR_CHEVRON =
+            BLOCKS.register("lit_destiny_floor_chevron", LitDestinyFloorChevronBlock::new);
 
         public static RegistryObject<Block> litDestinyBearing;
 

@@ -1,0 +1,18 @@
+{
+  "name": "planet.sgjourney.jungle_planet",
+  "point_of_origin": "sgjourney:universal",
+  "symbols": "sgjourney:universal",
+  "symbol_prefix": 26,
+  "galactic_addresses": {
+    "sgjourney:kaliem": {
+      "address": {
+        "symbols": [5, 9, 14, 21, 27, 34],
+        "randomizable": false
+      }
+    }
+  },
+  "extragalactic_address": {
+    "symbols": [2, 8, 15, 23, 30, 35, 37],
+    "randomizable": false
+  }
+}

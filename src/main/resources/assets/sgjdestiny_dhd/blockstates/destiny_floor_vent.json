@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "sgjdestiny_dhd:block/destiny_floor_vent" },
+    "facing=east":  { "model": "sgjdestiny_dhd:block/destiny_floor_vent", "y": 90 },
+    "facing=south": { "model": "sgjdestiny_dhd:block/destiny_floor_vent", "y": 180 },
+    "facing=west":  { "model": "sgjdestiny_dhd:block/destiny_floor_vent", "y": 270 }
+  }
+}

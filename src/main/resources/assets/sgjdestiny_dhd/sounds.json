@@ -1,0 +1,11 @@
+{
+  "steam_release": {
+    "subtitle": "subtitles.sgjdestiny_dhd.steam_release",
+    "sounds": [
+      {
+        "name": "sgjdestiny_dhd:steam/pressure_release",
+        "stream": true
+      }
+    ]
+  }
+}

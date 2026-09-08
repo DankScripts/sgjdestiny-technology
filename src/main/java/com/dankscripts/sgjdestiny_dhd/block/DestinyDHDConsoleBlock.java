@@ -3,6 +3,8 @@ package com.dankscripts.sgjdestiny_dhd.block;
 import com.dankscripts.sgjdestiny_dhd.block_entity.DestinyUniverseDHDEntity;
 import com.dankscripts.sgjdestiny_dhd.compat.DestinyBearingCompat;
 import com.dankscripts.sgjdestiny_dhd.registry.ModBlocks;
+import com.dankscripts.sgjdestiny_dhd.dialer.SeedShipAddressDatabase;
+import com.dankscripts.sgjdestiny_dhd.network.DestinyDialerNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -44,6 +46,9 @@ import net.minecraftforge.network.NetworkHooks;
  * Sneak-right-click opens its crystal interface for installing dialing hardware.
  */
 public final class DestinyDHDConsoleBlock extends UniverseDHDBlock {
+    static {
+        DestinyDialerNetwork.register();
+    }
     private static final VoxelShape NORTH_SHAPE = Shapes.or(
             box(-5.0, 0.0, 0.0, 21.0, 2.0, 20.0),
             box(-3.0, 2.0, 6.0, 2.0, 18.5, 10.0),
@@ -88,7 +93,8 @@ public final class DestinyDHDConsoleBlock extends UniverseDHDBlock {
                 return InteractionResult.CONSUME;
             }
             dhd.generate();
-            NetworkHooks.openScreen(serverPlayer, new DestinyMenuProvider(dhd), pos);
+            DestinyDialerNetwork.openSeedShipDatabase(serverPlayer, dhd,
+                    SeedShipAddressDatabase.entriesFor(serverPlayer.server, dhd));
         }
         return InteractionResult.CONSUME;
     }

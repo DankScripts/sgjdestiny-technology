@@ -1,0 +1,18 @@
+{
+  "type": "sgjourney:stargate_pedestal",
+  "start_pool": "sgjourney:stargate/universe/pedestal/jungle_planet",
+  "size": 1,
+  "max_distance_from_center": 80,
+  "biomes": "#sgjourney:has_structure/stargate_pedestal/jungle_planet",
+  "step": "strongholds",
+  "start_height": { "absolute": 0 },
+  "project_start_to_heightmap": "WORLD_SURFACE_WG",
+  "use_expansion_hack": false,
+  "spawn_overrides": {},
+  "terrain_adaptation": "beard_thin",
+  "stargate_modifiers": {
+    "local_point_of_origin": true,
+    "primary": true,
+    "protected": true
+  }
+}

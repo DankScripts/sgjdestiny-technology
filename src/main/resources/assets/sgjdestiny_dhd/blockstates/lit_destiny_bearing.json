@@ -1,12 +1,16 @@
 {
   "multipart": [
     { "when": { "facing": "north" }, "apply": { "model": "sgj_deco:block/destiny_bearing" } },
-    { "when": { "facing": "north" }, "apply": { "model": "sgjdestiny_dhd:block/lit_destiny_bearing" } },
+    { "when": { "facing": "north", "flashing": "false" }, "apply": { "model": "sgjdestiny_dhd:block/lit_destiny_bearing" } },
+    { "when": { "facing": "north", "flashing": "true" }, "apply": { "model": "sgjdestiny_dhd:block/bright_destiny_bearing" } },
     { "when": { "facing": "east" },  "apply": { "model": "sgj_deco:block/destiny_bearing", "y": 90 } },
-    { "when": { "facing": "east" },  "apply": { "model": "sgjdestiny_dhd:block/lit_destiny_bearing", "y": 90 } },
+    { "when": { "facing": "east", "flashing": "false" },  "apply": { "model": "sgjdestiny_dhd:block/lit_destiny_bearing", "y": 90 } },
+    { "when": { "facing": "east", "flashing": "true" },  "apply": { "model": "sgjdestiny_dhd:block/bright_destiny_bearing", "y": 90 } },
     { "when": { "facing": "south" }, "apply": { "model": "sgj_deco:block/destiny_bearing", "y": 180 } },
-    { "when": { "facing": "south" }, "apply": { "model": "sgjdestiny_dhd:block/lit_destiny_bearing", "y": 180 } },
+    { "when": { "facing": "south", "flashing": "false" }, "apply": { "model": "sgjdestiny_dhd:block/lit_destiny_bearing", "y": 180 } },
+    { "when": { "facing": "south", "flashing": "true" }, "apply": { "model": "sgjdestiny_dhd:block/bright_destiny_bearing", "y": 180 } },
     { "when": { "facing": "west" },  "apply": { "model": "sgj_deco:block/destiny_bearing", "y": 270 } },
-    { "when": { "facing": "west" },  "apply": { "model": "sgjdestiny_dhd:block/lit_destiny_bearing", "y": 270 } }
+    { "when": { "facing": "west", "flashing": "false" },  "apply": { "model": "sgjdestiny_dhd:block/lit_destiny_bearing", "y": 270 } },
+    { "when": { "facing": "west", "flashing": "true" },  "apply": { "model": "sgjdestiny_dhd:block/bright_destiny_bearing", "y": 270 } }
   ]
 }

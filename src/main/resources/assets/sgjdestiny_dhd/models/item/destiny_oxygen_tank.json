@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "sgjdestiny_dhd:item/destiny_oxygen_tank"
+  }
+}

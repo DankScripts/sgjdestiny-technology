@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["CBC","RGR","CBC"],
+  "key":{"C":{"item":"minecraft:copper_ingot"},"B":{"item":"minecraft:blackstone"},"R":{"item":"minecraft:redstone"},"G":{"item":"minecraft:tinted_glass"}},
+  "result":{"item":"sgjdestiny_dhd:kino_remote"}
+}

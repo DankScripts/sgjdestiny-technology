@@ -1,0 +1,33 @@
+{
+  "name": "planet.sgjourney.calcite_planet",
+  "point_of_origin": "sgjourney:universal",
+  "symbols": "sgjourney:universal",
+  "symbol_prefix": 26,
+  "galactic_addresses": {
+    "sgjourney:kaliem": {
+      "address": {
+        "symbols": [
+          3,
+          11,
+          17,
+          22,
+          28,
+          31
+        ],
+        "randomizable": false
+      }
+    }
+  },
+  "extragalactic_address": {
+    "symbols": [
+      4,
+      10,
+      18,
+      25,
+      29,
+      33,
+      36
+    ],
+    "randomizable": false
+  }
+}
