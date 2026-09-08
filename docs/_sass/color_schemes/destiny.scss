@@ -9,10 +9,21 @@ $nav-child-link-color: #a8c8bc;
 $search-background-color: #102b23;
 $search-result-preview-color: #9eb4ab;
 
+.site-header {
+  height: auto !important;
+  min-height: 5rem;
+  max-height: none !important;
+  align-items: center;
+}
+
 .site-title {
-  font-size: 1.15rem !important;
-  line-height: 1.25 !important;
+  height: auto !important;
+  padding-top: 0.65rem;
+  padding-bottom: 0.65rem;
+  font-size: 1rem !important;
+  line-height: 1.2 !important;
   letter-spacing: 0.01em;
+  white-space: normal;
 }
 
 .main-content h1 {
@@ -51,3 +62,4 @@ $search-result-preview-color: #9eb4ab;
     margin-left: 18rem;
   }
 }
+
