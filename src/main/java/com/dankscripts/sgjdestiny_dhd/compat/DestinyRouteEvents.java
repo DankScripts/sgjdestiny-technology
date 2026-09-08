@@ -37,12 +37,14 @@ public final class DestinyRouteEvents {
         link(server, "destiny", "destiny_route");
         link(server, "calcite_planet", "calcite_planet");
         link(server, "water_planet", "water_planet");
+        link(server, "jungle_planet", "jungle_planet");
         // Stargate#getAddressRegion reads SGJourney's saved Universe mapping,
         // rather than the SpaceLocation object itself. Refresh that mapping
         // after applying our overrides so existing gates gain the new routes.
         Universe.get(server).assignSpaceLocationsToAddressRegions();
         repairDestinationGateRecords(server, "calcite_planet");
         repairDestinationGateRecords(server, "water_planet");
+        repairDestinationGateRecords(server, "jungle_planet");
     }
 
     private static void link(MinecraftServer server, String dimensionName, String regionName) {

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.95-dev
+
+- Imports the Jungle Planet address region into SGJourney's saved Universe map
+  so it appears in the handheld destination list in both new and existing worlds.
+- Includes the Jungle Planet in destination-gate validation during server startup.
+
 ## 0.0.94-dev
 
 - Adds the humid Jungle Planet visited after the ice world, with dense jungle,
