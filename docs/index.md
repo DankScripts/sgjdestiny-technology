@@ -3,7 +3,6 @@ layout: default
 title: Home
 nav_order: 1
 description: Complete guide to Stargate Journey: Destiny Technology.
-permalink: /
 ---
 
 # Stargate Journey: Destiny Technology
