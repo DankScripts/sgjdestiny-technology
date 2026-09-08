@@ -9,7 +9,6 @@ nav_order: 1
 
 Bring Destiny's gate room technology into **Stargate Journey** on Forge 1.20.1. Build and operate the Universe gate console, carry the handheld remote, deploy Kino probes, watch their live camera feed, and reproduce Destiny's dialing effects.
 
-![Destiny gate room]({{ '/assets/images/destiny-gate-room.png' | relative_url }})
 
 ## Choose what you want to do
 
@@ -35,3 +34,4 @@ Bring Destiny's gate room technology into **Stargate Journey** on Forge 1.20.1. 
 
 {: .note }
 JEI is recommended in-game because it always shows the recipes for the exact addon version you installed. The full recipes are also available in [Crafting recipes]({{ '/recipes.html' | relative_url }}).
+

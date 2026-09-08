@@ -7,7 +7,6 @@ nav_order: 3
 
 # Kino Operation
 
-![Kino live video](../assets/images/kino-video.png)
 
 ## Deploy
 
@@ -40,4 +39,5 @@ The video is a full client-side world render supplied through Immersive Portals.
 ## Through a Stargate
 
 Kinos may travel through an open Stargate. The remote world and relevant chunks are loaded for the controlling player so video and telemetry can continue from the destination dimension.
+
 
