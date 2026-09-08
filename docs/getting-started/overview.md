@@ -1,8 +1,8 @@
 ---
 layout: default
-title: Home
+title: Overview
+parent: Getting Started
 nav_order: 1
-description: Complete guide to Stargate Journey: Destiny Technology.
 ---
 
 # Stargate Journey: Destiny Technology
@@ -27,3 +27,4 @@ Use this documentation to install the addon, build and operate the Destiny equip
 
 {: .note }
 Crafting recipes are documented here, but JEI is recommended in-game because it reflects recipes from the exact installed version.
+
