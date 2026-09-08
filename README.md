@@ -1,4 +1,4 @@
-# SGJourney: Destiny DHD
+# Stargate Journey: Destiny Technology
 
 A Forge 1.20.1 addon for Stargate Journey that recreates Destiny's shipboard
 dialing console from *Stargate Universe*.
@@ -55,4 +55,3 @@ The repository is source-visible for inspection and compatibility work. No
 permission is granted to copy, modify, redistribute, or republish the software
 or its original assets without prior written permission. See
 [LICENSE.txt](LICENSE.txt).
-

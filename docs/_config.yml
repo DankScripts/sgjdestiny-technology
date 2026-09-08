@@ -1,5 +1,8 @@
 title: Stargate Journey Destiny Technology
 description: Documentation for the Destiny gate systems and Kino technology addon for Stargate Journey.
+url: https://dankscripts.github.io
+baseurl: /sgjdestiny-technology
+repository: DankScripts/sgjdestiny-technology
 theme: just-the-docs
 remote_theme: just-the-docs/just-the-docs
 color_scheme: destiny
