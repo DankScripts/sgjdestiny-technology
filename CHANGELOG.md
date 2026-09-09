@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.0.97-dev
+
+- Corrects the Jungle Planet's unique Stargate placement field from the invalid
+  `y` coordinate to a deterministic `z` chunk coordinate.
+- Moves its anchor to an unexplored chunk and generates that chunk on startup,
+  repairing worlds opened with the earlier Jungle Planet builds.
+
 ## 0.0.96-dev
 
 - Generates and retains each custom destination's unique Stargate anchor chunk
@@ -614,3 +621,7 @@
 - Added the console item to the Functional Blocks creative-mode tab.
 - Added self-dropping block loot behavior.
 - No dialing, GUI, power, crystal, or screen functionality is included yet.
+## 0.0.98-dev
+- Rebuild the Jungle Planet gate arrival area as a broad, wooded jungle island instead of an ocean landing.
+- Transfer a following Kino with its owner when the player travels between dimensions.
+- Detect Kino crossings explicitly so manual and live-video flight can pass through connected Stargates.

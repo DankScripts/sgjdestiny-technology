@@ -76,12 +76,13 @@ public final class DestinyRouteEvents {
         ServerLevel level = server.getLevel(dimension);
         if (level == null) return;
 
-        // SGJourney's unique pedestal placement is anchored in chunk 0,0. A
+        // Our unique pedestal placement is anchored at a fixed chunk. A
         // newly added destination dimension may exist without ever generating
         // that chunk, leaving its valid address with no gate in the network.
         // Generate and retain the anchor chunk before inspecting gate records.
-        level.setChunkForced(0, 0, true);
-        level.getChunk(0, 0);
+        int anchorChunkZ = "jungle_planet".equals(dimensionName) ? 8 : 0;
+        level.setChunkForced(0, anchorChunkZ, true);
+        level.getChunk(0, anchorChunkZ);
 
         StargateNetwork network = StargateNetwork.get(server);
         int kept = 0;
