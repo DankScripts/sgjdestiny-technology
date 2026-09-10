@@ -1,0 +1,18 @@
+{
+  "name": "planet.sgjourney.eden",
+  "point_of_origin": "sgjourney:universal",
+  "symbols": "sgjourney:universal",
+  "symbol_prefix": 26,
+  "galactic_addresses": {
+    "sgjdestiny_dhd:mediora": {
+      "address": {
+        "symbols": [9, 15, 20, 25, 31, 38],
+        "randomizable": false
+      }
+    }
+  },
+  "extragalactic_address": {
+    "symbols": [10, 16, 21, 26, 32, 36, 39],
+    "randomizable": false
+  }
+}

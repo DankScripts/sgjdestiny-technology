@@ -39,6 +39,8 @@ public final class ModItems {
             () -> new KinoRemoteItem(new Item.Properties().stacksTo(1)));
     public static final RegistryObject<Item> KINO = ITEMS.register("kino",
             () -> new KinoItem(new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> SQUIGGLER_VENOM_SAC = ITEMS.register("squiggler_venom_sac",
+            () -> new Item(new Item.Properties()));
 
     private ModItems() {}
 }

@@ -1,0 +1,6 @@
+{
+  "name": "galaxy.sgjdestiny_dhd.mediora",
+  "type": "sgjourney:medium_galaxy",
+  "default_symbols": "sgjourney:universal",
+  "symbol_prefix": 26
+}

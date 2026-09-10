@@ -1,0 +1,6 @@
+{
+  "feature": "sgjdestiny_dhd:eden_shallow_cave",
+  "placement": [
+    { "type": "minecraft:rarity_filter", "chance": 8 }
+  ]
+}

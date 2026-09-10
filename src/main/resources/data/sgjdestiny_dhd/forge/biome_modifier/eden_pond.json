@@ -1,0 +1,6 @@
+{
+  "type": "forge:add_features",
+  "biomes": "sgjourney:eden",
+  "features": "sgjdestiny_dhd:eden_pond",
+  "step": "lakes"
+}

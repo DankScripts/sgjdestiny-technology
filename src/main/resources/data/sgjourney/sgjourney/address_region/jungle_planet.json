@@ -4,7 +4,7 @@
   "symbols": "sgjourney:universal",
   "symbol_prefix": 26,
   "galactic_addresses": {
-    "sgjourney:kaliem": {
+    "sgjdestiny_dhd:mediora": {
       "address": {
         "symbols": [5, 9, 14, 21, 27, 34],
         "randomizable": false

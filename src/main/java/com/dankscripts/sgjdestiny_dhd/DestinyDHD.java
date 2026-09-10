@@ -5,6 +5,7 @@ import com.dankscripts.sgjdestiny_dhd.registry.ModItems;
 import com.dankscripts.sgjdestiny_dhd.registry.ModParticles;
 import com.dankscripts.sgjdestiny_dhd.registry.ModSounds;
 import com.dankscripts.sgjdestiny_dhd.registry.ModEntities;
+import com.dankscripts.sgjdestiny_dhd.registry.ModFeatures;
 import com.dankscripts.sgjdestiny_dhd.config.DestinyServerConfig;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
@@ -36,6 +37,7 @@ public final class DestinyDHD {
         ModParticles.PARTICLES.register(modBus);
         ModSounds.SOUNDS.register(modBus);
         ModEntities.ENTITIES.register(modBus);
+        ModFeatures.register(modBus);
         modBus.addListener(this::commonSetup);
         modBus.addListener(this::addCreativeItems);
     }

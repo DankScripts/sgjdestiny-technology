@@ -7,7 +7,7 @@ version = mod_version
 group = mod_group_id
 
 base {
-    archivesName = "sgjdestiny-dhd-${minecraft_version}"
+    archivesName = "sgjdestiny-tech-${minecraft_version}"
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
@@ -37,6 +37,7 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    compileOnly files('libs/immersive-portals-3.0.7-all.jar')
 
     def configuredSgJourneyJar = System.getenv('SGJOURNEY_JAR')
     if (configuredSgJourneyJar != null && !configuredSgJourneyJar.isBlank()) {
@@ -64,7 +65,7 @@ tasks.named('processResources', ProcessResources).configure {
 }
 
 tasks.named('jar', Jar).configure {
-    archiveFileName = "sgjdestiny-dhd-${minecraft_version}-${mod_version}.jar"
+    archiveFileName = "sgjdestiny-tech-${minecraft_version}-${mod_version}.jar"
     manifest {
         attributes([
             'Specification-Title': mod_id,
@@ -80,7 +81,7 @@ tasks.named('jar', Jar).configure {
 }
 
 tasks.register('sourceArchive', Zip) {
-    archiveFileName = "sgjdestiny-dhd-${minecraft_version}-${mod_version}-source.zip"
+    archiveFileName = "sgjdestiny-tech-${minecraft_version}-${mod_version}-source.zip"
     destinationDirectory = layout.buildDirectory.dir('distributions')
     from(layout.projectDirectory) {
         include 'src/**'

@@ -43,33 +43,39 @@ public final class SeedShipAddressDatabase {
         EarthGateData.get(server).resolve(server).ifPresent(earth -> result.add(
                 new Entry(Component.translatable("destination.sgjdestiny_dhd.earth"),
                         earth.get9ChevronAddress(), true)));
-        if (source == null || source.getAddressRegion() == null) return List.copyOf(result);
-
-        AddressRegion sourceRegion = source.getAddressRegion();
         Map<Address.Immutable, Entry> entries = new LinkedHashMap<>();
         // Destiny's seed-ship database is preprogrammed. Read its known route
         // directly from SGJourney's Universe data so unloaded destination gate
         // chunks do not make records vanish from the console.
         Universe universe = Universe.get(server);
-        ResourceKey<Galaxy> kaliem = ResourceKey.create(Galaxy.REGISTRY_KEY,
-                new ResourceLocation("sgjourney", "kaliem"));
+        ResourceKey<Galaxy> mediora = ResourceKey.create(Galaxy.REGISTRY_KEY,
+                new ResourceLocation("sgjdestiny_dhd", "mediora"));
         // Destiny also has an ordinary galactic address. Keep it in the
         // handheld's seeded route table so expedition teams can return to the
         // ship with seven chevrons even while its gate dimension is unloaded.
-        addKnownRegion(universe, kaliem, "destiny_route", entries);
-        addKnownRegion(universe, kaliem, "calcite_planet", entries);
-        addKnownRegion(universe, kaliem, "water_planet", entries);
-        addKnownRegion(universe, kaliem, "jungle_planet", entries);
-        StargateNetwork network = StargateNetwork.get(server);
-        for (var level : server.getAllLevels()) {
-            for (Stargate destination : network.getStargatesInDimension(level.dimension())) {
-                // Seven symbols alone cannot distinguish the three gate families.
-                if (destination == source || destination.getStargateType() != StargateInit.UNIVERSE.get()) continue;
-                Address.Immutable address = destination.getConnectionAddress(sourceRegion, Address.Type.ADDRESS_7_CHEVRON);
-                if (address == null || address.getType() != Address.Type.ADDRESS_7_CHEVRON || !address.canBeDialed()) continue;
-                AddressRegion region = destination.getAddressRegion();
-                Component name = region == null ? Component.literal("SEED DESTINATION") : region.getTranslatedName();
-                entries.putIfAbsent(address, new Entry(name, address, false));
+        addKnownRegion(server, universe, mediora, "destiny_route", entries);
+        addKnownRegion(server, universe, mediora, "calcite_planet", entries);
+        addKnownRegion(server, universe, mediora, "water_planet", entries);
+        addKnownRegion(server, universe, mediora, "jungle_planet", entries);
+        addKnownRegion(server, universe, mediora, "justice_planet", entries);
+
+        // The seeded route belongs to the Destiny database and must remain
+        // visible while its physical gate or DHD cache is still loading.
+        // Network discovery supplements that route only when a source region
+        // is available.
+        if (source != null && source.getAddressRegion() != null) {
+            AddressRegion sourceRegion = source.getAddressRegion();
+            StargateNetwork network = StargateNetwork.get(server);
+            for (var level : server.getAllLevels()) {
+                for (Stargate destination : network.getStargatesInDimension(level.dimension())) {
+                    // Seven symbols alone cannot distinguish the three gate families.
+                    if (destination == source || destination.getStargateType() != StargateInit.UNIVERSE.get()) continue;
+                    Address.Immutable address = destination.getConnectionAddress(sourceRegion, Address.Type.ADDRESS_7_CHEVRON);
+                    if (address == null || address.getType() != Address.Type.ADDRESS_7_CHEVRON || !address.canBeDialed()) continue;
+                    AddressRegion region = destination.getAddressRegion();
+                    Component name = region == null ? Component.literal("SEED DESTINATION") : region.getTranslatedName();
+                    entries.putIfAbsent(address, new Entry(name, address, false));
+                }
             }
         }
         List<Entry> universeEntries = new ArrayList<>(entries.values());
@@ -78,12 +84,24 @@ public final class SeedShipAddressDatabase {
         return List.copyOf(result);
     }
 
-    private static void addKnownRegion(Universe universe, ResourceKey<Galaxy> galaxy, String name,
+    private static void addKnownRegion(MinecraftServer server, Universe universe,
+                                       ResourceKey<Galaxy> galaxy, String name,
                                        Map<Address.Immutable, Entry> entries) {
         ResourceKey<AddressRegion> key = ResourceKey.create(AddressRegion.REGISTRY_KEY,
                 new ResourceLocation("sgjourney", name));
         AddressRegion region = universe.getAddressRegionFromKey(key);
         Address.Immutable address = universe.getAddressInGalaxyFromAddressRegionKey(galaxy, key);
+        // SGJourney's saved reverse index may not expose a newly introduced
+        // custom galaxy in an existing world. The datapack definition remains
+        // authoritative and contains the fixed six destination symbols.
+        if (address == null) {
+            AddressRegion definition = server.registryAccess().registryOrThrow(AddressRegion.REGISTRY_KEY).get(key);
+            if (definition != null) {
+                if (region == null) region = definition;
+                Address.Immutable definedAddress = definition.getAddressInGalaxy(galaxy);
+                if (definedAddress != null) address = Address.Immutable.extendWithPointOfOrigin(definedAddress);
+            }
+        }
         if (region != null && address != null && address.getType() == Address.Type.ADDRESS_7_CHEVRON) {
             entries.putIfAbsent(address, new Entry(region.getTranslatedName(), address, false));
         }

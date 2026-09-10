@@ -62,7 +62,7 @@ public final class SeedShipDialerScreen extends Screen {
         this.console = console;
         this.directGate = directGate;
         this.handheld = handheld;
-        this.entries = entries;
+        this.entries = handheld ? entries.stream().filter(entry -> !entry.earth()).toList() : entries;
         this.gateState = gateState;
         this.kinoSection = kinoInitially;
         this.kinoDeployed = kinoDeployed;
@@ -170,8 +170,7 @@ public final class SeedShipDialerScreen extends Screen {
                         entryColor(entries.get(index), index == selected));
                 DestinyDialerNetwork.ClientEntry entry = entries.get(index);
                 graphics.drawString(font, entry.name(), l.rowsLeft + 8, y + 5, 0xD7CFB1, false);
-                graphics.drawString(font, addressText(entry), l.rowsLeft + 8, y + 16,
-                        entry.earth() ? 0xC8A45B : 0x789984, false);
+                drawUniverseAddress(graphics, entry, l.rowsLeft + 8, y + 15);
             }
         }
         if (page > 0) graphics.drawString(font, "< PREVIOUS", l.rowsLeft, l.screenTop + l.screenHeight - 14, 0xA8C2AE, false);
@@ -431,11 +430,15 @@ public final class SeedShipDialerScreen extends Screen {
         return entry.earth() ? 0xFFC69D4B : 0xFF5D806C;
     }
 
-    private static String addressText(DestinyDialerNetwork.ClientEntry entry) {
-        int[] symbols = entry.symbols();
-        StringBuilder text = new StringBuilder(entry.earth() ? "EARTH  9C  " : "U  7C  ");
-        for (int i = 0; i < symbols.length; i++) { if (i > 0) text.append("  "); if (symbols[i] < 10) text.append('0'); text.append(symbols[i]); }
-        return text.toString();
+    private void drawUniverseAddress(GuiGraphics graphics, DestinyDialerNetwork.ClientEntry entry, int x, int y) {
+        int glyphX = x;
+        for (int symbol : entry.symbols()) {
+            if (symbol < 0 || symbol > 38) continue;
+            ResourceLocation texture = new ResourceLocation("sgjourney",
+                    "textures/symbol/universal/universal_" + symbol + ".png");
+            graphics.blit(texture, glyphX, y, 12, 12, 0, 0, 32, 32, 32, 32);
+            glyphX += 14;
+        }
     }
 
     private record Layout(int left, int top, int width, int height, int screenLeft, int screenTop, int screenWidth,

@@ -1,0 +1,33 @@
+{
+  "name": "planet.sgjourney.justice_planet",
+  "point_of_origin": "sgjourney:universal",
+  "symbols": "sgjourney:universal",
+  "symbol_prefix": 26,
+  "galactic_addresses": {
+    "sgjdestiny_dhd:mediora": {
+      "address": {
+        "symbols": [
+          7,
+          13,
+          18,
+          23,
+          29,
+          36
+        ],
+        "randomizable": false
+      }
+    }
+  },
+  "extragalactic_address": {
+    "symbols": [
+      8,
+      14,
+      19,
+      24,
+      30,
+      35,
+      37
+    ],
+    "randomizable": false
+  }
+}

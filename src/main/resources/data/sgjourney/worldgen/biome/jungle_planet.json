@@ -17,18 +17,11 @@
     }
   },
   "spawners": {
-    "creature": [
-      { "type": "minecraft:parrot", "weight": 10, "minCount": 1, "maxCount": 2 },
-      { "type": "minecraft:chicken", "weight": 8, "minCount": 2, "maxCount": 4 }
-    ],
+    "creature": [],
     "monster": [
-      { "type": "sgjdestiny_dhd:squiggler", "weight": 85, "minCount": 2, "maxCount": 5 },
-      { "type": "minecraft:spider", "weight": 20, "minCount": 1, "maxCount": 3 },
-      { "type": "minecraft:zombie", "weight": 10, "minCount": 1, "maxCount": 2 }
+      { "type": "sgjdestiny_dhd:squiggler", "weight": 85, "minCount": 2, "maxCount": 5 }
     ],
-    "ambient": [
-      { "type": "minecraft:bat", "weight": 10, "minCount": 1, "maxCount": 2 }
-    ]
+    "ambient": []
   },
   "spawn_costs": {},
   "carvers": {
@@ -58,7 +51,7 @@
       "minecraft:bamboo_light", "minecraft:trees_jungle", "minecraft:flower_warm",
       "minecraft:patch_grass_jungle", "minecraft:brown_mushroom_normal",
       "minecraft:red_mushroom_normal", "minecraft:patch_sugar_cane", "minecraft:patch_pumpkin",
-      "minecraft:vines", "minecraft:glow_lichen"
+      "minecraft:vines", "minecraft:glow_lichen", "sgjdestiny_dhd:squiggler_nest"
     ],
     ["minecraft:freeze_top_layer"]
   ]

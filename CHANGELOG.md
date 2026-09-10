@@ -1,5 +1,125 @@
 # Changelog
 
+## 0.0.2-alpha
+
+- Promotes the accepted 0.0.141 development build to the second public alpha baseline.
+- Includes the complete accepted Destiny console, handheld controller, Kino, gate-network, planet, creature, recipe, configuration, and documentation systems.
+- Locks Eden with land-dominant mountainous terrain, widely spaced ponds and lakes, shallow hillside caves, a sealed three-layer bedrock floor, passive wildlife, no hostile mobs, and the accepted obelisk behavior.
+- Produces the release artifact as `sgjdestiny-tech-1.20.1-0.0.2-alpha.jar`.
+
+## 0.0.141-dev
+
+- Removes Eden's large underground cave and canyon carvers.
+- Adds occasional short, shallow cave openings specifically to natural hillsides.
+- Retains the normal-pipeline three-layer bedrock seal beneath the cave-free deep terrain.
+- Adds widely spaced natural ponds and small lakes, averaging about 90 blocks apart, without introducing a global sea level or deep surface oceans.
+
+## 0.0.140-dev
+
+- Adds Eden's bottom seal as a normal world-generation feature instead of a chunk-load repair.
+- Generates three continuous bedrock layers at the bottom of every new Eden chunk without blocking player movement during chunk loading.
+
+## 0.0.139-dev
+
+- Removes the synchronous Eden chunk-load block rewriting that froze players at newly generated terrain.
+- Returns bottom sealing to the noise generator so chunks generate through Minecraft's normal pipeline and remain compatible with Distant Horizons.
+
+## 0.0.138-dev
+
+- Seals every loaded Eden chunk with four continuous deep deepslate layers and a complete bedrock layer at the world bottom.
+- Repairs previously generated Eden chunks when they load and prevents all terrain or cave density rules from leaving openings into the void.
+- Restores Eden's normal cave-density generator above the guaranteed bottom seal.
+
+## 0.0.137-dev
+
+- Adds a guaranteed solid terrain-density foundation from Y=-64 through Y=-48 on Eden.
+- Prevents cave carving from punching holes through the bedrock floor while preserving the cave system above the sealed foundation.
+
+## 0.0.136-dev
+
+- Prevents Eden's deep terrain cavities from exposing frightening void-like openings.
+- Uses lava as the below-ground fallback fluid while retaining a zero sea level and disabled aquifers, filling deep void-like openings without creating surface oceans.
+
+## 0.0.135-dev
+
+- Prevents Eden from generating global seas by disabling its terrain aquifers, using air as its default fluid, and restoring a zero sea level.
+- Keeps Eden's intentional event-built lake and shoreline food as its controlled source of surface water.
+
+## 0.0.134-dev
+
+- Removes the failed fixed-seed mixins and restores the original launch-safe Mixin build configuration.
+- Retains Eden's taller obelisk, night-only beacon, nearby lake and food, and no-hostile-mob behavior.
+- Defers deterministic generation for finalized planets until it can be implemented without fragile launch-time injections.
+
+## 0.0.133-dev
+
+- Fixes the 0.0.132 client launch failure by removing a redundant fixed-seed injection from an inherited `ServerLevel` method.
+- Retains the valid terrain-noise and world-generation-region seed hooks.
+
+## 0.0.132-dev
+
+- Extends Eden's existing obelisk from 36 blocks to 108 blocks as one continuous monument.
+- Adds an integrated beacon cap that emits a skyward beam only during Eden's night and switches off at sunrise.
+- Adds water-filled lowlands plus a guaranteed lake near the future shuttle landing area and the obelisk.
+- Grows harvestable melons and mature sweet berries around the guaranteed lake.
+- Preserves Eden's accepted passive animal life while preventing hostile mobs from spawning or entering the dimension.
+- Locks Calcite, Water, Jungle, and Justice to the seed used by their accepted development-world terrain so their terrain, features, and structures reproduce on every server.
+- Leaves Eden seed-dependent until its design is finished and accepted.
+
+## 0.0.131-dev
+
+- Completes the Eden rename by removing the temporary `sgjourney:eden_planet` registry alias after migrating the test save to `sgjourney:eden`.
+- Redirects the saved player from the obsolete ocean-backed Eden dimension into the canonical land-heavy Eden dimension where the obelisk is generated.
+
+## 0.0.130-dev
+
+- Restores a hidden `sgjourney:eden_planet` biome and dimension compatibility alias so saves created before Eden was renamed can still load.
+- Keeps all new Eden generation and runtime behavior on the canonical `sgjourney:eden` identifier.
+
+## 0.0.118-dev
+
+- Added Mediora as a native SGJourney galaxy for Destiny's current route.
+- Migrates existing custom destinations from their former Kaliem mapping into Mediora.
+
+## 0.0.117-dev
+
+- Fixed dead Squigglers freezing indefinitely during their daylight retreat window.
+- Explicitly registers startup-generated Universe gate controllers with SGJourney so the Barren Planet is immediately dialable.
+
+## 0.0.116-dev
+
+- Centralizes every custom Universe destination in one startup preload list.
+- Forces and retains each destination's Stargate anchor chunk for the life of the server.
+- Detects a destination with no valid Universe gate record and deterministically places the SGJourney Universe pedestal template before routing becomes available.
+- Applies the destination-specific pedestal processor and reports the repaired gate count in the server log.
+
+## 0.0.115-dev
+
+- Adds the unnamed Barren Planet visited in SGU's "Justice" as a registered seven-chevron destination.
+- Generates a dry gray-brown gravel-and-stone valley without vegetation or natural animals.
+- Places a half-buried, non-Ancient alien wreck in a rocky area away from the Universe Stargate.
+
+## Accepted project baseline: 0.0.114-dev
+
+- The user accepted 0.0.114-dev as the new baseline for the entire project before development of the next destination begins.
+- Future work must preserve every accepted system in this build unless the user explicitly requests a change.
+
+## 0.0.114-dev
+
+- Removes the textual address-type prefix so destination rows show only the planet name and Universe glyph address.
+
+## 0.0.113-dev
+
+- Corrects Universe address glyph rendering to scale each complete SGJourney 32-by-32 symbol instead of sampling its empty corner.
+
+## 0.0.112-dev
+
+- Makes Squigglers retreat into the nearest nest and despawn as daylight approaches.
+- Adds visible sulfur-colored fumes venting from Squiggler nest openings.
+- Replaces numeric handheld address strings with SGJourney's Universe glyph textures.
+- Keeps Earth's nine-chevron address exclusive to the Destiny ship console and removes it from the handheld network list.
+- Records the accepted 0.0.111 Jungle Planet and Squiggler behavior as the completed baseline.
+
 ## 0.0.97-dev
 
 - Corrects the Jungle Planet's unique Stargate placement field from the invalid
@@ -625,3 +745,90 @@
 - Rebuild the Jungle Planet gate arrival area as a broad, wooded jungle island instead of an ocean landing.
 - Transfer a following Kino with its owner when the player travels between dimensions.
 - Detect Kino crossings explicitly so manual and live-video flight can pass through connected Stargates.
+## 0.0.99-dev
+- Make the entire loaded Jungle Planet continuous land with dense jungle growth and low cliff terrain.
+- Move Kino follow-dimension recovery into the regular server tick so it reliably follows its owner through a gate.
+## 0.0.100-dev
+- Restore the proven smooth Kino movement baseline.
+- Let a following Kino physically continue through the event horizon after its owner while holding the connection open for SGJourney's normal wormhole traversal.
+## 0.0.101-dev
+- Aim a following Kino at the source gate's real event-horizon center after its owner crosses, allowing physical follow-through in either direction.
+## 0.0.102-dev
+- Generate the Jungle Planet without oceans or aquifers instead of rewriting every loaded chunk at runtime.
+- Level the gate's immediate surroundings and grow close jungle undergrowth around it without leaving the gate in a pit.
+## 0.0.103-dev
+- Widen and fully level the gate landing area, filling low ground and blending gradually into nearby jungle hills.
+- Remove passive and vanilla hostile Jungle Planet spawns so only darkness-spawned Squigglers appear naturally.
+## 0.0.104-dev
+- Remove complete trees and hanging foliage before leveling the Jungle gate clearing, preventing floating chopped trunks and leaf layers.
+- Preserve an intact dense jungle perimeter with low undergrowth inside the clearing.
+
+## 0.0.105-dev
+- Remove the Jungle Planet gate clearing and terrain-leveling pass so natural jungle terrain and vegetation remain around the gate.
+
+## 0.0.106-dev
+- Add sparse hollow Squiggler nest mounds to Jungle Planet generation.
+- Spawn controlled Squiggler packs from nearby nests at night, with cooldown and population limits.
+
+## 0.0.109-dev
+- Distribute Squiggler nests as common colonies of 2–4 mounds across the Jungle Planet.
+- Let Squigglers climb trees and vegetation and drop toward nearby prey from above.
+- Add player-kill Squiggler Venom Sac drops with Looting support for quests and future waterborne-microbe cure content.
+
+## 0.0.110-dev
+- Add active vertical pursuit so Squigglers climb trunks and pass through canopy leaves to reach players in treetops without damaging vegetation.
+
+## 0.0.111-dev
+- Spread individual Squiggler nests broadly across the jungle instead of grouping them into clusters.
+- Use wall-climber navigation and forward canopy detection so Squigglers can route up trunks and enter leaves to reach treetop players.
+# 0.0.129-dev
+
+- Renames Eden's internal dimension, biome, address-region, and space-location identifier from `eden_planet` to `eden`.
+
+# 0.0.128-dev
+
+- Changes Eden to land-dominant terrain with meadows and sparse woodland instead of an ocean broken by small islands.
+- Rebuilds the obelisk as one continuous tapered monolith while preserving its accepted height.
+- Anchors the obelisk completion marker underground so repeated server starts cannot stack additional obelisks vertically.
+
+# 0.0.127-dev
+
+- Handles SGJourney's absent saved-galaxy map when introducing Eden to an existing world, preventing a server-start crash.
+
+# 0.0.126-dev
+
+- Adds Eden from SGU's “Faith” as a peaceful, Earth-like Mediora world with forests, meadows, water, and a monumental alien obelisk.
+- Keeps Eden outside the Stargate destination list because its travel route will use the upcoming Destiny shuttle system.
+
+# 0.0.125-dev
+
+- Embeds the Justice Planet pedestal three blocks into the selected terrain so its built-in base and arrival ramp meet the ground naturally instead of forming a raised rectangular mound.
+
+# 0.0.124-dev
+
+- Supports the Justice Planet gate pedestal with a shallow gravel-and-stone terrace that follows the selected terrain and tapers into the surrounding barren landscape.
+- Keeps gate placement additive so it does not excavate or erase nearby terrain.
+- Moves the crashed alien ship roughly 300 blocks from the Justice Planet arrival gate so it must be discovered during exploration.
+
+# 0.0.123-dev
+
+- Surveys nearby Justice Planet terrain before initial gate construction and places the full pedestal on the flattest suitable footprint.
+
+# 0.0.122-dev
+
+- Makes the lowest existing Justice Planet gate authoritative when earlier development builds left stacked duplicates.
+- Gives newly generated Justice Planet terrain broader and taller barren hills.
+
+# 0.0.121-dev
+
+- Registers Mediora into existing SGJourney Universe saves before migrating its planets, making their displayed seven-symbol addresses routable.
+
+# 0.0.120-dev
+
+- Made fixed Mediora dialer entries resolve directly from their authoritative datapack definitions when SGJourney's saved reverse index is unavailable.
+
+# 0.0.119-dev
+
+- Restored all seeded Mediora destinations in the Destiny dialer even while the source gate cache is loading.
+- Reattached migrated space locations to SGJourney's saved Mediora address-region instances.
+- Initialized newly placed destination gates through SGJourney so they receive a valid nine-chevron identity before network registration.

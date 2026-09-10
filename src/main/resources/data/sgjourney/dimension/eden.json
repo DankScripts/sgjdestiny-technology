@@ -1,0 +1,11 @@
+{
+  "type": "sgjourney:milky_way_planet",
+  "generator": {
+    "type": "minecraft:noise",
+    "settings": "sgjourney:eden",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "sgjourney:eden"
+    }
+  }
+}
