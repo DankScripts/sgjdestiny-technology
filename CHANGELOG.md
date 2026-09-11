@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Prevents malformed legacy SGJourney gate records in large modpacks from blocking the Destiny console and handheld address screens.
+
 ## 0.0.2-alpha
 
 - Promotes the accepted 0.0.141 development build to the second public alpha baseline.

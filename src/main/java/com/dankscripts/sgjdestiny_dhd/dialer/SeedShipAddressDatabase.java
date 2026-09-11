@@ -2,6 +2,9 @@ package com.dankscripts.sgjdestiny_dhd.dialer;
 
 import com.dankscripts.sgjdestiny_dhd.compat.DestinyRouteEvents;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -24,6 +27,8 @@ import java.util.Map;
 
 /** Server-authoritative view of SGJourney's registered Universe gates. */
 public final class SeedShipAddressDatabase {
+    private static final Logger LOGGER = LoggerFactory.getLogger("SGJ Destiny DHD/Address Database");
+
     private SeedShipAddressDatabase() {}
 
     public record Entry(Component name, Address.Immutable address, boolean earth) {}
@@ -70,7 +75,17 @@ public final class SeedShipAddressDatabase {
                 for (Stargate destination : network.getStargatesInDimension(level.dimension())) {
                     // Seven symbols alone cannot distinguish the three gate families.
                     if (destination == source || destination.getStargateType() != StargateInit.UNIVERSE.get()) continue;
-                    Address.Immutable address = destination.getConnectionAddress(sourceRegion, Address.Type.ADDRESS_7_CHEVRON);
+                    Address.Immutable address;
+                    try {
+                        address = destination.getConnectionAddress(sourceRegion, Address.Type.ADDRESS_7_CHEVRON);
+                    } catch (RuntimeException exception) {
+                        // Large modpacks can retain legacy SGJourney records whose
+                        // internal galaxy map contains a null key. One broken gate
+                        // must not prevent the seeded Destiny database from opening.
+                        LOGGER.warn("Skipped an unreadable Universe Stargate record in {} while building the Destiny address list",
+                                level.dimension().location());
+                        continue;
+                    }
                     if (address == null || address.getType() != Address.Type.ADDRESS_7_CHEVRON || !address.canBeDialed()) continue;
                     AddressRegion region = destination.getAddressRegion();
                     Component name = region == null ? Component.literal("SEED DESTINATION") : region.getTranslatedName();
