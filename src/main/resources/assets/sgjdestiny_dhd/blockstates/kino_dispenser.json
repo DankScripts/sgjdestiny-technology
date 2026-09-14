@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "sgjdestiny_dhd:block/kino_dispenser" },
+    "facing=east":  { "model": "sgjdestiny_dhd:block/kino_dispenser", "y": 90 },
+    "facing=south": { "model": "sgjdestiny_dhd:block/kino_dispenser", "y": 180 },
+    "facing=west":  { "model": "sgjdestiny_dhd:block/kino_dispenser", "y": 270 }
+  }
+}

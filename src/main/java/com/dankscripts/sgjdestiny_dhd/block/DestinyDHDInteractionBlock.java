@@ -38,7 +38,8 @@ public final class DestinyDHDInteractionBlock extends Block {
         for (int down = 1; down <= 2; down++) {
             BlockPos controllerPos = pos.below(down);
             BlockState controllerState = level.getBlockState(controllerPos);
-            if (controllerState.is(ModBlocks.DESTINY_DHD.get())) {
+            if (controllerState.is(ModBlocks.DESTINY_DHD.get())
+                    || controllerState.is(ModBlocks.KINO_DISPENSER.get())) {
                 return controllerState.use(level, player, hand,
                         new BlockHitResult(hit.getLocation(), hit.getDirection(), controllerPos, hit.isInside()));
             }

@@ -1,0 +1,91 @@
+# UV-mapped weathered Kino dispenser materials
+
+newmtl dark_iron
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/kino_dispenser/dark_iron
+
+newmtl blackened_metal
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/kino_dispenser/blackened_metal
+
+newmtl rim_metal
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/kino_dispenser/rim_metal
+
+newmtl aged_panel
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/kino_dispenser/aged_panel
+
+newmtl rusted_metal
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/kino_dispenser/rusted_metal
+
+newmtl cavity
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/kino_dispenser/cavity
+
+newmtl pipe
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/kino_dispenser/pipe
+
+newmtl pipe_band
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/kino_dispenser/pipe_band
+
+newmtl bolt
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/kino_dispenser/bolt
+
+newmtl display
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/kino_dispenser/display
+
+newmtl control_button
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/kino_dispenser/control_button
+
+newmtl status_light
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/kino_dispenser/status_light
+
+newmtl cable
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/kino_dispenser/cable
+
+newmtl kino_shell
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/kino_dispenser/kino_shell
+
+newmtl kino_seam
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/kino_dispenser/kino_seam
+
+newmtl kino_lens
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/kino_dispenser/kino_lens
+
+newmtl kino_camera
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/kino_dispenser/kino_camera
+
+newmtl kino_brass
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/kino_dispenser/kino_brass

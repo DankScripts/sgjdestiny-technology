@@ -1,7 +1,9 @@
 package com.dankscripts.sgjdestiny_dhd;
 
 import com.dankscripts.sgjdestiny_dhd.registry.ModBlocks;
+import com.dankscripts.sgjdestiny_dhd.registry.ModBlockEntities;
 import com.dankscripts.sgjdestiny_dhd.registry.ModItems;
+import com.dankscripts.sgjdestiny_dhd.registry.ModMenus;
 import com.dankscripts.sgjdestiny_dhd.registry.ModParticles;
 import com.dankscripts.sgjdestiny_dhd.registry.ModSounds;
 import com.dankscripts.sgjdestiny_dhd.registry.ModEntities;
@@ -33,7 +35,9 @@ public final class DestinyDHD {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         ModBlocks.registerOptionalBlocks();
         ModBlocks.BLOCKS.register(modBus);
+        ModBlockEntities.BLOCK_ENTITIES.register(modBus);
         ModItems.ITEMS.register(modBus);
+        ModMenus.MENUS.register(modBus);
         ModParticles.PARTICLES.register(modBus);
         ModSounds.SOUNDS.register(modBus);
         ModEntities.ENTITIES.register(modBus);
@@ -59,6 +63,7 @@ public final class DestinyDHD {
             event.accept(ModItems.DESTINY_DHD.get());
             event.accept(ModItems.KINO_REMOTE.get());
             event.accept(ModItems.KINO.get());
+            event.accept(ModItems.KINO_DISPENSER.get());
         }
     }
 }

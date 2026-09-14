@@ -1,0 +1,181 @@
+# Local textured approval preview
+
+newmtl dark_iron
+Kd 1 1 1
+Ka 0.03 0.03 0.03
+Ks 0.28 0.27 0.25
+Ns 36
+Ni 1.46
+illum 2
+map_Kd kino_dispenser_v5_dark_iron.png
+map_Ks kino_dispenser_v5_dark_iron_specular.png
+
+newmtl blackened_metal
+Kd 1 1 1
+Ka 0.03 0.03 0.03
+Ks 0.28 0.27 0.25
+Ns 36
+Ni 1.46
+illum 2
+map_Kd kino_dispenser_v5_blackened_metal.png
+map_Ks kino_dispenser_v5_blackened_metal_specular.png
+
+newmtl rim_metal
+Kd 1 1 1
+Ka 0.03 0.03 0.03
+Ks 0.28 0.27 0.25
+Ns 36
+Ni 1.46
+illum 2
+map_Kd kino_dispenser_v5_rim_metal.png
+map_Ks kino_dispenser_v5_rim_metal_specular.png
+
+newmtl aged_panel
+Kd 1 1 1
+Ka 0.03 0.03 0.03
+Ks 0.28 0.27 0.25
+Ns 36
+Ni 1.46
+illum 2
+map_Kd kino_dispenser_v5_aged_panel.png
+map_Ks kino_dispenser_v5_aged_panel_specular.png
+
+newmtl rusted_metal
+Kd 1 1 1
+Ka 0.03 0.03 0.03
+Ks 0.28 0.27 0.25
+Ns 36
+Ni 1.46
+illum 2
+map_Kd kino_dispenser_v5_rusted_metal.png
+map_Ks kino_dispenser_v5_rusted_metal_specular.png
+
+newmtl cavity
+Kd 1 1 1
+Ka 0.03 0.03 0.03
+Ks 0.06 0.06 0.06
+Ns 12
+Ni 1.46
+illum 2
+map_Kd kino_dispenser_v5_cavity.png
+map_Ks kino_dispenser_v5_cavity_specular.png
+
+newmtl pipe
+Kd 1 1 1
+Ka 0.03 0.03 0.03
+Ks 0.28 0.27 0.25
+Ns 36
+Ni 1.46
+illum 2
+map_Kd kino_dispenser_v5_pipe.png
+map_Ks kino_dispenser_v5_pipe_specular.png
+
+newmtl pipe_band
+Kd 1 1 1
+Ka 0.03 0.03 0.03
+Ks 0.28 0.27 0.25
+Ns 36
+Ni 1.46
+illum 2
+map_Kd kino_dispenser_v5_pipe_band.png
+map_Ks kino_dispenser_v5_pipe_band_specular.png
+
+newmtl bolt
+Kd 1 1 1
+Ka 0.03 0.03 0.03
+Ks 0.28 0.27 0.25
+Ns 36
+Ni 1.46
+illum 2
+map_Kd kino_dispenser_v5_bolt.png
+map_Ks kino_dispenser_v5_bolt_specular.png
+
+newmtl display
+Kd 1 1 1
+Ka 0.03 0.03 0.03
+Ks 0.06 0.06 0.06
+Ns 12
+Ni 1.46
+illum 2
+map_Kd kino_dispenser_v5_display.png
+map_Ks kino_dispenser_v5_display_specular.png
+
+newmtl control_button
+Kd 1 1 1
+Ka 0.03 0.03 0.03
+Ks 0.28 0.27 0.25
+Ns 36
+Ni 1.46
+illum 2
+map_Kd kino_dispenser_v5_control_button.png
+map_Ks kino_dispenser_v5_control_button_specular.png
+
+newmtl status_light
+Kd 1 1 1
+Ka 0.03 0.03 0.03
+Ks 0.06 0.06 0.06
+Ns 12
+Ni 1.46
+illum 2
+map_Kd kino_dispenser_v5_status_light.png
+map_Ks kino_dispenser_v5_status_light_specular.png
+
+newmtl cable
+Kd 1 1 1
+Ka 0.03 0.03 0.03
+Ks 0.06 0.06 0.06
+Ns 12
+Ni 1.46
+illum 2
+map_Kd kino_dispenser_v5_cable.png
+map_Ks kino_dispenser_v5_cable_specular.png
+
+newmtl kino_shell
+Kd 1 1 1
+Ka 0.03 0.03 0.03
+Ks 0.28 0.27 0.25
+Ns 36
+Ni 1.46
+illum 2
+map_Kd kino_dispenser_v5_kino_shell.png
+map_Ks kino_dispenser_v5_kino_shell_specular.png
+
+newmtl kino_seam
+Kd 1 1 1
+Ka 0.03 0.03 0.03
+Ks 0.28 0.27 0.25
+Ns 36
+Ni 1.46
+illum 2
+map_Kd kino_dispenser_v5_kino_seam.png
+map_Ks kino_dispenser_v5_kino_seam_specular.png
+
+newmtl kino_lens
+Kd 1 1 1
+Ka 0.03 0.03 0.03
+Ks 0.06 0.06 0.06
+Ns 12
+Ni 1.46
+illum 2
+map_Kd kino_dispenser_v5_kino_lens.png
+map_Ks kino_dispenser_v5_kino_lens_specular.png
+
+newmtl kino_camera
+Kd 1 1 1
+Ka 0.03 0.03 0.03
+Ks 0.28 0.27 0.25
+Ns 36
+Ni 1.46
+illum 2
+map_Kd kino_dispenser_v5_kino_camera.png
+map_Ks kino_dispenser_v5_kino_camera_specular.png
+
+newmtl kino_brass
+Kd 1 1 1
+Ka 0.03 0.03 0.03
+Ks 0.28 0.27 0.25
+Ns 36
+Ni 1.46
+illum 2
+map_Kd kino_dispenser_v5_kino_brass.png
+map_Ks kino_dispenser_v5_kino_brass_specular.png

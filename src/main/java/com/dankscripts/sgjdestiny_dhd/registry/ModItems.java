@@ -22,6 +22,9 @@ public final class ModItems {
     public static final RegistryObject<Item> DESTINY_FLOOR_VENT = ITEMS.register("destiny_floor_vent",
             () -> new BlockItem(ModBlocks.DESTINY_FLOOR_VENT.get(), new Item.Properties()));
 
+    public static final RegistryObject<Item> KINO_DISPENSER = ITEMS.register("kino_dispenser",
+            () -> new BlockItem(ModBlocks.KINO_DISPENSER.get(), new Item.Properties()));
+
     public static final RegistryObject<Item> EARTH_GATE_DESIGNATOR = ITEMS.register("earth_gate_designator",
             () -> new EarthGateDesignatorItem(new Item.Properties().stacksTo(1)));
 

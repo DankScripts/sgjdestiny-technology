@@ -1,3 +1,21 @@
+# Accepted Kino Dispenser baseline: 0.0.3-dev
+
+Accepted on 2026-09-14.
+
+Version 0.0.3-dev is the accepted reference point for the Ancient Kino Dispenser. Preserve the following unless the user explicitly requests a change:
+
+- The approved ancient, dark oxidized, weathered-metal appearance and final five-block total height.
+- The complete model geometry, including the enclosed black Kino compartment, raised lower bezel, sealed sides and back, attached panels, control box, cable routing, pedestal, and shortened vertical pipes.
+- The dispenser's full clickable coverage across its base block and both complete blocks above the base.
+- Automatic restoration of missing invisible upper interaction targets.
+- The purpose-built interface that resembles the dispenser compartment rather than a normal inventory window.
+- The interface's real Kino model previews, Deposit and Pickup controls, and synchronized `Kinos stored: N / 64` counter.
+- One-Kino-at-a-time deposits and withdrawals, persistent stored quantity, inventory-space checks, and dropping stored Kinos when the dispenser is broken.
+- The Forge OBJ material and UV fixes required for correct in-game rendering, including sealed double-sided geometry and the corrected solid pedestal caps.
+- The `dev` version suffix for continued development builds.
+
+This baseline supersedes the earlier Kino Dispenser preview and in-game test iterations. The whole-project 0.0.2-alpha-hotfix2 baseline below remains authoritative for systems unrelated to the Kino Dispenser.
+
 # Accepted whole-project baseline: 0.0.2-alpha-hotfix2
 
 Accepted on 2026-09-13.

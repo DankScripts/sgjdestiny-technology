@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.0.3-dev
+
+- Adds the accepted five-block-tall Ancient Kino Dispenser with dark oxidized and weathered metal materials.
+- Adds persistent storage for up to 64 Kinos with one-at-a-time deposit and pickup controls.
+- Adds a custom dispenser-style interface with real Kino model previews and a synchronized inventory counter.
+- Makes the base block and both blocks above it fully clickable, with automatic restoration of the invisible upper interaction targets.
+- Corrects OBJ UV mapping, back-face visibility, compartment sealing, pedestal caps, and in-game material rendering.
+
 ## 0.0.2-alpha-hotfix2
 
 - Fixes dedicated ATM9 server startup while retaining Immersive Portals as a required client-and-server dependency.
