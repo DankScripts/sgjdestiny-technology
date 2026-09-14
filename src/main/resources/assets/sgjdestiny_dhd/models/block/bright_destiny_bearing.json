@@ -9,6 +9,11 @@
       "from": [5.65, 1.65, 5.68033],
       "to": [10.35, 5.35, 10.38033],
       "shade": false,
+      "forge_data": {
+        "block_light": 15,
+        "sky_light": 15,
+        "ambient_occlusion": false
+      },
       "faces": {
         "north": { "uv": [0, 0, 4, 3], "texture": "#bulb" },
         "east":  { "uv": [0, 0, 4, 3], "texture": "#bulb" },

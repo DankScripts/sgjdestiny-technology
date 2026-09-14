@@ -167,6 +167,7 @@ public final class DestinyRouteEvents {
         StargateNetwork network = StargateNetwork.get(server);
         int kept = 0;
         int removed = 0;
+        List<AbstractStargateEntity<?>> validControllers = new ArrayList<>();
         for (Stargate gate : new ArrayList<>(network.getStargatesInDimension(dimension))) {
             if (gate.getStargateType() != StargateInit.UNIVERSE.get()) continue;
             if (gate.getPosition() == null) {
@@ -184,6 +185,8 @@ public final class DestinyRouteEvents {
             try {
                 if (gate.checkValidity()) {
                     kept++;
+                    AbstractStargateEntity<?> controller = findController(level, pos, gate);
+                    if (controller != null) validControllers.add(controller);
                 } else {
                     network.removeStargate(gate);
                     removed++;
@@ -204,8 +207,72 @@ public final class DestinyRouteEvents {
             LOGGER.info("Generated missing Universe Stargate for {} in permanently forced chunk {},{}; network now contains {} gate record(s)",
                     dimension.location(), destination.chunkX(), destination.chunkZ(), kept);
         }
+        // Old development saves can contain both the original buried pedestal
+        // and its corrected surface replacement. SGJourney stores primary-gate
+        // indexes separately from the physical controllers, and those indexes
+        // can continue pointing at the buried or stale record. Select the
+        // highest valid controller deterministically and restore both indexes
+        // without regenerating the gate or changing its preserved address.
+        if (validControllers.isEmpty()) {
+            StargateNetwork.findStargatesInLevel(level);
+            for (Stargate gate : network.getStargatesInDimension(dimension)) {
+                if (gate.getStargateType() != StargateInit.UNIVERSE.get() || gate.getPosition() == null) continue;
+                BlockPos pos = BlockPos.containing(gate.getPosition());
+                AbstractStargateEntity<?> controller = findController(level, pos, gate);
+                if (controller != null) validControllers.add(controller);
+            }
+        }
+        validControllers.stream().max(Comparator.comparingInt(controller -> controller.getBlockPos().getY()))
+                .ifPresent(controller -> restorePrimaryIndexes(server, dimension, controller));
         LOGGER.info("Validated {} destination gate records in {}: kept {}, removed {} stale records",
                 kept + removed, dimension.location(), kept, removed);
+    }
+
+    /** SGJourney stores the wormhole center, not necessarily the controller block position. */
+    private static AbstractStargateEntity<?> findController(ServerLevel level, BlockPos center, Stargate record) {
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        for (int x = center.getX() - 8; x <= center.getX() + 8; x++)
+            for (int y = center.getY() - 8; y <= center.getY() + 8; y++)
+                for (int z = center.getZ() - 8; z <= center.getZ() + 8; z++) {
+                    cursor.set(x, y, z);
+                    if (!(level.getBlockEntity(cursor) instanceof AbstractStargateEntity<?> controller)
+                            || controller.getStargateType() != StargateInit.UNIVERSE.get()) continue;
+                    Stargate candidate = controller.getStargate();
+                    if (candidate == record || (candidate != null && candidate.get9ChevronAddress() != null
+                            && candidate.get9ChevronAddress().equals(record.get9ChevronAddress()))) return controller;
+                }
+        return null;
+    }
+
+    private static void restorePrimaryIndexes(MinecraftServer server, ResourceKey<Level> dimension,
+                                              AbstractStargateEntity<?> controller) {
+        Stargate registered = controller.getStargate();
+        var address = controller.get9ChevronAddress();
+        if (registered == null || address == null || registered.getAddressRegionKey() == null) {
+            LOGGER.error("Cannot restore primary indexes for gate at {} in {}: record, address, or region is missing",
+                    controller.getBlockPos(), dimension.location());
+            return;
+        }
+        controller.setPrimary();
+        StargateNetwork network = StargateNetwork.get(server);
+        network.setPrimaryAddressForDimension(dimension, address);
+        network.setPrimaryAddressForAddressRegion(registered.getAddressRegionKey(), address);
+        // These expedition gates are the only route home from their generated
+        // planets and their pedestals contain no external power source. Keep
+        // the authoritative primary gate charged when its indexes are repaired
+        // so both fresh and existing worlds can dial out reliably.
+        long maxEnergy = controller.energyStorage.getTrueMaxEnergyStored();
+        if (controller.energyStorage.getTrueEnergyStored() < maxEnergy) {
+            controller.energyStorage.setEnergy(maxEnergy);
+            LOGGER.info("Powered expedition gate at {} in {} to {}/{} energy",
+                    controller.getBlockPos(), dimension.location(),
+                    controller.energyStorage.getTrueEnergyStored(), maxEnergy);
+        }
+        controller.setupServerAutoCache();
+        controller.updateStargate();
+        controller.setChanged();
+        LOGGER.info("Restored surface primary gate at {} in {} with preserved address {} and region {}",
+                controller.getBlockPos(), dimension.location(), address, registered.getAddressRegionKey().location());
     }
 
     private static boolean placeMissingGate(ServerLevel level, Destination destination) {
@@ -232,9 +299,7 @@ public final class DestinyRouteEvents {
         StructureProcessorList processors = level.registryAccess().registryOrThrow(
                 net.minecraft.core.registries.Registries.PROCESSOR_LIST).get(processorsId);
         if (processors != null) processors.list().forEach(settings::addProcessor);
-        if (destination.name().equals("justice_planet")) {
-            buildJusticeFoundation(level, origin, template);
-        }
+        buildFoundation(level, origin, template);
         boolean placed = template.placeInWorld(level, origin, origin, settings, level.random, 3);
         if (!placed) {
             LOGGER.error("Failed to place missing Universe Stargate template in {}", level.dimension().location());
@@ -273,9 +338,8 @@ public final class DestinyRouteEvents {
         int anchorX = (destination.chunkX() << 4) + 8;
         int anchorZ = (destination.chunkZ() << 4) + 8;
         PlacementSite best = null;
-        // Search chunk centers in expanding rings. Sampling the complete
-        // pedestal footprint prevents a smooth-looking center point from being
-        // chosen on the shoulder of a hill.
+        // Search the entire area. Do not stop at the first superficially flat
+        // sample: a broad, fully supported site farther away is preferable.
         for (int radius = 0; radius <= 10; radius++) {
             for (int dx = -radius; dx <= radius; dx++) {
                 for (int dz = -radius; dz <= radius; dz++) {
@@ -283,11 +347,9 @@ public final class DestinyRouteEvents {
                     int centerX = anchorX + dx * 16;
                     int centerZ = anchorZ + dz * 16;
                     PlacementSite candidate = scorePlacement(level, template, centerX, centerZ);
-                    if (best == null || candidate.variation() < best.variation()) best = candidate;
-                    if (candidate.variation() <= 1) return candidate;
+                    if (best == null || candidate.score() < best.score()) best = candidate;
                 }
             }
-            if (best != null && best.variation() <= 2) return best;
         }
         return best == null ? scorePlacement(level, template, anchorX, anchorZ) : best;
     }
@@ -296,15 +358,23 @@ public final class DestinyRouteEvents {
                                                  int centerX, int centerZ) {
         int halfX = template.getSize().getX() / 2 + 1;
         int halfZ = template.getSize().getZ() / 2 + 1;
-        int minimum = Integer.MAX_VALUE;
-        int maximum = Integer.MIN_VALUE;
-        for (int x = centerX - halfX; x <= centerX + halfX; x += 3)
-            for (int z = centerZ - halfZ; z <= centerZ + halfZ; z += 3) {
+        List<Integer> heights = new ArrayList<>();
+        for (int x = centerX - halfX; x <= centerX + halfX; x++)
+            for (int z = centerZ - halfZ; z <= centerZ + halfZ; z++) {
                 int height = level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z);
-                minimum = Math.min(minimum, height);
-                maximum = Math.max(maximum, height);
+                heights.add(height);
             }
-        return new PlacementSite(centerX, centerZ, maximum, maximum - minimum);
+        heights.sort(Integer::compareTo);
+        int base = heights.get(heights.size() / 2);
+        int variation = heights.get(heights.size() - 1) - heights.get(0);
+        int earthwork = 0;
+        int unsupported = 0;
+        for (int height : heights) {
+            earthwork += Math.abs(height - base);
+            if (height < base - 1) unsupported++;
+        }
+        long score = (long) unsupported * 1_000_000L + (long) variation * 10_000L + earthwork;
+        return new PlacementSite(centerX, centerZ, base, variation, score);
     }
 
     /**
@@ -312,8 +382,8 @@ public final class DestinyRouteEvents {
      * finder deliberately avoids cutting hills; this small additive terrace
      * fills only missing ground and tapers into the natural surface.
      */
-    private static void buildJusticeFoundation(ServerLevel level, BlockPos origin,
-                                                StructureTemplate template) {
+    private static void buildFoundation(ServerLevel level, BlockPos origin,
+                                        StructureTemplate template) {
         int minX = origin.getX();
         int maxX = origin.getX() + template.getSize().getX() - 1;
         int minZ = origin.getZ();
@@ -330,15 +400,15 @@ public final class DestinyRouteEvents {
                 int targetTop = platformTop - ring;
                 if (targetTop <= naturalTop) continue;
 
-                for (int y = naturalTop + 1; y <= targetTop; y++) {
-                    level.setBlock(new BlockPos(x, y, z),
-                            y == targetTop ? Blocks.GRAVEL.defaultBlockState()
-                                    : Blocks.STONE.defaultBlockState(), 3);
-                }
+                var surface = level.getBlockState(new BlockPos(x, naturalTop, z));
+                if (surface.isAir()) surface = Blocks.STONE.defaultBlockState();
+                for (int y = naturalTop + 1; y <= targetTop; y++)
+                    level.setBlock(new BlockPos(x, y, z), y == targetTop
+                            ? surface : Blocks.STONE.defaultBlockState(), 3);
             }
         }
     }
 
     private record Destination(String name, int chunkX, int chunkZ) {}
-    private record PlacementSite(int centerX, int centerZ, int baseY, int variation) {}
+    private record PlacementSite(int centerX, int centerZ, int baseY, int variation, long score) {}
 }

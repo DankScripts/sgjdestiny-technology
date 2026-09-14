@@ -1,10 +1,5 @@
 package com.dankscripts.sgjdestiny_dhd.dialer;
 
-import com.dankscripts.sgjdestiny_dhd.compat.DestinyRouteEvents;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -27,8 +22,6 @@ import java.util.Map;
 
 /** Server-authoritative view of SGJourney's registered Universe gates. */
 public final class SeedShipAddressDatabase {
-    private static final Logger LOGGER = LoggerFactory.getLogger("SGJ Destiny DHD/Address Database");
-
     private SeedShipAddressDatabase() {}
 
     public record Entry(Component name, Address.Immutable address, boolean earth) {}
@@ -43,7 +36,6 @@ public final class SeedShipAddressDatabase {
     }
 
     private static List<Entry> entriesFor(MinecraftServer server, Stargate source) {
-        DestinyRouteEvents.ensureRoutes(server);
         List<Entry> result = new ArrayList<>();
         EarthGateData.get(server).resolve(server).ifPresent(earth -> result.add(
                 new Entry(Component.translatable("destination.sgjdestiny_dhd.earth"),
@@ -58,34 +50,24 @@ public final class SeedShipAddressDatabase {
         // Destiny also has an ordinary galactic address. Keep it in the
         // handheld's seeded route table so expedition teams can return to the
         // ship with seven chevrons even while its gate dimension is unloaded.
-        addKnownRegion(server, universe, mediora, "destiny_route", entries);
-        addKnownRegion(server, universe, mediora, "calcite_planet", entries);
-        addKnownRegion(server, universe, mediora, "water_planet", entries);
-        addKnownRegion(server, universe, mediora, "jungle_planet", entries);
-        addKnownRegion(server, universe, mediora, "justice_planet", entries);
+        AddressRegion sourceRegion = source == null ? null : source.getAddressRegion();
+        addKnownRegion(server, universe, mediora, "destiny_route", sourceRegion, entries);
+        addKnownRegion(server, universe, mediora, "calcite_planet", sourceRegion, entries);
+        addKnownRegion(server, universe, mediora, "water_planet", sourceRegion, entries);
+        addKnownRegion(server, universe, mediora, "jungle_planet", sourceRegion, entries);
+        addKnownRegion(server, universe, mediora, "justice_planet", sourceRegion, entries);
 
         // The seeded route belongs to the Destiny database and must remain
         // visible while its physical gate or DHD cache is still loading.
         // Network discovery supplements that route only when a source region
         // is available.
         if (source != null && source.getAddressRegion() != null) {
-            AddressRegion sourceRegion = source.getAddressRegion();
             StargateNetwork network = StargateNetwork.get(server);
             for (var level : server.getAllLevels()) {
                 for (Stargate destination : network.getStargatesInDimension(level.dimension())) {
                     // Seven symbols alone cannot distinguish the three gate families.
                     if (destination == source || destination.getStargateType() != StargateInit.UNIVERSE.get()) continue;
-                    Address.Immutable address;
-                    try {
-                        address = destination.getConnectionAddress(sourceRegion, Address.Type.ADDRESS_7_CHEVRON);
-                    } catch (RuntimeException exception) {
-                        // Large modpacks can retain legacy SGJourney records whose
-                        // internal galaxy map contains a null key. One broken gate
-                        // must not prevent the seeded Destiny database from opening.
-                        LOGGER.warn("Skipped an unreadable Universe Stargate record in {} while building the Destiny address list",
-                                level.dimension().location());
-                        continue;
-                    }
+                    Address.Immutable address = destination.getConnectionAddress(sourceRegion, Address.Type.ADDRESS_7_CHEVRON);
                     if (address == null || address.getType() != Address.Type.ADDRESS_7_CHEVRON || !address.canBeDialed()) continue;
                     AddressRegion region = destination.getAddressRegion();
                     Component name = region == null ? Component.literal("SEED DESTINATION") : region.getTranslatedName();
@@ -100,12 +82,20 @@ public final class SeedShipAddressDatabase {
     }
 
     private static void addKnownRegion(MinecraftServer server, Universe universe,
-                                       ResourceKey<Galaxy> galaxy, String name,
+                                       ResourceKey<Galaxy> galaxy, String name, AddressRegion sourceRegion,
                                        Map<Address.Immutable, Entry> entries) {
         ResourceKey<AddressRegion> key = ResourceKey.create(AddressRegion.REGISTRY_KEY,
                 new ResourceLocation("sgjourney", name));
         AddressRegion region = universe.getAddressRegionFromKey(key);
-        Address.Immutable address = universe.getAddressInGalaxyFromAddressRegionKey(galaxy, key);
+        Address.Immutable address = null;
+        // Prefer the address SGJourney's live network will actually resolve.
+        // This keeps the dialer and the network on the same record when an old
+        // world contains migrated or duplicate destination gates.
+        Stargate primary = StargateNetwork.get(server).getPrimaryStargateFromAddressRegion(key);
+        if (primary != null && sourceRegion != null)
+            address = primary.getConnectionAddress(sourceRegion, Address.Type.ADDRESS_7_CHEVRON);
+        if (address == null)
+            address = universe.getAddressInGalaxyFromAddressRegionKey(galaxy, key);
         // SGJourney's saved reverse index may not expose a newly introduced
         // custom galaxy in an existing world. The datapack definition remains
         // authoritative and contains the fixed six destination symbols.

@@ -35,6 +35,9 @@ import java.util.UUID;
 public final class KinoRemoteItem extends Item {
     private static final String MODE = "KinoMode";
     private static final String OWNER = "sgjdestiny_kino_owner";
+    private static final String LINKED = "sgjdestiny_kino_linked";
+    private static final String BINDING = "sgjdestiny_kino_binding";
+    private static final String PLAYER_BINDING = "sgjdestiny_active_kino_binding";
     private static final String FOLLOW = "sgjdestiny_kino_follow";
     private static final String LAST_DIMENSION = "sgjdestiny_kino_last_dimension";
     private static final String CAMERA_PITCH = "sgjdestiny_kino_camera_pitch";
@@ -89,26 +92,27 @@ public final class KinoRemoteItem extends Item {
     }
 
     private static void operateKino(ServerPlayer player) {
-        List<ArmorStand> kinos = ownedKinos(player);
+        List<ArmorStand> kinos = linkedKinos(player);
         if (kinos.isEmpty()) deployKino(player);
         else if (player.isSprinting()) recallKino(player, kinos);
-        else setFollowing(player, kinos, !kinos.get(0).getPersistentData().getBoolean(FOLLOW));
+        else if (!kinos.isEmpty()) setFollowing(player, kinos,
+                !kinos.get(0).getPersistentData().getBoolean(FOLLOW));
     }
 
     public static void deployFromItem(ServerPlayer player) {
-        List<ArmorStand> kinos = ownedKinos(player);
+        List<ArmorStand> kinos = linkedKinos(player);
         if (kinos.isEmpty()) deployKino(player);
-        else setFollowing(player, kinos, true);
+        else if (!kinos.isEmpty()) setFollowing(player, kinos, true);
     }
 
     public static void handleKinoCommand(ServerPlayer player, int command) {
         boolean holdingRemote = player.getMainHandItem().is(ModItems.KINO_REMOTE.get())
                 || player.getOffhandItem().is(ModItems.KINO_REMOTE.get());
         if (!holdingRemote) return;
-        List<ArmorStand> kinos = ownedKinos(player);
+        List<ArmorStand> kinos = linkedKinos(player);
         if (command == 0) {
             if (kinos.isEmpty()) deployKino(player);
-            else setFollowing(player, kinos, true);
+            else if (!kinos.isEmpty()) setFollowing(player, kinos, true);
         } else if (command == 1 && !kinos.isEmpty()) {
             setFollowing(player, kinos, false);
         } else if (command == 2 && !kinos.isEmpty()) {
@@ -117,10 +121,12 @@ public final class KinoRemoteItem extends Item {
             moveKino(kinos, command);
         } else if (command == 9) {
             scanKino(player, kinos);
+        } else if (command == 12 && !kinos.isEmpty()) {
+            restoreHoverHeight(kinos);
         }
     }
 
-    private static List<ArmorStand> ownedKinos(ServerPlayer player) {
+    public static List<ArmorStand> ownedKinos(ServerPlayer player) {
         String owner = player.getUUID().toString();
         java.util.ArrayList<ArmorStand> found = new java.util.ArrayList<>();
         for (ServerLevel level : player.server.getAllLevels()) {
@@ -132,12 +138,51 @@ public final class KinoRemoteItem extends Item {
         return found;
     }
 
+    private static List<ArmorStand> linkedKinos(ServerPlayer player) {
+        List<ArmorStand> owned = ownedKinos(player);
+        String binding = player.getPersistentData().getString(PLAYER_BINDING);
+        if (binding.isEmpty()) {
+            ArmorStand legacy = owned.stream().filter(KinoRemoteItem::isLinked).findFirst().orElse(null);
+            if (legacy != null) {
+                binding = legacy.getPersistentData().getString(BINDING);
+                if (binding.isEmpty()) binding = UUID.randomUUID().toString();
+                legacy.getPersistentData().putString(BINDING, binding);
+                player.getPersistentData().putString(PLAYER_BINDING, binding);
+            }
+        }
+        String activeBinding = binding;
+        return owned.stream().filter(KinoRemoteItem::isLinked)
+                .filter(kino -> activeBinding.equals(kino.getPersistentData().getString(BINDING))).toList();
+    }
+
+    public static boolean canRestoreBinding(ServerPlayer player, ArmorStand kino) {
+        String activeBinding = player.getPersistentData().getString(PLAYER_BINDING);
+        String kinoBinding = kino.getPersistentData().getString(BINDING);
+        if (activeBinding.isEmpty()) {
+            if (kinoBinding.isEmpty()) kinoBinding = UUID.randomUUID().toString();
+            kino.getPersistentData().putString(BINDING, kinoBinding);
+            player.getPersistentData().putString(PLAYER_BINDING, kinoBinding);
+            return true;
+        }
+        return activeBinding.equals(kinoBinding);
+    }
+
+    public static boolean isLinked(ArmorStand kino) {
+        CompoundTag data = kino.getPersistentData();
+        return !data.contains(LINKED) || data.getBoolean(LINKED);
+    }
+
+    public static void setLinked(ArmorStand kino, boolean linked) {
+        kino.getPersistentData().putBoolean(LINKED, linked);
+        if (!linked) kino.getPersistentData().putBoolean(FOLLOW, false);
+    }
+
     public static boolean hasDeployedKino(ServerPlayer player) {
-        return !ownedKinos(player).isEmpty();
+        return !linkedKinos(player).isEmpty();
     }
 
     public static ArmorStand getDeployedKino(ServerPlayer player) {
-        List<ArmorStand> kinos = ownedKinos(player);
+        List<ArmorStand> kinos = linkedKinos(player);
         return kinos.isEmpty() ? null : kinos.get(0);
     }
 
@@ -159,6 +204,15 @@ public final class KinoRemoteItem extends Item {
         applyVisualYaw(kino, cameraYaw);
     }
 
+    /** Adopt SGJourney's destination-facing rotation after wormhole travel. */
+    public static void synchronizeAfterTransit(ArmorStand kino) {
+        CompoundTag data = kino.getPersistentData();
+        float cameraYaw = net.minecraft.util.Mth.wrapDegrees(kino.getYRot() - 180.0F);
+        data.remove(CAMERA_HOME_YAW);
+        data.putFloat(CAMERA_YAW, cameraYaw);
+        applyVisualYaw(kino, cameraYaw);
+    }
+
     private static void applyVisualYaw(ArmorStand kino, float cameraYaw) {
         float visualYaw = cameraYaw + 180;
         kino.setYRot(visualYaw);
@@ -167,7 +221,7 @@ public final class KinoRemoteItem extends Item {
     }
 
     public static VideoFrame captureVideo(ServerPlayer player) {
-        List<ArmorStand> kinos = ownedKinos(player);
+        List<ArmorStand> kinos = linkedKinos(player);
         if (kinos.isEmpty()) return null;
         ArmorStand kino = kinos.get(0);
         ServerLevel level = (ServerLevel) kino.level();
@@ -238,6 +292,10 @@ public final class KinoRemoteItem extends Item {
         kino.setItemSlot(EquipmentSlot.HEAD, new ItemStack(ModItems.KINO.get()));
         setCameraYaw(kino, player.getYRot());
         kino.getPersistentData().putString(OWNER, player.getUUID().toString());
+        String binding = UUID.randomUUID().toString();
+        player.getPersistentData().putString(PLAYER_BINDING, binding);
+        kino.getPersistentData().putString(BINDING, binding);
+        kino.getPersistentData().putBoolean(LINKED, true);
         kino.getPersistentData().putBoolean(FOLLOW, false);
         kino.getPersistentData().putFloat(CAMERA_PITCH, 0);
         kino.getPersistentData().putString(LAST_DIMENSION, level.dimension().location().toString());
@@ -271,13 +329,13 @@ public final class KinoRemoteItem extends Item {
             double dx = 0, dy = 0, dz = 0;
             if (command == 3) { dx = fx; dz = fz; }
             if (command == 4) { dx = -fx; dz = -fz; }
-            if (command == 5) { dx = fz; dz = -fx; cameraYaw -= 12; }
-            if (command == 6) { dx = -fz; dz = fx; cameraYaw += 12; }
+            if (command == 5) { dx = fz; dz = -fx; cameraYaw -= 6; }
+            if (command == 6) { dx = -fz; dz = fx; cameraYaw += 6; }
             setCameraYaw(kino, cameraYaw);
             if (command == 7) dy = 1;
             if (command == 8) dy = -1;
-            double moveX = dx * .7, moveZ = dz * .7;
-            kino.move(MoverType.SELF, new net.minecraft.world.phys.Vec3(moveX, dy * .55, moveZ));
+            double moveX = dx * .35, moveZ = dz * .35;
+            kino.move(MoverType.SELF, new net.minecraft.world.phys.Vec3(moveX, dy * .275, moveZ));
             if (command >= 3 && command <= 6) maintainHoverHeight(kino);
         }
     }
@@ -297,8 +355,28 @@ public final class KinoRemoteItem extends Item {
         }
     }
 
+    private static void restoreHoverHeight(List<ArmorStand> kinos) {
+        for (ArmorStand kino : kinos) {
+            kino.getPersistentData().putBoolean(FOLLOW, false);
+            ServerLevel level = (ServerLevel) kino.level();
+            BlockPos.MutableBlockPos probe = new BlockPos.MutableBlockPos((int)Math.floor(kino.getX()),
+                    (int)Math.floor(kino.getY()) + 3, (int)Math.floor(kino.getZ()));
+            while (probe.getY() > level.getMinBuildHeight()) {
+                var state = level.getBlockState(probe);
+                if (!state.getCollisionShape(level, probe).isEmpty()) {
+                    double groundTop = probe.getY()
+                            + state.getCollisionShape(level, probe).max(net.minecraft.core.Direction.Axis.Y);
+                    kino.setPos(kino.getX(), groundTop + .15, kino.getZ());
+                    kino.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+                    break;
+                }
+                probe.move(0, -1, 0);
+            }
+        }
+    }
+
     public static void lookKino(ServerPlayer player, float yawDelta, float pitchDelta, boolean reset) {
-        for (ArmorStand kino : ownedKinos(player)) {
+        for (ArmorStand kino : linkedKinos(player)) {
             CompoundTag data = kino.getPersistentData();
             if (reset) {
                 if (data.contains(CAMERA_HOME_YAW)) setCameraYaw(kino, data.getFloat(CAMERA_HOME_YAW));

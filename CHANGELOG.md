@@ -1,8 +1,21 @@
 # Changelog
 
-## Unreleased
+## 0.0.2-alpha-hotfix2
 
+- Fixes dedicated ATM9 server startup while retaining Immersive Portals as a required client-and-server dependency.
+- Restores the high-quality Immersive Portals Kino video renderer and smooths the feed at the client's rendered frame rate.
+- Keeps manual Kino controls and camera placement active after Stargate travel, including travel back through the gate.
+- Uses W/A/S/D for horizontal flight, Space and Shift for vertical flight, Left Control for default hover height, and first-person-style mouse pitch.
+- Holds an active Stargate connection through SGJourney's native lifecycle while a Kino is scouting, then releases it when the player crosses or the connection is manually closed.
+- Requires an open wormhole for cross-dimensional Kino control and video, ends the feed when that route closes, and restores the same link when the destination is redialed.
+- Gives each active Kino one persistent handheld binding and allows a replacement to be deployed after abandoning an older Kino. The abandoned unit remains dormant and cannot steal the replacement's link.
+- Prevents right-clicking a newly deployed Kino with its handheld from creating a fake handheld entity and fixes missing handheld model faces.
+- Repairs imported and generated destination-gate registration, retained addresses, outward dialing, and safer surface placement.
 - Prevents malformed legacy SGJourney gate records in large modpacks from blocking the Destiny console and handheld address screens.
+- Corrects the nine-chevron bearing so its white lamp flashes on each lock and remains lit only after a successful connection.
+- Starts the nine-chevron electrical discharge after the seventh lock, keeps it active through chevrons eight and nine and a successful connection, and stops it immediately on failure or disconnect before the accepted idle rotation and steam sequence.
+- Restricts Destiny Bearing illumination to the white lamp element.
+- Documents that shader packs are unsupported with the Kino video feed.
 
 ## 0.0.2-alpha
 

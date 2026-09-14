@@ -1,11 +1,11 @@
 package com.dankscripts.sgjdestiny_dhd.network;
 
 import com.dankscripts.sgjdestiny_dhd.DestinyDHD;
-import com.dankscripts.sgjdestiny_dhd.client.SeedShipDialerScreen;
+import com.dankscripts.sgjdestiny_dhd.client.DestinyDialerClientPackets;
 import com.dankscripts.sgjdestiny_dhd.dialer.SeedShipAddressDatabase;
 import com.dankscripts.sgjdestiny_dhd.compat.DestinyDialDelay;
+import com.dankscripts.sgjdestiny_dhd.compat.KinoEvents;
 import com.dankscripts.sgjdestiny_dhd.item.KinoRemoteItem;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -21,6 +21,9 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import net.povstalec.sgjourney.common.block_entities.dhd.UniverseDHDEntity;
 import net.povstalec.sgjourney.common.block_entities.stargate.UniverseStargateEntity;
 import net.povstalec.sgjourney.common.sgjourney.Address;
+import net.povstalec.sgjourney.common.sgjourney.StargateInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +38,7 @@ import qouteall.imm_ptl.core.chunk_loading.ChunkLoader;
 import qouteall.imm_ptl.core.chunk_loading.DimensionalChunkPos;
 
 public final class DestinyDialerNetwork {
+    private static final Logger LOGGER = LoggerFactory.getLogger("SGJ Destiny DHD/Dial");
     private static final String VERSION = "10";
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(DestinyDHD.MOD_ID, "seed_ship_dialer"),
@@ -109,6 +113,7 @@ public final class DestinyDialerNetwork {
     }
 
     public static void openKinoControl(ServerPlayer player) {
+        validateKinoLink(player);
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
                 new OpenDatabase(player.blockPosition(), false, true, List.of(), 0, true,
                         KinoRemoteItem.hasDeployedKino(player)));
@@ -125,6 +130,30 @@ public final class DestinyDialerNetwork {
     public static void kinoCommand(int command) { CHANNEL.sendToServer(new KinoCommand(command)); }
     public static void kinoLook(float yawDelta, float pitchDelta, boolean reset) {
         CHANNEL.sendToServer(new KinoLook(yawDelta, pitchDelta, reset));
+    }
+
+    public static void suspendKinoLink(ServerPlayer player) {
+        removeKinoLoader(player);
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new KinoStatus(false));
+    }
+
+    public static void restoreKinoLink(ServerPlayer player) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new KinoStatus(true));
+    }
+
+    public static void refreshKinoVideoAfterTransit(ServerPlayer player, ArmorStand kino) {
+        if (player == null || kino == null || !KINO_LOADERS.containsKey(player.getUUID())) return;
+        sendKinoVideoFrame(player, kino);
+    }
+
+    private static ArmorStand validateKinoLink(ServerPlayer player) {
+        ArmorStand kino = KinoRemoteItem.getDeployedKino(player);
+        if (kino != null && !KinoEvents.hasOpenRoute(player, kino)) {
+            KinoRemoteItem.setLinked(kino, false);
+            suspendKinoLink(player);
+            return null;
+        }
+        return kino;
     }
 
     public record ClientEntry(Component name, int[] symbols, boolean earth) {}
@@ -176,10 +205,9 @@ public final class DestinyDialerNetwork {
             buffer.writeBoolean(kinoDeployed);
         }
         static void handle(OpenDatabase message, Supplier<NetworkEvent.Context> context) {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
-                    Minecraft.getInstance().setScreen(new SeedShipDialerScreen(message.console, message.directGate,
-                            message.handheld,
-                            message.entries, message.gateState, message.kinoInitially, message.kinoDeployed)));
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> DestinyDialerClientPackets.openDatabase(
+                    message.console, message.directGate, message.handheld, message.entries,
+                    message.gateState, message.kinoInitially, message.kinoDeployed));
             context.get().setPacketHandled(true);
         }
     }
@@ -206,7 +234,7 @@ public final class DestinyDialerNetwork {
                     if (message.directGate
                             && player.level().getBlockEntity(message.console) instanceof UniverseStargateEntity gate
                             && SeedShipAddressDatabase.isAuthorizedSelection(player.server, gate, address)
-                            && queueDirectGateDial(gate, message.symbols)) {
+                            && queueDirectGateDial(player, gate, message.symbols)) {
                     } else if (!message.directGate
                             && player.level().getBlockEntity(message.console) instanceof UniverseDHDEntity dhd
                             && SeedShipAddressDatabase.isAuthorizedSelection(player.server, dhd, address)
@@ -221,7 +249,7 @@ public final class DestinyDialerNetwork {
             context.get().setPacketHandled(true);
         }
 
-        private static boolean queueDirectGateDial(UniverseStargateEntity gate, int[] symbols) {
+        private static boolean queueDirectGateDial(ServerPlayer player, UniverseStargateEntity gate, int[] symbols) {
             if (gate.isConnected() || gate.isDialingOut() || gate.dialFromBuffer()
                     || gate.isRotating() || gate.getChevronsEngaged() > 0) return false;
             int[] dialSymbols = symbols;
@@ -229,10 +257,21 @@ public final class DestinyDialerNetwork {
                 dialSymbols = java.util.Arrays.copyOf(symbols, 7);
                 dialSymbols[6] = 0;
             }
+            StargateInfo.FeedbackMessage feedback = null;
             for (int i = 0; i < dialSymbols.length; i++) {
-                gate.indirectEngageSymbol(dialSymbols[i], i == dialSymbols.length - 1);
+                feedback = gate.indirectEngageSymbol(dialSymbols[i], i == dialSymbols.length - 1);
+                if (feedback.feedback().isError()) break;
             }
-            return true;
+            LOGGER.info("Direct dial from {} at {} region={} address={} energy={}/{} feedback={}",
+                    gate.getLevel() == null ? "unknown" : gate.getLevel().dimension().location(),
+                    gate.getBlockPos(), gate.getStargate() == null ? "none" : gate.getStargate().getAddressRegionKey(),
+                    new Address.Immutable(dialSymbols), gate.energyStorage.getTrueEnergyStored(),
+                    gate.energyStorage.getTrueMaxEnergyStored(), feedback);
+            if (feedback != null && feedback.feedback().isError()) {
+                player.displayClientMessage(feedback.getMessageComponent(), false);
+                return false;
+            }
+            return feedback != null;
         }
     }
 
@@ -267,18 +306,16 @@ public final class DestinyDialerNetwork {
         void encode(FriendlyByteBuf buffer) { buffer.writeVarInt(command); }
         static void handle(KinoCommand message, Supplier<NetworkEvent.Context> context) {
             ServerPlayer player = context.get().getSender();
-            if (player != null && message.command >= 0 && message.command <= 11) {
+            if (player != null && message.command >= 0 && message.command <= 12) {
                 if (message.command == 10) {
-                    ArmorStand kino = KinoRemoteItem.getDeployedKino(player);
+                    ArmorStand kino = validateKinoLink(player);
                     if (kino != null) {
-                        updateKinoLoader(player, kino);
-                        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new KinoVideoFrame(
-                                kino.level().dimension().location().toString(), kino.getX(), kino.getY() + 1.45,
-                                kino.getZ(), KinoRemoteItem.getCameraYaw(kino), KinoRemoteItem.getCameraPitch(kino)));
+                        sendKinoVideoFrame(player, kino);
                     }
                 } else if (message.command == 11) {
                     removeKinoLoader(player);
                 } else {
+                    validateKinoLink(player);
                     KinoRemoteItem.handleKinoCommand(player, message.command);
                     CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
                             new KinoStatus(KinoRemoteItem.hasDeployedKino(player)));
@@ -286,6 +323,13 @@ public final class DestinyDialerNetwork {
             }
             context.get().setPacketHandled(true);
         }
+    }
+
+    private static void sendKinoVideoFrame(ServerPlayer player, ArmorStand kino) {
+        updateKinoLoader(player, kino);
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new KinoVideoFrame(
+                kino.level().dimension().location().toString(), kino.getX(), kino.getY() + 1.45,
+                kino.getZ(), KinoRemoteItem.getCameraYaw(kino), KinoRemoteItem.getCameraPitch(kino)));
     }
 
     private static void updateKinoLoader(ServerPlayer player, ArmorStand kino) {
@@ -309,11 +353,8 @@ public final class DestinyDialerNetwork {
         KinoStatus(FriendlyByteBuf buffer) { deployed = buffer.readBoolean(); }
         void encode(FriendlyByteBuf buffer) { buffer.writeBoolean(deployed); }
         static void handle(KinoStatus message, Supplier<NetworkEvent.Context> context) {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-                if (Minecraft.getInstance().screen instanceof SeedShipDialerScreen screen) {
-                    screen.setKinoDeployed(message.deployed);
-                }
-            });
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
+                    () -> () -> DestinyDialerClientPackets.updateKinoStatus(message.deployed));
             context.get().setPacketHandled(true);
         }
     }
@@ -334,11 +375,8 @@ public final class DestinyDialerNetwork {
             buffer.writeFloat(yaw); buffer.writeFloat(pitch);
         }
         static void handle(KinoVideoFrame message, Supplier<NetworkEvent.Context> context) {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-                if (Minecraft.getInstance().screen instanceof SeedShipDialerScreen screen) {
-                    screen.setKinoCamera(message.dimension, message.x, message.y, message.z, message.yaw, message.pitch);
-                }
-            });
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> DestinyDialerClientPackets.updateKinoVideo(
+                    message.dimension, message.x, message.y, message.z, message.yaw, message.pitch));
             context.get().setPacketHandled(true);
         }
     }
@@ -358,7 +396,9 @@ public final class DestinyDialerNetwork {
         static void handle(KinoLook message, Supplier<NetworkEvent.Context> context) {
             ServerPlayer player = context.get().getSender();
             if (player != null && Float.isFinite(message.yawDelta) && Float.isFinite(message.pitchDelta)) {
-                KinoRemoteItem.lookKino(player, message.yawDelta, message.pitchDelta, message.reset);
+                if (validateKinoLink(player) != null) {
+                    KinoRemoteItem.lookKino(player, message.yawDelta, message.pitchDelta, message.reset);
+                }
             }
             context.get().setPacketHandled(true);
         }

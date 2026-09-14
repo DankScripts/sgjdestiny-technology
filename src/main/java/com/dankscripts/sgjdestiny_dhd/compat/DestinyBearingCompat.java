@@ -47,7 +47,6 @@ public final class DestinyBearingCompat {
     private static final int CHEVRON_FLASH_TICKS = 8;
     private static final int FLOOR_CHEVRON_RADIUS = 8;
     private static final int NINE_CHEVRON_LENGTH = 9;
-    private static final int DISCHARGE_START_GRACE_TICKS = 8;
     private static final int DISCHARGE_INTERVAL_TICKS = 3;
     private static final int VENT_HORIZONTAL_RADIUS = 8;
     private static final int VENT_VERTICAL_RADIUS = 3;
@@ -76,20 +75,22 @@ public final class DestinyBearingCompat {
         lightBeforeDial(level, dhd);
     }
 
-    /** Called before SGJourney accepts a symbol into this Destiny console. */
+    /** Called before SGJourney accepts the ninth symbol into this Destiny console. */
     public static void observeEncodedSymbol(ServerLevel level, AbstractDHDEntity dhd, int symbol) {
         if (!(dhd instanceof UniverseDHDEntity universeDhd) || dhd.getAddress() == null
                 || dhd.getAddress().getLength() != NINE_CHEVRON_LENGTH - 1) {
             return;
         }
-        beginNineChevronDischarge(level, universeDhd);
+        // Remember that this is a nine-chevron dial, but do not discharge yet.
+        // The seventh lock is the electrical sequence's trigger.
+        NINE_CHEVRON_DIALS.add(new ConsoleKey(level.dimension().location(), universeDhd.getBlockPos()));
     }
 
     /** Fallback for addresses filled by another controller or integration. */
     public static void observeEngage(ServerLevel level, AbstractDHDEntity dhd) {
         if (dhd instanceof UniverseDHDEntity universeDhd && dhd.getAddress() != null
                 && dhd.getAddress().getLength() == NINE_CHEVRON_LENGTH) {
-            beginNineChevronDischarge(level, universeDhd);
+            NINE_CHEVRON_DIALS.add(new ConsoleKey(level.dimension().location(), universeDhd.getBlockPos()));
         }
     }
 
@@ -152,15 +153,6 @@ public final class DestinyBearingCompat {
             return;
         }
 
-        // Server-tick fallback: SGJourney integrations can populate the DHD
-        // address without taking the normal encode-symbol injection path. As
-        // long as nine symbols are visibly waiting at this Destiny console,
-        // guarantee that its discharge state exists.
-        if (!NINE_CHEVRON_DISCHARGES.containsKey(key) && dhd.getAddress() != null
-                && dhd.getAddress().getLength() == NINE_CHEVRON_LENGTH) {
-            beginNineChevronDischarge(level, dhd);
-        }
-
         BlockPos gateCenter = gate.getCenterPos();
         int range = communicationRange(dhd);
         boolean canReadGate = gateCenter.distSqr(dhd.getBlockPos()) <= (long) range * range;
@@ -174,8 +166,16 @@ public final class DestinyBearingCompat {
         boolean debounceActive = ACTIVE_CONSOLES.contains(key) && lastActivity != null
                 && gameTime - lastActivity <= IDLE_DEBOUNCE_TICKS;
         boolean active = canReadGate && (preDialHold || gateActive || debounceActive);
-        tickNineChevronDischarge(level, dhd, gate, key, canReadGate, gameTime);
         int chevrons = gate.getChevronsEngaged();
+        // Destiny's bearing does not arc during the first seven locks. The
+        // seventh completed lock energizes the discharge used for chevrons
+        // eight and nine.
+        if (NINE_CHEVRON_DIALS.contains(key)
+                && !NINE_CHEVRON_DISCHARGES.containsKey(key)
+                && gateActive && chevrons >= 7 && chevrons < 9) {
+            beginNineChevronDischarge(level, dhd);
+        }
+        tickNineChevronDischarge(level, dhd, gate, key, canReadGate, gameTime);
         Integer previousChevrons = LAST_CHEVRONS.put(key, chevrons);
         if (bearingEnabled && canReadGate && previousChevrons != null && chevrons > previousChevrons) {
             BEARING_FLASH_UNTIL.put(key, gameTime + CHEVRON_FLASH_TICKS);
@@ -191,8 +191,10 @@ public final class DestinyBearingCompat {
             FLOOR_CHEVRON_LATCHED.add(key);
             LOGGER.info("[Destiny Floor Chevron] final chevron {} locked at {}", chevrons, key.position());
         }
-        boolean bearingLit = canReadGate && (gate.isConnected() || flashing
-                || (nineChevronDial && active));
+        // Nine-chevron dialing uses the same lamp behavior as a normal
+        // seven-chevron dial: a short pulse for each lock, then darkness until
+        // the next lock. A successful connection holds the lamp on steadily.
+        boolean bearingLit = canReadGate && (gate.isConnected() || flashing);
 
         if (active) {
             ACTIVE_CONSOLES.add(key);
@@ -227,25 +229,19 @@ public final class DestinyBearingCompat {
         if (discharge == null) return;
 
         int chevrons = gate.getChevronsEngaged();
-        long age = gameTime - discharge.startedAt;
-        boolean awaitingEngage = dhd.getAddress() != null
-                && dhd.getAddress().getLength() == NINE_CHEVRON_LENGTH;
-        boolean gateMotion = gate.isDialingOut();
-        if (gate instanceof UniverseStargateEntity universeGate) {
-            gateMotion = gateMotion || universeGate.dialFromBuffer() || universeGate.isRotating();
-        }
-
         boolean outgoingConnection = gate.getConnectionState()
                 == StargateConnection.State.OUTGOING_CONNECTION;
         boolean incomingConnection = gate.getConnectionState()
                 == StargateConnection.State.INCOMING_CONNECTION;
 
-        // A successful outgoing nine-chevron connection continues drawing from
-        // the bearing until it closes. Incoming wormholes never show this local
-        // power draw. Failure, cancellation, loss of range, and reset stop it.
-        if (!canReadGate || incomingConnection
-                || (!awaitingEngage && !outgoingConnection && age > DISCHARGE_START_GRACE_TICKS
-                    && !gateMotion && chevrons == 0)) {
+        // Continue only through outgoing locks eight/nine and an established
+        // outgoing wormhole. Failure/cancellation and disconnect stop the arc
+        // before the ring returns to idle and before steam is released.
+        if (outgoingConnection) discharge.connectionEstablished = true;
+        boolean lockingEightOrNine = !discharge.connectionEstablished
+                && NINE_CHEVRON_DIALS.contains(key)
+                && isGateActive(gate) && chevrons >= 7;
+        if (!canReadGate || incomingConnection || (!lockingEightOrNine && !outgoingConnection)) {
             NINE_CHEVRON_DISCHARGES.remove(key);
             LOGGER.info("[Destiny Bearing] nine-chevron discharge stopped at {}", key.position());
             return;
@@ -623,6 +619,7 @@ public final class DestinyBearingCompat {
         private BlockPos bearing;
         private boolean missingBearingReported;
         private boolean emissionConfirmed;
+        private boolean connectionEstablished;
 
         private DischargeState(long startedAt, BlockPos bearing) {
             this.startedAt = startedAt;

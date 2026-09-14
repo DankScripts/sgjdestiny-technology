@@ -26,7 +26,7 @@ public final class LitDestinyBearingBlock extends HorizontalDirectionalBlock {
                 .sound(SoundType.METAL)
                 .noCollission()
                 .noOcclusion()
-                .lightLevel(state -> 15));
+                .lightLevel(state -> 7));
         registerDefaultState(stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(FLASHING, false));

@@ -1,10 +1,23 @@
-# Accepted whole-project baseline: 0.0.2-alpha
+# Accepted whole-project baseline: 0.0.2-alpha-hotfix2
 
-Accepted on 2026-09-10.
+Accepted on 2026-09-13.
 
-Version 0.0.2-alpha, promoted from the accepted 0.0.141-dev build, is the current reference point for the entire project. Preserve all working behavior, visuals, assets, recipes, configuration, dimensions, addresses, gate integration, Kino systems, and documentation present in this build unless the user explicitly requests a change. New work must be additive and must not regress an accepted system.
+Version 0.0.2-alpha-hotfix2 is the current reference point for the entire project. Preserve all working behavior, visuals, assets, recipes, configuration, dimensions, addresses, gate integration, Kino systems, and documentation present in this build unless the user explicitly requests a change. New work must be additive and must not regress an accepted system.
 
-This whole-project baseline specifically includes:
+This baseline adds the complete field-tested Hotfix 2 behavior:
+
+- Dedicated ATM9 servers launch with Immersive Portals installed on both client and server.
+- The high-quality Immersive Portals Kino feed renders at the client's frame rate, with tick-rate camera updates and smooth movement between updates. Shader packs remain unsupported for Kino video.
+- Kino flight uses W/A/S/D, Space, Shift, and Left Control; mouse pitch matches normal first-person movement.
+- Manual Kino controls, video, and camera placement survive Stargate travel in both directions.
+- A Kino holds SGJourney's wormhole open through its native connection lifecycle until the player crosses or the connection is manually closed.
+- Cross-dimensional Kino control and video require an active wormhole. Closing it suspends the link and feed; redialing the same destination restores the same Kino.
+- Each active Kino has one persistent handheld binding. A replacement can be deployed after abandoning a Kino, and the dormant older unit cannot reclaim the handheld.
+- Right-clicking a newly deployed Kino while holding its handheld cannot create a fake handheld entity.
+- Custom destination gates retain valid addresses, register reliably, and can dial outward after generation or import repair.
+- Nine-chevron bearing illumination and electrical discharge use the accepted lock, connection, failure, shutdown, and steam timing.
+
+This whole-project baseline also preserves:
 
 - Destiny console seven- and nine-chevron dialing, bearing and floor-chevron lighting, electrical discharge, steam effects, and continuous steam audio.
 - The handheld controller design, remote dialing, Kino controls, smooth flight, Stargate traversal, high-quality live video, camera controls, and multiplayer Kino limit.

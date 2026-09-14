@@ -54,6 +54,7 @@ public final class SeedShipDialerScreen extends Screen {
     private boolean ignoreNextMouseMove;
     private double lastVideoMouseX, lastVideoMouseY;
     private double pendingLookX, pendingLookY;
+    private static final double VIDEO_CAMERA_INTERPOLATION_NS = 50_000_000.0;
 
     public SeedShipDialerScreen(BlockPos console, boolean directGate, boolean handheld,
                                 List<DestinyDialerNetwork.ClientEntry> entries, int gateState,
@@ -344,16 +345,18 @@ public final class SeedShipDialerScreen extends Screen {
         if (!handheld || !kinoSection) return;
         flightInputTick++;
         if (videoMode && (pendingLookX != 0 || pendingLookY != 0)) {
-            DestinyDialerNetwork.kinoLook((float)(pendingLookX * .18), (float)(pendingLookY * .18), false);
+            DestinyDialerNetwork.kinoLook((float)(pendingLookX * .18), (float)(-pendingLookY * .18), false);
             pendingLookX = pendingLookY = 0;
         }
-        if (kinoDeployed && videoMode && flightInputTick % 2 == 0) DestinyDialerNetwork.kinoCommand(10);
-        if (flightInputTick % 2 != 0) return;
         long window = Minecraft.getInstance().getWindow().getWindow();
-        if (InputConstants.isKeyDown(window, GLFW.GLFW_KEY_UP)) DestinyDialerNetwork.kinoCommand(3);
-        if (InputConstants.isKeyDown(window, GLFW.GLFW_KEY_DOWN)) DestinyDialerNetwork.kinoCommand(4);
-        if (InputConstants.isKeyDown(window, GLFW.GLFW_KEY_LEFT)) DestinyDialerNetwork.kinoCommand(5);
-        if (InputConstants.isKeyDown(window, GLFW.GLFW_KEY_RIGHT)) DestinyDialerNetwork.kinoCommand(6);
+        if (InputConstants.isKeyDown(window, GLFW.GLFW_KEY_W)) DestinyDialerNetwork.kinoCommand(3);
+        if (InputConstants.isKeyDown(window, GLFW.GLFW_KEY_S)) DestinyDialerNetwork.kinoCommand(4);
+        if (InputConstants.isKeyDown(window, GLFW.GLFW_KEY_A)) DestinyDialerNetwork.kinoCommand(5);
+        if (InputConstants.isKeyDown(window, GLFW.GLFW_KEY_D)) DestinyDialerNetwork.kinoCommand(6);
+        if (InputConstants.isKeyDown(window, GLFW.GLFW_KEY_SPACE)) DestinyDialerNetwork.kinoCommand(7);
+        if (InputConstants.isKeyDown(window, GLFW.GLFW_KEY_LEFT_SHIFT)) DestinyDialerNetwork.kinoCommand(8);
+        if (InputConstants.isKeyDown(window, GLFW.GLFW_KEY_LEFT_CONTROL)) DestinyDialerNetwork.kinoCommand(12);
+        if (kinoDeployed && videoMode) DestinyDialerNetwork.kinoCommand(10);
     }
 
     private Layout layout() {
@@ -395,16 +398,16 @@ public final class SeedShipDialerScreen extends Screen {
 
     public void setKinoDeployed(boolean deployed) {
         this.kinoDeployed = deployed;
+        if (!deployed) exitVideoMode();
     }
 
     public void setKinoCamera(String dimension, double x, double y, double z, float yaw, float pitch) {
         Vec3 next = new Vec3(x, y, z);
-        if (videoCameraPos == null || !this.videoDimension.equals(dimension)) {
-            this.videoCameraPos = next;
-            this.videoCameraFrom = next;
-        } else {
-            this.videoCameraFrom = interpolatedVideoCameraPos();
-        }
+        boolean canInterpolate = videoCameraPos != null && dimension.equals(videoDimension)
+                && videoCameraPos.distanceToSqr(next) < 16.0;
+        Vec3 current = canInterpolate ? interpolatedVideoCameraPos() : next;
+        this.videoCameraPos = current;
+        this.videoCameraFrom = current;
         this.videoDimension = dimension;
         this.videoCameraTarget = next;
         this.videoCameraMoveStarted = System.nanoTime();
@@ -414,7 +417,7 @@ public final class SeedShipDialerScreen extends Screen {
 
     private Vec3 interpolatedVideoCameraPos() {
         if (videoCameraTarget == null || videoCameraFrom == null) return videoCameraPos;
-        double progress = Math.min(1.0, (System.nanoTime() - videoCameraMoveStarted) / 100_000_000.0);
+        double progress = Math.min(1.0, (System.nanoTime() - videoCameraMoveStarted) / VIDEO_CAMERA_INTERPOLATION_NS);
         videoCameraPos = videoCameraFrom.lerp(videoCameraTarget, progress);
         return videoCameraPos;
     }
@@ -422,7 +425,7 @@ public final class SeedShipDialerScreen extends Screen {
     public boolean shouldHideKinoFromVideo(Entity entity) {
         return videoMode && videoCameraPos != null && entity instanceof ArmorStand stand
                 && stand.getItemBySlot(EquipmentSlot.HEAD).is(ModItems.KINO.get())
-                && entity.position().distanceToSqr(videoCameraPos.x, videoCameraPos.y - 1.45, videoCameraPos.z) < 4.0;
+                && entity.position().distanceToSqr(videoCameraPos.x, videoCameraPos.y - 1.45, videoCameraPos.z) < 36.0;
     }
 
     private static int entryColor(DestinyDialerNetwork.ClientEntry entry, boolean selected) {
