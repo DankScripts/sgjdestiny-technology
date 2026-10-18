@@ -161,6 +161,8 @@ public final class KinoDispenserBlock extends BaseEntityBlock {
                 for (int i = 0; i < stored; i++) {
                     level.addFreshEntity(new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5,
                             pos.getZ() + 0.5, new ItemStack(ModItems.KINO.get())));
+                    level.addFreshEntity(new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5,
+                            pos.getZ() + 0.5, new ItemStack(ModItems.KINO_REMOTE.get())));
                 }
             }
             for (int up = 1; up <= 2; up++) {

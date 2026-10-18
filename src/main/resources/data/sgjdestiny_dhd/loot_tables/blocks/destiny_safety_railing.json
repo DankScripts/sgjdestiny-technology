@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    { "rolls": 1, "entries": [{ "type": "minecraft:item", "name": "sgjdestiny_dhd:destiny_safety_railing" }],
+      "conditions": [{ "condition": "minecraft:block_state_property", "block": "sgjdestiny_dhd:destiny_safety_railing", "properties": { "north": "true" } }] },
+    { "rolls": 1, "entries": [{ "type": "minecraft:item", "name": "sgjdestiny_dhd:destiny_safety_railing" }],
+      "conditions": [{ "condition": "minecraft:block_state_property", "block": "sgjdestiny_dhd:destiny_safety_railing", "properties": { "east": "true" } }] },
+    { "rolls": 1, "entries": [{ "type": "minecraft:item", "name": "sgjdestiny_dhd:destiny_safety_railing" }],
+      "conditions": [{ "condition": "minecraft:block_state_property", "block": "sgjdestiny_dhd:destiny_safety_railing", "properties": { "south": "true" } }] },
+    { "rolls": 1, "entries": [{ "type": "minecraft:item", "name": "sgjdestiny_dhd:destiny_safety_railing" }],
+      "conditions": [{ "condition": "minecraft:block_state_property", "block": "sgjdestiny_dhd:destiny_safety_railing", "properties": { "west": "true" } }] }
+  ]
+}

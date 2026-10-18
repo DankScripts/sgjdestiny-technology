@@ -1,0 +1,9 @@
+{
+  "multipart": [
+    {"apply": {"model": "sgjdestiny_dhd:block/invisible_helper"}},
+    {"when": {"part": "0", "facing": "north"}, "apply": {"model": "sgjdestiny_dhd:block/destiny_oxygen_generator"}},
+    {"when": {"part": "0", "facing": "east"}, "apply": {"model": "sgjdestiny_dhd:block/destiny_oxygen_generator", "y": 90}},
+    {"when": {"part": "0", "facing": "south"}, "apply": {"model": "sgjdestiny_dhd:block/destiny_oxygen_generator", "y": 180}},
+    {"when": {"part": "0", "facing": "west"}, "apply": {"model": "sgjdestiny_dhd:block/destiny_oxygen_generator", "y": 270}}
+  ]
+}

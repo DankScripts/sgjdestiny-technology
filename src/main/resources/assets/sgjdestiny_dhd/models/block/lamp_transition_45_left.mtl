@@ -1,0 +1,14 @@
+newmtl base
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd #base
+
+newmtl top
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd #top
+
+newmtl lens
+Kd 1 1 1
+forge_TintIndex -1
+map_Kd #lens

@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:block",
+  "pools": [{
+    "rolls": 1,
+    "entries": [{"type": "minecraft:item", "name": "sgjdestiny_dhd:destiny_oxygen_generator"}],
+    "conditions": [{"condition": "minecraft:block_state_property", "block": "sgjdestiny_dhd:destiny_oxygen_generator", "properties": {"part": "0"}}]
+  }]
+}

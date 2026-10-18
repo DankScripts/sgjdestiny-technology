@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ANA",
+    "IDI",
+    "ARA"
+  ],
+  "key": {
+    "A": { "tag": "forge:ingots/naquadah_alloy" },
+    "N": { "item": "minecraft:comparator" },
+    "I": { "tag": "forge:ingots/iron" },
+    "D": { "item": "minecraft:iron_door" },
+    "R": { "item": "minecraft:redstone" }
+  },
+  "result": { "item": "sgjdestiny_dhd:destiny_ship_airlock" }
+}

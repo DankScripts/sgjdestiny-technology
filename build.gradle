@@ -43,7 +43,7 @@ dependencies {
     if (configuredSgJourneyJar != null && !configuredSgJourneyJar.isBlank()) {
         compileOnly files(configuredSgJourneyJar)
     } else {
-        compileOnly files('libs/Stargate.Journey-1.20.1-0.6.48-hotfix1.jar')
+        compileOnly files('libs/Stargate.Journey-1.20.1-0.6.50.jar')
     }
 }
 
@@ -63,6 +63,32 @@ tasks.named('processResources', ProcessResources).configure {
     inputs.properties props
     filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) { expand props }
 }
+
+tasks.register('verifyShuttleMaterials') {
+    def model = file('src/main/resources/assets/sgjdestiny_dhd/models/block/destiny_shuttle_dev.obj')
+    def materials = file('src/main/resources/assets/sgjdestiny_dhd/models/block/destiny_shuttle_dev.mtl')
+    inputs.files(model, materials)
+    doLast {
+        def used = [] as Set
+        def defined = [] as Set
+        model.eachLine { line ->
+            if (line.startsWith('usemtl ')) used.add(line.substring(7).trim())
+        }
+        materials.eachLine { line ->
+            if (line.startsWith('newmtl ')) defined.add(line.substring(7).trim())
+            if (line.startsWith('map_Kd ')) {
+                def textureId = line.substring(7).trim().split(':', 2)
+                if (textureId.length != 2) throw new GradleException("Invalid shuttle texture: ${line}")
+                def texture = file("src/main/resources/assets/${textureId[0]}/textures/${textureId[1]}.png")
+                if (!texture.isFile()) throw new GradleException("Missing shuttle texture: ${texture}")
+            }
+        }
+        def missing = used - defined
+        if (!missing.empty) throw new GradleException("Undefined shuttle materials: ${missing.sort()}")
+    }
+}
+
+tasks.named('processResources').configure { dependsOn 'verifyShuttleMaterials' }
 
 tasks.named('jar', Jar).configure {
     archiveFileName = "sgjdestiny-tech-${minecraft_version}-${mod_version}.jar"
@@ -87,6 +113,7 @@ tasks.register('sourceArchive', Zip) {
         include 'src/**'
         include 'blockbench/**'
         include 'tools/**'
+        include 'corridor-work/stargate-universe-destiny-corridor-original.stl'
         include 'gradle/**'
         include 'gradlew'
         include 'gradlew.bat'
@@ -100,6 +127,9 @@ tasks.register('sourceArchive', Zip) {
         include '.gitignore'
         include '.gitattributes'
         exclude 'tools/build-transformer/**'
+        exclude 'blockbench/shuttle/private_reference/**'
+        exclude 'blockbench/shuttle/*preview*/**'
+        exclude 'blockbench/shuttle/paint_stencil_markup/**'
     }
 }
 
@@ -110,3 +140,15 @@ tasks.register('release') {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
+
+tasks.register('compileElevatorMotionTest', JavaCompile) {
+    source = files('tools/tests/LiftMotionTest.java', 'src/main/java/com/dankscripts/sgjdestiny_dhd/elevator/LiftMotion.java')
+    classpath = files()
+    destinationDirectory = layout.buildDirectory.dir('elevator-tests')
+}
+tasks.register('verifyElevatorMotion', JavaExec) {
+    dependsOn 'compileElevatorMotionTest'
+    classpath = files(layout.buildDirectory.dir('elevator-tests'))
+    mainClass = 'com.dankscripts.sgjdestiny_dhd.elevator.LiftMotionTest'
+}
+tasks.named('check').configure { dependsOn 'verifyElevatorMotion' }

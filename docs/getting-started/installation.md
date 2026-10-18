@@ -13,11 +13,23 @@ nav_order: 1
 |:--|:--|
 | Minecraft | 1.20.1 |
 | Forge | 47.4.0 or newer compatible 47.x build |
-| Stargate Journey | 0.6.48 or newer |
+| Stargate Journey | 0.6.49 or newer; 0.6.50 recommended |
 | Immersive Portals | 3.0.7 for Forge 1.20.1 |
 | Cloth Config | Version required by Immersive Portals |
+| Simply Light | 1.4.6 or newer |
+| GTCEu | 7.2.0 or newer |
+| Macaw's Bridges | 3.1.0 or newer |
+| SGJourney Deco | 1.2.0 or newer |
 
-Stargate Journey: Deco 1.2.0 or newer is optional. The addon detects its Destiny Bearing when installed. Distant Horizons is also optional.
+Stargate Journey 0.6.50 is the current recommended version. A diamond-tier
+SGJourney graver opens the Universe DHD engraving menu from the Destiny console
+or its screen; normal clicks still open the Destiny dialer.
+
+Forge displays its normal missing-mods screen before opening a world if a
+required dependency is absent. The packaged ship itself remains opt-in.
+Distant Horizons is optional. See
+[Configuration]({{ '/configuration.html' | relative_url }}) for the ship
+setting and its single-player and dedicated-server file locations.
 
 ## Client and server
 

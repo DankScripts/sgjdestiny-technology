@@ -13,7 +13,8 @@ import com.dankscripts.sgjdestiny_dhd.block.KinoDispenserBlock;
 
 public final class KinoDispenserBlockEntity extends BlockEntity {
     public static final int CAPACITY = 64;
-    private int storedKinos;
+    private static final int INITIAL_KINO_KITS = 2;
+    private int storedKinos = INITIAL_KINO_KITS;
 
     public KinoDispenserBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.KINO_DISPENSER.get(), pos, state);
@@ -25,25 +26,43 @@ public final class KinoDispenserBlockEntity extends BlockEntity {
 
     public boolean deposit(Player player) {
         if (storedKinos >= CAPACITY) return false;
-        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
-            ItemStack stack = player.getInventory().getItem(slot);
-            if (stack.is(ModItems.KINO.get())) {
-                if (!player.getAbilities().instabuild) stack.shrink(1);
-                storedKinos++;
-                markChanged();
-                return true;
-            }
+        int kinoSlot = findSlot(player, ModItems.KINO.get());
+        int remoteSlot = findSlot(player, ModItems.KINO_REMOTE.get());
+        if (kinoSlot < 0 || remoteSlot < 0) return false;
+
+        if (!player.getAbilities().instabuild) {
+            player.getInventory().getItem(kinoSlot).shrink(1);
+            player.getInventory().getItem(remoteSlot).shrink(1);
         }
-        return false;
+        storedKinos++;
+        markChanged();
+        return true;
     }
 
     public boolean pickup(Player player) {
         if (storedKinos <= 0) return false;
-        ItemStack kino = new ItemStack(ModItems.KINO.get());
-        if (!player.getInventory().add(kino)) return false;
+        if (!player.getAbilities().instabuild && emptyInventorySlots(player) < 2) return false;
+
+        if (!player.getInventory().add(new ItemStack(ModItems.KINO.get()))) return false;
+        if (!player.getInventory().add(new ItemStack(ModItems.KINO_REMOTE.get()))) return false;
         storedKinos--;
         markChanged();
         return true;
+    }
+
+    private static int findSlot(Player player, net.minecraft.world.item.Item item) {
+        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+            if (player.getInventory().getItem(slot).is(item)) return slot;
+        }
+        return -1;
+    }
+
+    private static int emptyInventorySlots(Player player) {
+        int empty = 0;
+        for (int slot = 0; slot < player.getInventory().items.size(); slot++) {
+            if (player.getInventory().getItem(slot).isEmpty()) empty++;
+        }
+        return empty;
     }
 
     public int takeAll() {
@@ -73,6 +92,8 @@ public final class KinoDispenserBlockEntity extends BlockEntity {
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
-        storedKinos = Math.max(0, Math.min(CAPACITY, tag.getInt("StoredKinos")));
+        storedKinos = tag.contains("StoredKinos")
+                ? Math.max(0, Math.min(CAPACITY, tag.getInt("StoredKinos")))
+                : INITIAL_KINO_KITS;
     }
 }

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["CIC", "GBG", "CIC"],
+  "key": {
+    "C": {"item": "minecraft:copper_block"},
+    "I": {"item": "minecraft:iron_block"},
+    "G": {"item": "minecraft:glass"},
+    "B": {"item": "minecraft:bucket"}
+  },
+  "result": {"item": "sgjdestiny_dhd:destiny_water_holding_tank"}
+}

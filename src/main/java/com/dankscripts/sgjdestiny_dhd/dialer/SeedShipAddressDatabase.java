@@ -94,7 +94,9 @@ public final class SeedShipAddressDatabase {
         Stargate primary = StargateNetwork.get(server).getPrimaryStargateFromAddressRegion(key);
         if (primary != null && sourceRegion != null)
             address = primary.getConnectionAddress(sourceRegion, Address.Type.ADDRESS_7_CHEVRON);
-        if (address == null)
+        // SGJourney returns a nine-chevron fallback when a common galaxy cannot
+        // be resolved; that is not a usable seeded seven-chevron route.
+        if (address == null || address.getType() != Address.Type.ADDRESS_7_CHEVRON)
             address = universe.getAddressInGalaxyFromAddressRegionKey(galaxy, key);
         // SGJourney's saved reverse index may not expose a newly introduced
         // custom galaxy in an existing world. The datapack definition remains

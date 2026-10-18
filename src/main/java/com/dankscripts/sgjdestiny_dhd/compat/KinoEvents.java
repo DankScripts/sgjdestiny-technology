@@ -4,8 +4,11 @@ import com.dankscripts.sgjdestiny_dhd.item.KinoRemoteItem;
 import com.dankscripts.sgjdestiny_dhd.network.DestinyDialerNetwork;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -26,10 +29,23 @@ public final class KinoEvents {
     private KinoEvents() {}
 
     @SubscribeEvent
+    public static void stopLoadingRemovedKino(EntityLeaveLevelEvent event) {
+        if (event.getLevel().isClientSide() || !(event.getEntity() instanceof ArmorStand kino)
+                || !kino.getTags().contains("sgjdestiny_kino")) return;
+        Entity.RemovalReason reason = kino.getRemovalReason();
+        if (reason == Entity.RemovalReason.KILLED || reason == Entity.RemovalReason.DISCARDED)
+            KinoRemoteItem.releaseKinoChunk(kino);
+    }
+
+    @SubscribeEvent
     public static void floatWithOwner(TickEvent.LevelTickEvent event) {
         if (event.phase != TickEvent.Phase.END || event.level.isClientSide() || event.level.getGameTime() % 2 != 0) return;
         for (net.minecraft.world.entity.Entity entity : ((net.minecraft.server.level.ServerLevel) event.level).getAllEntities()) {
             if (!(entity instanceof ArmorStand kino) || !kino.getTags().contains("sgjdestiny_kino")) continue;
+            // The armor stand is only a visual carrier. The handheld resolves
+            // movement with the Kino-sized collision box before moving it.
+            kino.noPhysics = true;
+            KinoRemoteItem.keepKinoChunkLoaded(kino);
             String now = event.level.dimension().location().toString();
             String before = kino.getPersistentData().getString(KinoRemoteItem.lastDimensionKey());
             AbstractStargateEntity<?> gate = nearbyConnectedGate(kino);
@@ -51,7 +67,7 @@ public final class KinoEvents {
                 net.minecraft.world.phys.Vec3 forward = gate.getStargate().getForward();
                 if (forward.lengthSqr() > .0001) {
                     net.minecraft.world.phys.Vec3 exit = forward.normalize().scale(1.35);
-                    kino.setPos(kino.getX() + exit.x, kino.getY() + exit.y, kino.getZ() + exit.z);
+                    KinoRemoteItem.moveWithBlockCollision(kino, exit);
                     kino.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
                 }
                 try {
@@ -72,9 +88,9 @@ public final class KinoEvents {
                             .getPlayerList().getPlayer(UUID.fromString(kino.getPersistentData()
                                     .getString(KinoRemoteItem.ownerKey())));
                     if (owner != null && owner.level() != kino.level()) {
-                        kino.setPos(kino.getX() + kino.getPersistentData().getDouble(FOLLOW_DX),
-                                kino.getY() + kino.getPersistentData().getDouble(FOLLOW_DY),
-                                kino.getZ() + kino.getPersistentData().getDouble(FOLLOW_DZ));
+                        KinoRemoteItem.moveWithBlockCollision(kino, new Vec3(kino.getPersistentData().getDouble(FOLLOW_DX),
+                                kino.getPersistentData().getDouble(FOLLOW_DY),
+                                kino.getPersistentData().getDouble(FOLLOW_DZ)));
                     } else if (owner != null && !before.isEmpty() && !before.equals(now)
                             && gate != null && gate.getConnectionID() != null) {
                         HELD_CONNECTIONS.remove(gate.getConnectionID());
@@ -99,7 +115,7 @@ public final class KinoEvents {
                 kino.getPersistentData().putDouble(FOLLOW_DX, dx);
                 kino.getPersistentData().putDouble(FOLLOW_DY, dy);
                 kino.getPersistentData().putDouble(FOLLOW_DZ, dz);
-                kino.setPos(kino.getX() + dx, kino.getY() + dy, kino.getZ() + dz);
+                KinoRemoteItem.moveWithBlockCollision(kino, new Vec3(dx, dy, dz));
                 KinoRemoteItem.setCameraYaw(kino, owner.getYRot());
             }
         }

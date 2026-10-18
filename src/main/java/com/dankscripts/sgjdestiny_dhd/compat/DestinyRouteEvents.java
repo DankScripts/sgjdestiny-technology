@@ -104,7 +104,8 @@ public final class DestinyRouteEvents {
 
     private static void ensureMedioraGalaxy(MinecraftServer server) {
         Universe universe = Universe.get(server);
-        if (universe.hasGalaxy(MEDIORA)) return;
+        Galaxy existing = universe.getGalaxy(MEDIORA);
+        if (existing != null && MEDIORA.equals(existing.getResourceKey())) return;
         Galaxy definition = server.registryAccess().registryOrThrow(Galaxy.REGISTRY_KEY).get(MEDIORA);
         if (definition == null) {
             LOGGER.error("Mediora galaxy definition is missing from the datapack registry");
@@ -112,7 +113,16 @@ public final class DestinyRouteEvents {
         }
         // SGJourney registers datapack galaxies only when a Universe save is
         // first created. Add Mediora explicitly for worlds that predate it.
-        universe.addGalaxy(MEDIORA, definition);
+        // Registry values are keyless templates. SGJourney's own registration
+        // copies them with a key before any region is attached. Using the raw
+        // template creates a null galaxy entry in every attached region.
+        var retained = new java.util.LinkedHashMap<net.povstalec.sgjourney.common.sgjourney.Address.Immutable, AddressRegion>();
+        if (existing != null) {
+            for (var entry : existing.getAddressRegions(e -> true)) retained.put(entry.getKey(), entry.getValue());
+            universe.getGalaxiesWithPrefix(existing.symbolPrefix).remove(existing);
+        }
+        universe.addGalaxy(MEDIORA, definition.copyTemplateWithKey(MEDIORA, retained));
+        universe.setDirty();
         LOGGER.info("Registered Mediora in the existing SGJourney Universe save");
     }
 
@@ -137,7 +147,17 @@ public final class DestinyRouteEvents {
         // just migrated from Kaliem, and attaching the datapack instance here
         // leaves Stargate#getAddressRegion disconnected from Mediora.
         AddressRegion effectiveRegion = universe.getAddressRegionFromKey(regionKey);
-        if (effectiveRegion == null) effectiveRegion = region;
+        if (effectiveRegion == null) {
+            LOGGER.error("Could not register route region {}; refusing to attach a keyless template", regionKey.location());
+            return;
+        }
+        // Repair the null-key residue and the galaxy's reverse lookup together.
+        // Keep saved addresses and existing physical Stargates intact.
+        Galaxy galaxy = universe.getGalaxy(MEDIORA);
+        if (galaxy != null && DestinyRouteRepair.repair(galaxy, effectiveRegion, region.getAddressInGalaxy(MEDIORA))) {
+            universe.setDirty();
+            LOGGER.warn("Repaired Mediora address indexes for {}", regionKey.location());
+        }
         SpaceLocation location = SpaceLocation.fromDimension(server, dimension);
         location.setAddressRegion(effectiveRegion);
         SpaceLocation.addSpaceLocation(dimension, location);

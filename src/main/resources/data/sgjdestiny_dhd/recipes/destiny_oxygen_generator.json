@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["CIC", "GTG", "CBC"],
+  "key": {
+    "C": {"item": "minecraft:copper_ingot"},
+    "I": {"item": "minecraft:iron_ingot"},
+    "G": {"item": "minecraft:glass"},
+    "T": {"item": "sgjdestiny_dhd:destiny_oxygen_tank"},
+    "B": {"item": "minecraft:bucket"}
+  },
+  "result": {"item": "sgjdestiny_dhd:destiny_oxygen_generator"}
+}

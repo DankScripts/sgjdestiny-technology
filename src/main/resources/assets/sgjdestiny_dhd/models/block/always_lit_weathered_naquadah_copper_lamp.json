@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "up": "sgjourney:block/weathered_naquadah_copper_lamp_horizontal_on",
+    "down": "sgjourney:block/weathered_polished_naquadah_copper_block",
+    "north": "sgjourney:block/weathered_polished_naquadah_copper_block",
+    "south": "sgjourney:block/weathered_polished_naquadah_copper_block",
+    "east": "sgjourney:block/weathered_polished_naquadah_copper_block",
+    "west": "sgjourney:block/weathered_polished_naquadah_copper_block",
+    "particle": "sgjourney:block/weathered_polished_naquadah_copper_block"
+  }
+}

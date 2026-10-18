@@ -14,11 +14,12 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 
-/** Thin, poisonous atmosphere and Ancient suit life support for Water Planet. */
+/** Water Planet hazards and suit life support for oxygen-free Destiny exterior. */
 @Mod.EventBusSubscriber(modid = "sgjdestiny_dhd", bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class WaterPlanetLifeSupportEvents {
     private static final ResourceLocation WATER_PLANET = new ResourceLocation("sgjourney", "water_planet");
     private static final java.util.Map<java.util.UUID, Long> ENTRY_SAFETY_UNTIL = new java.util.HashMap<>();
+    private static final java.util.Map<java.util.UUID, Integer> DESTINY_EXPOSURE = new java.util.HashMap<>();
     private WaterPlanetLifeSupportEvents() {}
 
     @SubscribeEvent
@@ -55,9 +56,28 @@ public final class WaterPlanetLifeSupportEvents {
     @SubscribeEvent
     public static void protectExplorers(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || !(event.player instanceof ServerPlayer player)) return;
-        if (!player.level().dimension().location().equals(WATER_PLANET)) return;
+        boolean destiny = DestinyAtmosphere.isDestiny(player.serverLevel());
+        if (!destiny && !player.level().dimension().location().equals(WATER_PLANET)) {
+            DESTINY_EXPOSURE.remove(player.getUUID());
+            return;
+        }
+        if (destiny && DestinyAtmosphere.breathable(player.serverLevel(), player.blockPosition())) {
+            DESTINY_EXPOSURE.remove(player.getUUID());
+            player.setAirSupply(player.getMaxAirSupply());
+            if (!player.isCreative() && !player.isSpectator() && player.tickCount % 40 == 0) {
+                int co2 = DestinyAtmosphere.co2Percent(player.serverLevel());
+                if (co2 >= 60)
+                    player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 100, 0, false, false, true));
+                if (co2 >= 80) {
+                    player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 0, false, false, true));
+                    player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 100, 0, false, false, true));
+                }
+                if (co2 >= 95) player.hurt(player.damageSources().drown(), 2.0F);
+            }
+            return;
+        }
         Long safetyUntil = ENTRY_SAFETY_UNTIL.get(player.getUUID());
-        if (safetyUntil != null) {
+        if (!destiny && safetyUntil != null) {
             if (player.serverLevel().getGameTime() > safetyUntil) {
                 ENTRY_SAFETY_UNTIL.remove(player.getUUID());
             } else if (player.isInWall()) {
@@ -68,19 +88,33 @@ public final class WaterPlanetLifeSupportEvents {
 
         ItemStack tank = findUsableTank(player);
         if (wearingCompleteSuit(player) && !tank.isEmpty()) {
+            if (destiny) DESTINY_EXPOSURE.remove(player.getUUID());
             player.setTicksFrozen(0);
             if (player.tickCount % 10 == 0) tank.setDamageValue(tank.getDamageValue() + 1);
             return;
         }
         if (wearingAdAstraSuit(player) && adAstraReportsOxygen(player)) {
+            if (destiny) DESTINY_EXPOSURE.remove(player.getUUID());
             player.setTicksFrozen(0);
             return;
         }
 
-        // Give the player a few seconds to react after stepping through the gate.
+        // The gloves are built into the chestplate. Any missing suit piece breaks
+        // the seal: oxygen escapes from a carried tank without protecting the wearer.
+        if (!tank.isEmpty() && wearingAnySuitPiece(player) && player.tickCount % 2 == 0)
+            tank.setDamageValue(Math.min(tank.getMaxDamage(), tank.getDamageValue() + 1));
+
+        if (destiny) {
+            int exposure = DESTINY_EXPOSURE.merge(player.getUUID(), 1, Integer::sum);
+            if (exposure >= 100 && exposure % 40 == 0)
+                player.hurt(player.damageSources().drown(), 2.0F);
+            return;
+        }
+
+        // Give the player a few seconds to react after stepping into a bad atmosphere.
         if (player.tickCount % 40 == 0) {
             player.addEffect(new MobEffectInstance(MobEffects.POISON, 80, 0, false, false, true));
-            player.setAirSupply(Math.max(-20, player.getAirSupply() - 80));
+            player.setAirSupply(Math.max(0, player.getAirSupply() - 80));
         }
     }
 
@@ -89,6 +123,13 @@ public final class WaterPlanetLifeSupportEvents {
                 && player.getItemBySlot(EquipmentSlot.CHEST).is(ModItems.DESTINY_ENVIRONMENTAL_CHESTPLATE.get())
                 && player.getItemBySlot(EquipmentSlot.LEGS).is(ModItems.DESTINY_ENVIRONMENTAL_LEGGINGS.get())
                 && player.getItemBySlot(EquipmentSlot.FEET).is(ModItems.DESTINY_ENVIRONMENTAL_BOOTS.get());
+    }
+
+    private static boolean wearingAnySuitPiece(ServerPlayer player) {
+        return player.getItemBySlot(EquipmentSlot.HEAD).is(ModItems.DESTINY_ENVIRONMENTAL_HELMET.get())
+                || player.getItemBySlot(EquipmentSlot.CHEST).is(ModItems.DESTINY_ENVIRONMENTAL_CHESTPLATE.get())
+                || player.getItemBySlot(EquipmentSlot.LEGS).is(ModItems.DESTINY_ENVIRONMENTAL_LEGGINGS.get())
+                || player.getItemBySlot(EquipmentSlot.FEET).is(ModItems.DESTINY_ENVIRONMENTAL_BOOTS.get());
     }
 
     private static ItemStack findUsableTank(ServerPlayer player) {

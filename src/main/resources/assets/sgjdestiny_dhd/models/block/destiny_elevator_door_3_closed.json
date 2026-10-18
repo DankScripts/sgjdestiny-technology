@@ -1,0 +1,282 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "minecraft:block/polished_deepslate",
+    "metal": "minecraft:block/polished_deepslate",
+    "seam": "minecraft:block/black_concrete"
+  },
+  "elements": [
+    {
+      "from": [
+        12,
+        0,
+        15
+      ],
+      "to": [
+        16,
+        24,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "#metal",
+          "uv": [
+            12,
+            0,
+            16,
+            1
+          ]
+        },
+        "up": {
+          "texture": "#metal",
+          "uv": [
+            12,
+            15,
+            16,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            4,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#metal",
+          "uv": [
+            12,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#metal",
+          "uv": [
+            15,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            1,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        12,
+        23,
+        0
+      ],
+      "to": [
+        16,
+        24,
+        15
+      ],
+      "faces": {
+        "down": {
+          "texture": "#metal",
+          "uv": [
+            12,
+            1,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#metal",
+          "uv": [
+            12,
+            0,
+            16,
+            15
+          ]
+        },
+        "north": {
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            4,
+            1
+          ]
+        },
+        "south": {
+          "texture": "#metal",
+          "uv": [
+            12,
+            0,
+            16,
+            1
+          ]
+        },
+        "west": {
+          "texture": "#metal",
+          "uv": [
+            0,
+            0,
+            15,
+            1
+          ]
+        },
+        "east": {
+          "texture": "#metal",
+          "uv": [
+            1,
+            0,
+            16,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        13,
+        0,
+        0
+      ],
+      "to": [
+        15,
+        23,
+        15
+      ],
+      "faces": {
+        "down": {
+          "texture": "#metal",
+          "uv": [
+            13,
+            1,
+            15,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#metal",
+          "uv": [
+            13,
+            0,
+            15,
+            15
+          ]
+        },
+        "north": {
+          "texture": "#metal",
+          "uv": [
+            1,
+            1,
+            3,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#metal",
+          "uv": [
+            13,
+            1,
+            15,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#metal",
+          "uv": [
+            0,
+            1,
+            15,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#metal",
+          "uv": [
+            1,
+            1,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        12.875,
+        0,
+        0
+      ],
+      "to": [
+        13,
+        23,
+        0.2
+      ],
+      "faces": {
+        "down": {
+          "texture": "#seam",
+          "uv": [
+            12.875,
+            15.8,
+            13,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#seam",
+          "uv": [
+            12.875,
+            0,
+            13,
+            0.2
+          ]
+        },
+        "north": {
+          "texture": "#seam",
+          "uv": [
+            3,
+            1,
+            3.125,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#seam",
+          "uv": [
+            12.875,
+            1,
+            13,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#seam",
+          "uv": [
+            0,
+            1,
+            0.2,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#seam",
+          "uv": [
+            15.8,
+            1,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

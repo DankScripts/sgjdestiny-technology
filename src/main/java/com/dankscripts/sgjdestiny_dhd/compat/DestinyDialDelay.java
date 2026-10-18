@@ -1,12 +1,16 @@
 package com.dankscripts.sgjdestiny_dhd.compat;
 
 import com.dankscripts.sgjdestiny_dhd.registry.ModBlocks;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraftforge.event.PlayLevelSoundEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.povstalec.sgjourney.common.block_entities.dhd.AbstractDHDEntity;
 import net.povstalec.sgjourney.common.block_entities.dhd.UniverseDHDEntity;
+import net.povstalec.sgjourney.common.init.SoundInit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +29,7 @@ public final class DestinyDialDelay {
     private static final Map<AbstractDHDEntity, PendingAddress> PROGRAMMED_DIALS = new IdentityHashMap<>();
     private static final Map<AbstractDHDEntity, Long> HOLD_UNTIL_GATE_ACTIVITY = new IdentityHashMap<>();
     private static final Set<AbstractDHDEntity> RELEASING = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
+    private static final Set<AbstractDHDEntity> PROGRAMMED_DIAL_RELEASING = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
 
     private DestinyDialDelay() {}
 
@@ -128,11 +133,29 @@ public final class DestinyDialDelay {
             dialIterator.remove();
             if (dhd.isRemoved() || !(dhd.getLevel() instanceof ServerLevel) || !dhd.getAddress().isEmpty()) continue;
             RELEASING.add(dhd);
+            PROGRAMMED_DIAL_RELEASING.add(dhd);
             try {
                 for (int symbol : pending.symbols()) dhd.encodeSymbol(symbol);
                 dhd.engageStargate();
             } finally {
+                PROGRAMMED_DIAL_RELEASING.remove(dhd);
                 RELEASING.remove(dhd);
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onProgrammedDialSound(PlayLevelSoundEvent.AtPosition event) {
+        if (PROGRAMMED_DIAL_RELEASING.isEmpty() || event.getSound() == null) return;
+        SoundEvent sound = event.getSound().value();
+        if (sound != SoundInit.UNIVERSE_DHD_PRESS.get() && sound != SoundInit.UNIVERSE_DHD_ENTER.get()) return;
+
+        BlockPos soundPos = BlockPos.containing(event.getPosition());
+        for (AbstractDHDEntity dhd : PROGRAMMED_DIAL_RELEASING) {
+            if (event.getLevel() == dhd.getLevel() && soundPos.equals(dhd.getBlockPos())) {
+                // Selecting a stored address is not a series of physical DHD button presses.
+                event.setCanceled(true);
+                return;
             }
         }
     }

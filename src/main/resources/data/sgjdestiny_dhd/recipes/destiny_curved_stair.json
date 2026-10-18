@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["I  ", "II ", "CCI"],
+  "key": {
+    "I": { "tag": "forge:ingots/iron" },
+    "C": { "tag": "forge:ingots/copper" }
+  },
+  "result": { "item": "sgjdestiny_dhd:destiny_curved_stair", "count": 4 }
+}

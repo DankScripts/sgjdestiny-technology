@@ -1,7 +1,9 @@
 # Gradle
 .gradle/
+.gradle-dev/
 .gradle-build-cache/
 .gradle-user/
+.tmp/
 build/
 out/
 
@@ -35,6 +37,10 @@ logs/
 crash-reports/
 local.properties
 tools/__pycache__/
+corridor-work/*.png
+corridor-work/*.npz
+corridor-work/*.log
+corridor-work/prototype/
 
 # Rejected Kino dispenser preview iterations (the accepted v5 source is tracked)
 blockbench/kino_dispenser_preview*
@@ -47,3 +53,4 @@ blockbench/kino_dispenser_weathered_preview_v2.*
 blockbench/kino_dispenser_weathered_preview_v3.*
 blockbench/kino_dispenser_weathered_preview_v4.*
 blockbench/kino_dispenser_weathered_textures*/
+blockbench/shuttle/private_reference/

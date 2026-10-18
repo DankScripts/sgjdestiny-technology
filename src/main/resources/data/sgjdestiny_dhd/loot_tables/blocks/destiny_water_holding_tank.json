@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:block",
+  "pools": [{
+    "rolls": 1,
+    "entries": [{
+      "type": "minecraft:item",
+      "name": "sgjdestiny_dhd:destiny_water_holding_tank",
+      "conditions": [{
+        "condition": "minecraft:block_state_property",
+        "block": "sgjdestiny_dhd:destiny_water_holding_tank",
+        "properties": {"part": "4"}
+      }]
+    }],
+    "conditions": [{"condition": "minecraft:survives_explosion"}]
+  }]
+}

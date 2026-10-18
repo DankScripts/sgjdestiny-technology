@@ -17,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.BlockGetter;
@@ -35,8 +36,10 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.povstalec.sgjourney.common.blocks.dhd.UniverseDHDBlock;
 import net.povstalec.sgjourney.common.block_entities.dhd.UniverseDHDEntity;
-import net.povstalec.sgjourney.common.menu.DHDCrystalMenu;
-import net.povstalec.sgjourney.common.menu.UniverseDHDMenu;
+import net.povstalec.sgjourney.common.menu.dhd.DHDCrystalMenu;
+import net.povstalec.sgjourney.common.menu.dhd.UniverseDHDMenu;
+import net.povstalec.sgjourney.common.menu.graver.DHDEngravingMenu;
+import net.povstalec.sgjourney.common.init.TagInit;
 import net.minecraftforge.network.NetworkHooks;
 
 /**
@@ -82,6 +85,12 @@ public final class DestinyDHDConsoleBlock extends UniverseDHDBlock {
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos,
                                  Player player, InteractionHand hand, BlockHitResult hit) {
+        // SGJourney 0.6.49+ lets these items handle DHD clicks themselves.
+        // Opening our dialer first would swallow graver and symbol-paper use.
+        if (player.getItemInHand(InteractionHand.MAIN_HAND).is(TagInit.Items.STOPS_DHD_INTERACTION)
+                || player.getItemInHand(InteractionHand.OFF_HAND).is(TagInit.Items.STOPS_DHD_INTERACTION)) {
+            return InteractionResult.FAIL;
+        }
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
         if (level.getBlockEntity(pos) instanceof UniverseDHDEntity dhd
@@ -97,6 +106,26 @@ public final class DestinyDHDConsoleBlock extends UniverseDHDBlock {
                     SeedShipAddressDatabase.entriesFor(serverPlayer.server, dhd));
         }
         return InteractionResult.CONSUME;
+    }
+
+    @Override
+    protected void openDHDGravingMenu(Level level, BlockPos pos, BlockState state, Player player) {
+        if (!(player instanceof ServerPlayer serverPlayer)
+                || !(level.getBlockEntity(pos) instanceof UniverseDHDEntity dhd)) {
+            return;
+        }
+        NetworkHooks.openScreen(serverPlayer, new MenuProvider() {
+            @Override
+            public Component getDisplayName() {
+                return Component.empty();
+            }
+
+            @Override
+            public AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player menuPlayer) {
+                return new DestinyUniverseDHDEngravingMenu(containerId, inventory, dhd,
+                        ContainerLevelAccess.create(level, pos));
+            }
+        }, pos);
     }
 
     @Override
@@ -180,6 +209,23 @@ public final class DestinyDHDConsoleBlock extends UniverseDHDBlock {
         }
     }
 
+    /** SGJourney's stock engraving menu validates only its own Universe DHD block. */
+    public static final class DestinyUniverseDHDEngravingMenu extends DHDEngravingMenu.Universe {
+        private final UniverseDHDEntity dhd;
+
+        public DestinyUniverseDHDEngravingMenu(int containerId, Inventory inventory,
+                                               UniverseDHDEntity dhd, ContainerLevelAccess access) {
+            super(containerId, inventory, dhd, access);
+            this.dhd = dhd;
+        }
+
+        @Override
+        public boolean stillValid(Player player) {
+            return stillValid(ContainerLevelAccess.create(player.level(), dhd.getBlockPos()),
+                    player, ModBlocks.DESTINY_DHD.get());
+        }
+    }
+
     public static final class DestinyMenuProvider implements MenuProvider {
         private final UniverseDHDEntity dhd;
 
@@ -226,7 +272,7 @@ public final class DestinyDHDConsoleBlock extends UniverseDHDBlock {
         return shapeFor(state.getValue(FACING));
     }
 
-    private static VoxelShape shapeFor(Direction direction) {
+    static VoxelShape shapeFor(Direction direction) {
         return switch (direction) {
             case EAST -> EAST_SHAPE;
             case SOUTH -> SOUTH_SHAPE;

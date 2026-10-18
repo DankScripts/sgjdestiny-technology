@@ -21,7 +21,7 @@ nav_order: 4
 3. Use it normally to open the address list.
 4. Select an address and press **Select**.
 
-The remote locates a usable nearby Universe gate. A Destiny console does not need to be nearby.
+The remote locates the nearest registered Universe gate in the current dimension with no distance limit. A Destiny console does not need to be nearby.
 
 ## Open Kino controls
 
@@ -29,6 +29,8 @@ The remote locates a usable nearby Universe gate. A Destiny console does not nee
 2. Sneak-use it until the tooltip reports **Kino Control** mode, then use it normally.
 3. The upper-right button opens gate controls; the button below opens Kino controls.
 4. The bottom-right button returns home or leaves live video.
+
+In a dimension without a Universe gate, normal use opens Kino controls automatically. Kino deployment and flight do not require a gate nearby.
 
 ## Deploy and recover a Kino
 
@@ -53,7 +55,7 @@ When no GUI is open, hold the remote in either hand and use:
 | Left Arrow | Move left and turn left |
 | Right Arrow | Move right and turn right |
 
-The arrow keys also work during live video. Horizontal movement follows nearby terrain height. Use the screen's **Up** and **Down** buttons for manual altitude changes.
+The arrow keys also work during live video. The Kino uses a compact collision body matching its visible model, so it can rise over slab steps or dip into a clear one-block tunnel. Use the screen's **Up** and **Down** buttons for manual altitude changes; solid floors, walls, and ceilings still stop it.
 
 ## Use live video
 
@@ -68,4 +70,3 @@ Leaving video restores the camera to its forward home direction.
 ## Scan a destination
 
 Press **Scan**. Telemetry appears in chat with the dimension, atmosphere classification, temperature index, altitude, and biome.
-

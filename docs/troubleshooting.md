@@ -8,7 +8,10 @@ nav_order: 7
 
 ## Minecraft reports a missing dependency
 
-Install matching Forge 1.20.1 builds of Stargate Journey, Immersive Portals, and Cloth Config on both client and server. Remove duplicate or incompatible versions.
+Install matching Forge 1.20.1 builds of Stargate Journey, Immersive Portals,
+Cloth Config, Simply Light, GTCEu, Macaw's Bridges, and SGJourney
+Deco on both client and server. Forge lists the missing mod and required
+version on its error screen. Remove duplicate or incompatible versions.
 
 ## The Kino video page is blank
 

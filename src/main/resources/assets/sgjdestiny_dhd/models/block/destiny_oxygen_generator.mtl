@@ -1,0 +1,24 @@
+newmtl Hull
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_spire_solid_green
+
+newmtl Recess
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_scrubber_solid_recess
+
+newmtl Bronze
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_bronze
+
+newmtl Metal
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_scrubber_solid_metal
+
+newmtl Light
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_light

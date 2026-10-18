@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "D",
+    "S"
+  ],
+  "key": {
+    "S": {
+      "item": "sgjdestiny_dhd:always_lit_weathered_naquadah_copper_lamp"
+    },
+    "D": {
+      "item": "sgjdestiny_dhd:always_lit_diagonal_weathered_naquadah_copper_lamp"
+    }
+  },
+  "result": {
+    "item": "sgjdestiny_dhd:always_lit_45_right_weathered_naquadah_copper_lamp",
+    "count": 2
+  }
+}

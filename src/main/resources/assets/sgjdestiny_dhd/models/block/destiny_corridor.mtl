@@ -1,0 +1,12 @@
+newmtl corridor_atlas
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_corridor_atlas
+newmtl sgj_floor
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjourney:block/weathered_polished_naquadah_copper_block
+newmtl sgj_lamp
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjourney:block/weathered_naquadah_copper_lamp_vertical_on

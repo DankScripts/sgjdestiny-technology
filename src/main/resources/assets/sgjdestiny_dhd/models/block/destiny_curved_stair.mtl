@@ -1,0 +1,11 @@
+newmtl tread
+Kd 1 1 1
+map_Kd sgjourney:block/weathered_polished_naquadah_copper_block
+
+newmtl edge
+Kd 1 1 1
+map_Kd sgjourney:block/oxidized_polished_naquadah_copper_block
+
+newmtl rail
+Kd 1 1 1
+map_Kd sgjourney:block/weathered_polished_naquadah_copper_block

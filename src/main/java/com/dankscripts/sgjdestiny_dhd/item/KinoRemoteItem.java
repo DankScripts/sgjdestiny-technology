@@ -1,24 +1,31 @@
 package com.dankscripts.sgjdestiny_dhd.item;
 
+import com.dankscripts.sgjdestiny_dhd.DestinyDHD;
 import com.dankscripts.sgjdestiny_dhd.dialer.SeedShipAddressDatabase;
 import com.dankscripts.sgjdestiny_dhd.network.DestinyDialerNetwork;
 import com.dankscripts.sgjdestiny_dhd.registry.ModItems;
 import com.dankscripts.sgjdestiny_dhd.config.DestinyServerConfig;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -26,6 +33,10 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.ClipContext;
 import net.povstalec.sgjourney.common.block_entities.dhd.UniverseDHDEntity;
 import net.povstalec.sgjourney.common.block_entities.stargate.UniverseStargateEntity;
+import net.povstalec.sgjourney.common.data.StargateNetwork;
+import net.povstalec.sgjourney.common.init.StargateInit;
+import net.povstalec.sgjourney.common.sgjourney.stargate.Stargate;
+import net.minecraftforge.common.world.ForgeChunkManager;
 
 import java.util.Comparator;
 import java.util.List;
@@ -43,6 +54,11 @@ public final class KinoRemoteItem extends Item {
     private static final String CAMERA_PITCH = "sgjdestiny_kino_camera_pitch";
     private static final String CAMERA_HOME_YAW = "sgjdestiny_kino_camera_home_yaw";
     private static final String CAMERA_YAW = "sgjdestiny_kino_camera_yaw";
+    private static final String FORCED_DIMENSION = "sgjdestiny_kino_forced_dimension";
+    private static final String FORCED_CHUNK_X = "sgjdestiny_kino_forced_chunk_x";
+    private static final String FORCED_CHUNK_Z = "sgjdestiny_kino_forced_chunk_z";
+    private static final double KINO_CAMERA_HEIGHT = 1.45;
+    private static final double KINO_COLLISION_RADIUS = .30;
 
     public KinoRemoteItem(Properties properties) { super(properties); }
 
@@ -77,18 +93,39 @@ public final class KinoRemoteItem extends Item {
                     SeedShipAddressDatabase.entriesFor(player.server, dhd));
             return;
         }
-        UniverseStargateEntity gate = BlockPos.betweenClosedStream(player.blockPosition().offset(-32, -16, -32),
-                        player.blockPosition().offset(32, 16, 32))
-                .map(player.level()::getBlockEntity).filter(UniverseStargateEntity.class::isInstance)
-                .map(UniverseStargateEntity.class::cast)
-                .min(Comparator.comparingDouble(be -> be.getBlockPos().distSqr(player.blockPosition())))
-                .orElse(null);
+        UniverseStargateEntity gate = StargateNetwork.get(player.server)
+                .getStargatesInDimension(player.level().dimension()).stream()
+                .filter(record -> record.getStargateType() == StargateInit.UNIVERSE.get()
+                        && record.getPosition() != null)
+                .sorted(Comparator.comparingDouble(record -> record.getPosition().distanceToSqr(player.position())))
+                .map(record -> findGateController(player.serverLevel(), record))
+                .filter(java.util.Objects::nonNull)
+                .findFirst().orElse(null);
         if (gate == null) {
-            player.displayClientMessage(Component.translatable("message.sgjdestiny_dhd.remote_no_gate"), true);
+            // The gate database needs a nearby controller, but deploying and
+            // flying a Kino must remain available everywhere.
+            DestinyDialerNetwork.openKinoControl(player);
             return;
         }
         DestinyDialerNetwork.openHandheldDatabase(player, gate,
                 SeedShipAddressDatabase.entriesFor(player.server, gate));
+    }
+
+    private static UniverseStargateEntity findGateController(ServerLevel level, Stargate record) {
+        // SGJourney records the gate's center, which can be several blocks from
+        // its controller. Only the selected gate's small area is loaded here.
+        BlockPos center = BlockPos.containing(record.getPosition());
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        for (int x = center.getX() - 8; x <= center.getX() + 8; x++)
+            for (int y = center.getY() - 8; y <= center.getY() + 8; y++)
+                for (int z = center.getZ() - 8; z <= center.getZ() + 8; z++) {
+                    cursor.set(x, y, z);
+                    if (!(level.getBlockEntity(cursor) instanceof UniverseStargateEntity gate)) continue;
+                    Stargate candidate = gate.getStargate();
+                    if (candidate == record || (candidate != null && candidate.get9ChevronAddress() != null
+                            && candidate.get9ChevronAddress().equals(record.get9ChevronAddress()))) return gate;
+                }
+        return null;
     }
 
     private static void operateKino(ServerPlayer player) {
@@ -289,6 +326,9 @@ public final class KinoRemoteItem extends Item {
         kino.setInvisible(true);
         kino.setInvulnerable(true);
         kino.setNoGravity(true);
+        // The armor stand only carries the visible Kino model. Flight uses a
+        // separate collision box around the model, not the two-block stand.
+        kino.noPhysics = true;
         kino.setItemSlot(EquipmentSlot.HEAD, new ItemStack(ModItems.KINO.get()));
         setCameraYaw(kino, player.getYRot());
         kino.getPersistentData().putString(OWNER, player.getUUID().toString());
@@ -301,11 +341,13 @@ public final class KinoRemoteItem extends Item {
         kino.getPersistentData().putString(LAST_DIMENSION, level.dimension().location().toString());
         kino.addTag("sgjdestiny_kino");
         level.addFreshEntity(kino);
+        keepKinoChunkLoaded(kino);
         player.displayClientMessage(Component.translatable("message.sgjdestiny_dhd.kino_deployed"), true);
     }
 
     private static void recallKino(ServerPlayer player, List<ArmorStand> kinos) {
         for (ArmorStand kino : kinos) {
+            releaseKinoChunk(kino);
             kino.discard();
             player.getInventory().placeItemBackInInventory(new ItemStack(ModItems.KINO.get()));
         }
@@ -335,43 +377,102 @@ public final class KinoRemoteItem extends Item {
             if (command == 7) dy = 1;
             if (command == 8) dy = -1;
             double moveX = dx * .35, moveZ = dz * .35;
-            kino.move(MoverType.SELF, new net.minecraft.world.phys.Vec3(moveX, dy * .275, moveZ));
-            if (command >= 3 && command <= 6) maintainHoverHeight(kino);
+            moveWithBlockCollision(kino, new Vec3(moveX, dy * .275, moveZ));
         }
     }
 
-    private static void maintainHoverHeight(ArmorStand kino) {
-        BlockPos.MutableBlockPos probe = new BlockPos.MutableBlockPos((int)Math.floor(kino.getX()),
-                (int)Math.floor(kino.getY()) + 3, (int)Math.floor(kino.getZ()));
+    private static void moveTowardFloor(ArmorStand kino, int maxBlocks, double maxStep) {
         ServerLevel level = (ServerLevel) kino.level();
-        for (int i = 0; i < 12 && probe.getY() > level.getMinBuildHeight(); i++, probe.move(0, -1, 0)) {
-            var state = level.getBlockState(probe);
-            if (!state.getCollisionShape(level, probe).isEmpty()) {
-                double groundTop = probe.getY() + state.getCollisionShape(level, probe).max(net.minecraft.core.Direction.Axis.Y);
-                double targetY = groundTop + .15;
-                kino.setPos(kino.getX(), kino.getY() + Math.max(-.7, Math.min(.7, targetY - kino.getY())), kino.getZ());
-                return;
+        // Ground clearance belongs to the visible Kino, not the invisible
+        // armor stand's feet, which can be below a one-block tunnel floor.
+        double bodyBottom = kino.getY() + KINO_CAMERA_HEIGHT - KINO_COLLISION_RADIUS;
+        BlockPos.MutableBlockPos probe = new BlockPos.MutableBlockPos((int)Math.floor(kino.getX()),
+                (int)Math.floor(bodyBottom - .05), (int)Math.floor(kino.getZ()));
+        for (int i = 0; i < maxBlocks && probe.getY() >= level.getMinBuildHeight();
+                i++, probe.move(0, -1, 0)) {
+            var shape = level.getBlockState(probe).getCollisionShape(level, probe);
+            if (shape.isEmpty()) continue;
+            double groundTop = probe.getY() + shape.max(net.minecraft.core.Direction.Axis.Y);
+            double targetCarrierY = groundTop + KINO_COLLISION_RADIUS + .10 - KINO_CAMERA_HEIGHT;
+            double correction = Math.max(-maxStep, Math.min(maxStep, targetCarrierY - kino.getY()));
+            moveWithBlockCollision(kino, new Vec3(0, correction, 0));
+            return;
+        }
+    }
+
+    private static AABB kinoCollisionBox(ArmorStand kino) {
+        double x = kino.getX(), y = kino.getY() + KINO_CAMERA_HEIGHT, z = kino.getZ();
+        return new AABB(x - KINO_COLLISION_RADIUS, y - KINO_COLLISION_RADIUS, z - KINO_COLLISION_RADIUS,
+                x + KINO_COLLISION_RADIUS, y + KINO_COLLISION_RADIUS, z + KINO_COLLISION_RADIUS);
+    }
+
+    /** Resolve flight against Minecraft shapes using the visible Kino's size. */
+    public static void moveWithBlockCollision(ArmorStand kino, Vec3 motion) {
+        ServerLevel level = (ServerLevel) kino.level();
+        AABB box = kinoCollisionBox(kino);
+        Vec3 resolved = collideKino(kino, level, box, motion);
+        if (motion.y == 0 && motion.horizontalDistanceSqr() > 1.0E-6
+                && resolved.horizontalDistanceSqr() + 1.0E-4 < motion.horizontalDistanceSqr()) {
+            // A flying Kino can climb slab steps or dip into a low opening.
+            // Both legs of the route are clipped against actual block shapes.
+            double bestProgress = resolved.horizontalDistanceSqr();
+            for (double offset : new double[] { .55, -.55, 1.05, -1.15 }) {
+                Vec3 vertical = collideKino(kino, level, box, new Vec3(0, offset, 0));
+                if (Math.abs(vertical.y - offset) > 1.0E-4) continue;
+                Vec3 horizontal = collideKino(kino, level, box.move(vertical), motion);
+                if (horizontal.horizontalDistanceSqr() <= bestProgress + 1.0E-4) continue;
+                bestProgress = horizontal.horizontalDistanceSqr();
+                resolved = vertical.add(horizontal);
             }
         }
+        kino.noPhysics = true;
+        kino.move(MoverType.SELF, resolved);
+    }
+
+    private static Vec3 collideKino(ArmorStand kino, ServerLevel level, AABB box, Vec3 motion) {
+        return Entity.collideBoundingBox(kino, motion, box, level,
+                level.getEntityCollisions(kino, box.expandTowards(motion)));
+    }
+
+    /** Keep the moving Kino entity ticking even when its owner travels far away. */
+    public static void keepKinoChunkLoaded(ArmorStand kino) {
+        if (!(kino.level() instanceof ServerLevel level)) return;
+        CompoundTag data = kino.getPersistentData();
+        ChunkPos current = new ChunkPos(kino.blockPosition());
+        String dimension = level.dimension().location().toString();
+        String previousDimension = data.getString(FORCED_DIMENSION);
+        if (dimension.equals(previousDimension)
+                && data.getInt(FORCED_CHUNK_X) == current.x
+                && data.getInt(FORCED_CHUNK_Z) == current.z) return;
+
+        ForgeChunkManager.forceChunk(level, DestinyDHD.MOD_ID, kino.getUUID(),
+                current.x, current.z, true, true);
+        releaseKinoChunk(kino);
+        data.putString(FORCED_DIMENSION, dimension);
+        data.putInt(FORCED_CHUNK_X, current.x);
+        data.putInt(FORCED_CHUNK_Z, current.z);
+    }
+
+    public static void releaseKinoChunk(ArmorStand kino) {
+        CompoundTag data = kino.getPersistentData();
+        String dimension = data.getString(FORCED_DIMENSION);
+        if (dimension.isEmpty()) return;
+        if (kino.level() instanceof ServerLevel level) {
+            ServerLevel previous = level.getServer().getLevel(ResourceKey.create(Registries.DIMENSION,
+                    new ResourceLocation(dimension)));
+            if (previous != null) ForgeChunkManager.forceChunk(previous, DestinyDHD.MOD_ID, kino.getUUID(),
+                    data.getInt(FORCED_CHUNK_X), data.getInt(FORCED_CHUNK_Z), false, true);
+        }
+        data.remove(FORCED_DIMENSION);
+        data.remove(FORCED_CHUNK_X);
+        data.remove(FORCED_CHUNK_Z);
     }
 
     private static void restoreHoverHeight(List<ArmorStand> kinos) {
         for (ArmorStand kino : kinos) {
             kino.getPersistentData().putBoolean(FOLLOW, false);
-            ServerLevel level = (ServerLevel) kino.level();
-            BlockPos.MutableBlockPos probe = new BlockPos.MutableBlockPos((int)Math.floor(kino.getX()),
-                    (int)Math.floor(kino.getY()) + 3, (int)Math.floor(kino.getZ()));
-            while (probe.getY() > level.getMinBuildHeight()) {
-                var state = level.getBlockState(probe);
-                if (!state.getCollisionShape(level, probe).isEmpty()) {
-                    double groundTop = probe.getY()
-                            + state.getCollisionShape(level, probe).max(net.minecraft.core.Direction.Axis.Y);
-                    kino.setPos(kino.getX(), groundTop + .15, kino.getZ());
-                    kino.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
-                    break;
-                }
-                probe.move(0, -1, 0);
-            }
+            moveTowardFloor(kino, 64, .7);
+            kino.setDeltaMovement(Vec3.ZERO);
         }
     }
 

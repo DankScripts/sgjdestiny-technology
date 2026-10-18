@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -15,6 +16,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.povstalec.sgjourney.common.items.GraverItem;
 
 /** Invisible, non-colliding screen target that forwards interaction to the console below it. */
 public final class DestinyDHDInteractionBlock extends Block {
@@ -40,6 +42,17 @@ public final class DestinyDHDInteractionBlock extends Block {
             BlockState controllerState = level.getBlockState(controllerPos);
             if (controllerState.is(ModBlocks.DESTINY_DHD.get())
                     || controllerState.is(ModBlocks.KINO_DISPENSER.get())) {
+                // The screen target is a separate invisible block. A graver
+                // must examine the real DHD block for SGJourney's tier check
+                // and engraving callback, not this target's block state.
+                if (controllerState.is(ModBlocks.DESTINY_DHD.get())
+                        && player.getItemInHand(hand).getItem() instanceof GraverItem graver) {
+                    InteractionResult result = graver.useOn(new UseOnContext(player, hand,
+                            new BlockHitResult(hit.getLocation(), hit.getDirection(),
+                                    controllerPos, hit.isInside())));
+                    return result == InteractionResult.PASS
+                            ? InteractionResult.sidedSuccess(level.isClientSide()) : result;
+                }
                 return controllerState.use(level, player, hand,
                         new BlockHitResult(hit.getLocation(), hit.getDirection(), controllerPos, hit.isInside()));
             }

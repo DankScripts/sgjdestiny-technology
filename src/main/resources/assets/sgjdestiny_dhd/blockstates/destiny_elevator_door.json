@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "open=false,part=0": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_0_closed"
+    },
+    "open=true,part=0": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_0_open"
+    },
+    "open=false,part=1": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_1_closed"
+    },
+    "open=true,part=1": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_1_open"
+    },
+    "open=false,part=2": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_2_closed"
+    },
+    "open=true,part=2": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_2_open"
+    },
+    "open=false,part=3": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_3_closed"
+    },
+    "open=true,part=3": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_3_open"
+    }
+  }
+}

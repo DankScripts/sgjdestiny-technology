@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["BBB", "C C"],
+  "key": {
+    "B": { "item": "minecraft:iron_bars" },
+    "C": { "tag": "forge:ingots/copper" }
+  },
+  "result": { "item": "sgjdestiny_dhd:destiny_safety_railing", "count": 4 }
+}

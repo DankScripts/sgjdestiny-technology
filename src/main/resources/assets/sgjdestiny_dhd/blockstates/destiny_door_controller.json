@@ -1,0 +1,916 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "facing": "north",
+        "corridor_offset": "0"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_body",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corridor_offset": "0",
+        "pressed": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_up",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corridor_offset": "0",
+        "pressed": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_down",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corridor_offset": "0",
+        "locked": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_dim",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corridor_offset": "0",
+        "locked": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_lit",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corridor_offset": "0",
+        "active": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_amber_dim",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corridor_offset": "0",
+        "active": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_white_lit",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corridor_offset": "1"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_body_offset_1",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corridor_offset": "1",
+        "pressed": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_up_offset_1",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corridor_offset": "1",
+        "pressed": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_down_offset_1",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corridor_offset": "1",
+        "locked": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_dim_offset_1",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corridor_offset": "1",
+        "locked": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_lit_offset_1",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corridor_offset": "1",
+        "active": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_amber_dim_offset_1",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corridor_offset": "1",
+        "active": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_white_lit_offset_1",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corridor_offset": "2"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_body_offset_2",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corridor_offset": "2",
+        "pressed": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_up_offset_2",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corridor_offset": "2",
+        "pressed": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_down_offset_2",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corridor_offset": "2",
+        "locked": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_dim_offset_2",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corridor_offset": "2",
+        "locked": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_lit_offset_2",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corridor_offset": "2",
+        "active": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_amber_dim_offset_2",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corridor_offset": "2",
+        "active": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_white_lit_offset_2",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corridor_offset": "0"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_body",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corridor_offset": "0",
+        "pressed": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_up",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corridor_offset": "0",
+        "pressed": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_down",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corridor_offset": "0",
+        "locked": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_dim",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corridor_offset": "0",
+        "locked": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_lit",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corridor_offset": "0",
+        "active": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_amber_dim",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corridor_offset": "0",
+        "active": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_white_lit",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corridor_offset": "1"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_body_offset_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corridor_offset": "1",
+        "pressed": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_up_offset_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corridor_offset": "1",
+        "pressed": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_down_offset_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corridor_offset": "1",
+        "locked": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_dim_offset_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corridor_offset": "1",
+        "locked": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_lit_offset_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corridor_offset": "1",
+        "active": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_amber_dim_offset_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corridor_offset": "1",
+        "active": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_white_lit_offset_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corridor_offset": "2"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_body_offset_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corridor_offset": "2",
+        "pressed": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_up_offset_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corridor_offset": "2",
+        "pressed": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_down_offset_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corridor_offset": "2",
+        "locked": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_dim_offset_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corridor_offset": "2",
+        "locked": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_lit_offset_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corridor_offset": "2",
+        "active": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_amber_dim_offset_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corridor_offset": "2",
+        "active": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_white_lit_offset_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corridor_offset": "0"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_body",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corridor_offset": "0",
+        "pressed": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_up",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corridor_offset": "0",
+        "pressed": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_down",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corridor_offset": "0",
+        "locked": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_dim",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corridor_offset": "0",
+        "locked": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_lit",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corridor_offset": "0",
+        "active": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_amber_dim",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corridor_offset": "0",
+        "active": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_white_lit",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corridor_offset": "1"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_body_offset_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corridor_offset": "1",
+        "pressed": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_up_offset_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corridor_offset": "1",
+        "pressed": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_down_offset_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corridor_offset": "1",
+        "locked": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_dim_offset_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corridor_offset": "1",
+        "locked": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_lit_offset_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corridor_offset": "1",
+        "active": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_amber_dim_offset_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corridor_offset": "1",
+        "active": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_white_lit_offset_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corridor_offset": "2"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_body_offset_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corridor_offset": "2",
+        "pressed": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_up_offset_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corridor_offset": "2",
+        "pressed": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_down_offset_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corridor_offset": "2",
+        "locked": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_dim_offset_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corridor_offset": "2",
+        "locked": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_lit_offset_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corridor_offset": "2",
+        "active": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_amber_dim_offset_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corridor_offset": "2",
+        "active": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_white_lit_offset_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corridor_offset": "0"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_body",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corridor_offset": "0",
+        "pressed": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_up",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corridor_offset": "0",
+        "pressed": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_down",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corridor_offset": "0",
+        "locked": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_dim",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corridor_offset": "0",
+        "locked": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_lit",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corridor_offset": "0",
+        "active": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_amber_dim",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corridor_offset": "0",
+        "active": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_white_lit",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corridor_offset": "1"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_body_offset_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corridor_offset": "1",
+        "pressed": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_up_offset_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corridor_offset": "1",
+        "pressed": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_down_offset_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corridor_offset": "1",
+        "locked": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_dim_offset_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corridor_offset": "1",
+        "locked": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_lit_offset_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corridor_offset": "1",
+        "active": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_amber_dim_offset_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corridor_offset": "1",
+        "active": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_white_lit_offset_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corridor_offset": "2"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_body_offset_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corridor_offset": "2",
+        "pressed": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_up_offset_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corridor_offset": "2",
+        "pressed": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_button_down_offset_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corridor_offset": "2",
+        "locked": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_dim_offset_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corridor_offset": "2",
+        "locked": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_red_lit_offset_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corridor_offset": "2",
+        "active": "false"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_amber_dim_offset_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corridor_offset": "2",
+        "active": "true"
+      },
+      "apply": {
+        "model": "sgjdestiny_dhd:block/destiny_door_controller_white_lit_offset_2",
+        "y": 270
+      }
+    }
+  ]
+}

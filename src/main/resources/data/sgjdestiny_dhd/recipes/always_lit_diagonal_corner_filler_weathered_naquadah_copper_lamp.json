@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "sgjdestiny_dhd:always_lit_diagonal_weathered_naquadah_copper_lamp"
+  },
+  "result": "sgjdestiny_dhd:always_lit_diagonal_corner_filler_weathered_naquadah_copper_lamp",
+  "count": 2
+}

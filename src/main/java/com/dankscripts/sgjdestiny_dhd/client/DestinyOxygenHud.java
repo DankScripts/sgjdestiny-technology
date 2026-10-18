@@ -21,7 +21,12 @@ public final class DestinyOxygenHud {
         if (!event.getOverlay().id().equals(VanillaGuiOverlay.HOTBAR.id())) return;
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null || minecraft.options.hideGui) return;
-        if (!minecraft.player.getItemBySlot(EquipmentSlot.HEAD).is(ModItems.DESTINY_ENVIRONMENTAL_HELMET.get())) return;
+        boolean helmet = minecraft.player.getItemBySlot(EquipmentSlot.HEAD).is(ModItems.DESTINY_ENVIRONMENTAL_HELMET.get());
+        boolean chestplate = minecraft.player.getItemBySlot(EquipmentSlot.CHEST).is(ModItems.DESTINY_ENVIRONMENTAL_CHESTPLATE.get());
+        boolean leggings = minecraft.player.getItemBySlot(EquipmentSlot.LEGS).is(ModItems.DESTINY_ENVIRONMENTAL_LEGGINGS.get());
+        boolean boots = minecraft.player.getItemBySlot(EquipmentSlot.FEET).is(ModItems.DESTINY_ENVIRONMENTAL_BOOTS.get());
+        if (!helmet && !chestplate && !leggings && !boots) return;
+        boolean sealed = helmet && chestplate && leggings && boots;
         ItemStack tank = ItemStack.EMPTY;
         for (ItemStack stack : minecraft.player.getInventory().items) {
             if (stack.is(ModItems.DESTINY_OXYGEN_TANK.get())) {
@@ -32,7 +37,7 @@ public final class DestinyOxygenHud {
         int max = tank.isEmpty() ? 3600 : tank.getMaxDamage();
         int remaining = tank.isEmpty() ? 0 : Math.max(0, max - tank.getDamageValue());
         int percent = max == 0 ? 0 : remaining * 100 / max;
-        int seconds = remaining / 2;
+        int seconds = remaining / (sealed ? 2 : 10);
         String time = String.format("%02d:%02d", seconds / 60, seconds % 60);
         GuiGraphics graphics = event.getGuiGraphics();
         int width = 132, height = 38;
@@ -42,7 +47,8 @@ public final class DestinyOxygenHud {
         graphics.renderOutline(x, y, width, height, 0xFF9A6532);
         graphics.fill(x + 3, y + 3, x + width - 3, y + height - 3, 0x481C302D);
         graphics.renderItem(tank.isEmpty() ? new ItemStack(ModItems.DESTINY_OXYGEN_TANK.get()) : tank, x + 6, y + 10);
-        graphics.drawString(minecraft.font, "SUIT OXYGEN", x + 28, y + 5, 0xFFE8B968, false);
+        graphics.drawString(minecraft.font, sealed ? "SUIT OXYGEN" : "SUIT UNSEALED",
+                x + 28, y + 5, sealed ? 0xFFE8B968 : 0xFFFF7566, false);
         String reading = percent + "%  " + time;
         graphics.drawString(minecraft.font, reading, x + 28, y + 16, 0xFFB9D5CC, false);
         int barLeft = x + 28;

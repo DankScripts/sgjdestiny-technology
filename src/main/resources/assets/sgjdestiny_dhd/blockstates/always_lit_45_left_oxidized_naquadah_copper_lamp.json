@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "sgjdestiny_dhd:block/always_lit_45_left_oxidized_naquadah_copper_lamp",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "sgjdestiny_dhd:block/always_lit_45_left_oxidized_naquadah_copper_lamp",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "sgjdestiny_dhd:block/always_lit_45_left_oxidized_naquadah_copper_lamp",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "sgjdestiny_dhd:block/always_lit_45_left_oxidized_naquadah_copper_lamp",
+      "y": 270
+    }
+  }
+}

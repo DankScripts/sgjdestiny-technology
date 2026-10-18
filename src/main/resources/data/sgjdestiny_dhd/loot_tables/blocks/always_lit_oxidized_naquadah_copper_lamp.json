@@ -1,0 +1,1 @@
+{"type":"minecraft:block","pools":[{"rolls":1,"entries":[{"type":"minecraft:item","name":"sgjdestiny_dhd:always_lit_oxidized_naquadah_copper_lamp"}],"conditions":[{"condition":"minecraft:survives_explosion"}]}]}

@@ -1,0 +1,39 @@
+newmtl shuttle_palette
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_shuttle_palette
+
+newmtl shuttle_metal
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_shuttle_metal
+
+newmtl shuttle_red
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_shuttle_red
+
+newmtl shuttle_pipe
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_shuttle_pipe
+
+newmtl shuttle_cockpit_v33
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_shuttle_cockpit_v33
+
+newmtl shuttle_parts
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_shuttle_parts
+
+newmtl shuttle_machinery
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_shuttle_machinery
+
+newmtl shuttle_interior_graphite
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_shuttle_palette

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["IBI", "TGT", "IBI"],
+  "key": {
+    "I": {"item": "minecraft:iron_ingot"},
+    "B": {"item": "minecraft:iron_block"},
+    "T": {"item": "sgjdestiny_dhd:destiny_oxygen_tank"},
+    "G": {"item": "minecraft:glass"}
+  },
+  "result": {"item": "sgjdestiny_dhd:destiny_oxygen_storage_tank"}
+}

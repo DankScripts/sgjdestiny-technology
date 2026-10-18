@@ -1,0 +1,1653 @@
+{
+  "source_dimension": "sgjourney:destiny",
+  "capture_min": [
+    -165,
+    47,
+    -424
+  ],
+  "capture_max": [
+    149,
+    117,
+    -40
+  ],
+  "gate_controller": [
+    -8,
+    74,
+    -299
+  ],
+  "dialing_console": [
+    -4,
+    75,
+    -316
+  ],
+  "kino_dispenser": [
+    18,
+    85,
+    -330
+  ],
+  "kino_dispenser_stored_kits": 2,
+  "original_room_min": [
+    -16,
+    69,
+    -310
+  ],
+  "original_room_max": [
+    0,
+    84,
+    -278
+  ],
+  "preserved_gate_positions": [
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -11,
+        75,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -11,
+        76,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -11,
+        77,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -11,
+        78,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -11,
+        79,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -10,
+        74,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -10,
+        75,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -10,
+        79,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -10,
+        80,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -9,
+        74,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -9,
+        80,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:basic_interface",
+      "pos": [
+        -8,
+        73,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_stargate",
+      "pos": [
+        -8,
+        74,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_stargate_chevron",
+      "pos": [
+        -8,
+        75,
+        -300
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -8,
+        80,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -7,
+        74,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -7,
+        80,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -6,
+        74,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -6,
+        75,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -6,
+        79,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -6,
+        80,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -5,
+        75,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -5,
+        76,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -5,
+        77,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -5,
+        78,
+        -299
+      ]
+    },
+    {
+      "name": "sgjourney:universe_ring",
+      "pos": [
+        -5,
+        79,
+        -299
+      ]
+    }
+  ],
+  "tile_count": 210,
+  "counts": {
+    "source_non_air_blocks": 222561,
+    "ship_blocks": 221006,
+    "preserved_gate_blocks": 26,
+    "dispenser_with_two_kinos": 1,
+    "excluded_placed_shuttle_blocks": 1529,
+    "complete_airlock_doors": 38,
+    "original_room_air_cells": 6510
+  },
+  "block_entity_ids": {
+    "minecraft:chest": 37,
+    "minecraft:sign": 23,
+    "minecraft:comparator": 9,
+    "sgjdestiny_dhd:destiny_ship_airlock": 38,
+    "sgjdestiny_dhd:destiny_oxygen_generator": 4,
+    "sgjdestiny_dhd:destiny_corridor": 25,
+    "sgjourney:universe_dhd": 1,
+    "minecraft:beacon": 15,
+    "minecraft:brewing_stand": 13,
+    "sgjdestiny_dhd:kino_dispenser": 1,
+    "sgjdestiny_dhd:destiny_control_hub": 1,
+    "sgjdestiny_dhd:destiny_water_holding_tank": 3
+  },
+  "namespaces": {
+    "minecraft": 143231,
+    "sgjourney": 67373,
+    "sgjdestiny_dhd": 10193,
+    "simplylight": 208,
+    "sgj_deco": 1
+  },
+  "block_ids": {
+    "minecraft:air": 6510,
+    "minecraft:beacon": 15,
+    "minecraft:black_glazed_terracotta": 333,
+    "minecraft:black_stained_glass_pane": 405,
+    "minecraft:brewing_stand": 13,
+    "minecraft:brown_concrete": 334,
+    "minecraft:brown_terracotta": 90,
+    "minecraft:chest": 37,
+    "minecraft:comparator": 9,
+    "minecraft:cyan_terracotta": 3464,
+    "minecraft:diamond_block": 34,
+    "minecraft:dirt": 30,
+    "minecraft:end_rod": 2,
+    "minecraft:glass": 32,
+    "minecraft:glass_pane": 158,
+    "minecraft:glowstone": 197,
+    "minecraft:gray_concrete": 129355,
+    "minecraft:green_concrete": 67,
+    "minecraft:ladder": 69,
+    "minecraft:lava": 461,
+    "minecraft:lever": 1,
+    "minecraft:light_gray_concrete": 396,
+    "minecraft:light_gray_stained_glass": 1805,
+    "minecraft:light_gray_stained_glass_pane": 45,
+    "minecraft:lime_concrete": 1,
+    "minecraft:magenta_glazed_terracotta": 15,
+    "minecraft:oak_button": 4,
+    "minecraft:oak_trapdoor": 9,
+    "minecraft:oak_wall_sign": 23,
+    "minecraft:observer": 40,
+    "minecraft:obsidian": 3,
+    "minecraft:piston": 24,
+    "minecraft:piston_head": 221,
+    "minecraft:quartz_stairs": 40,
+    "minecraft:red_concrete": 72,
+    "minecraft:redstone_lamp": 186,
+    "minecraft:redstone_torch": 57,
+    "minecraft:redstone_wall_torch": 111,
+    "minecraft:redstone_wire": 968,
+    "minecraft:repeater": 126,
+    "minecraft:sea_lantern": 1677,
+    "minecraft:smooth_stone_slab": 1843,
+    "minecraft:spruce_door": 14,
+    "minecraft:spruce_log": 39,
+    "minecraft:sticky_piston": 205,
+    "minecraft:stone_button": 38,
+    "minecraft:stone_pressure_plate": 80,
+    "minecraft:white_stained_glass_pane": 3,
+    "minecraft:yellow_concrete": 80,
+    "sgj_deco:destiny_bearing": 1,
+    "sgjdestiny_dhd:always_lit_45_left_oxidized_naquadah_copper_lamp": 1,
+    "sgjdestiny_dhd:always_lit_45_left_weathered_naquadah_copper_lamp": 33,
+    "sgjdestiny_dhd:always_lit_45_right_weathered_naquadah_copper_lamp": 33,
+    "sgjdestiny_dhd:always_lit_corner_oxidized_naquadah_copper_lamp": 21,
+    "sgjdestiny_dhd:always_lit_corner_weathered_naquadah_copper_lamp": 69,
+    "sgjdestiny_dhd:always_lit_diagonal_corner_filler_oxidized_naquadah_copper_lamp": 1,
+    "sgjdestiny_dhd:always_lit_diagonal_corner_filler_weathered_naquadah_copper_lamp": 476,
+    "sgjdestiny_dhd:always_lit_diagonal_oxidized_naquadah_copper_lamp": 2,
+    "sgjdestiny_dhd:always_lit_diagonal_weathered_naquadah_copper_lamp": 208,
+    "sgjdestiny_dhd:always_lit_oxidized_naquadah_copper_lamp": 465,
+    "sgjdestiny_dhd:always_lit_weathered_naquadah_copper_lamp": 855,
+    "sgjdestiny_dhd:destiny_control_hub": 1,
+    "sgjdestiny_dhd:destiny_control_hub_part": 40,
+    "sgjdestiny_dhd:destiny_corridor": 25,
+    "sgjdestiny_dhd:destiny_corridor_collision": 6063,
+    "sgjdestiny_dhd:destiny_curved_stair": 10,
+    "sgjdestiny_dhd:destiny_dhd": 1,
+    "sgjdestiny_dhd:destiny_dhd_decorative": 3,
+    "sgjdestiny_dhd:destiny_dhd_interaction": 4,
+    "sgjdestiny_dhd:destiny_door_controller": 75,
+    "sgjdestiny_dhd:destiny_elevator_anchor": 1,
+    "sgjdestiny_dhd:destiny_elevator_door": 32,
+    "sgjdestiny_dhd:destiny_elevator_support": 4,
+    "sgjdestiny_dhd:destiny_floor_vent": 2,
+    "sgjdestiny_dhd:destiny_oxygen_generator": 8,
+    "sgjdestiny_dhd:destiny_oxygen_storage_tank": 3,
+    "sgjdestiny_dhd:destiny_safety_railing": 59,
+    "sgjdestiny_dhd:destiny_ship_airlock": 342,
+    "sgjdestiny_dhd:destiny_water_holding_tank": 81,
+    "sgjdestiny_dhd:kino_dispenser": 1,
+    "sgjdestiny_dhd:oxidized_smooth_naquadah_copper_wall_filler": 2,
+    "sgjdestiny_dhd:weathered_smooth_naquadah_copper_wall_filler": 1272,
+    "sgjourney:oxidized_naquadah_copper_block": 81,
+    "sgjourney:oxidized_naquadah_copper_stairs": 8,
+    "sgjourney:oxidized_polished_naquadah_copper_block": 15354,
+    "sgjourney:oxidized_polished_naquadah_copper_slab": 18,
+    "sgjourney:oxidized_smooth_naquadah_copper_block": 2822,
+    "sgjourney:oxidized_smooth_naquadah_copper_slab": 7,
+    "sgjourney:weathered_polished_naquadah_copper_block": 42500,
+    "sgjourney:weathered_polished_naquadah_copper_slab": 2,
+    "sgjourney:weathered_polished_naquadah_copper_stairs": 5,
+    "sgjourney:weathered_smooth_naquadah_copper_block": 6564,
+    "sgjourney:weathered_smooth_naquadah_copper_slab": 12,
+    "simplylight:edge_light": 9,
+    "simplylight:edge_light_top": 199
+  },
+  "source_region_sha256": {
+    "r.-1.-1.mca": "21d7e155d090ea55b81bf910cc77734a19466072990bbb30a7f57bf5e1265a4c",
+    "r.-1.-2.mca": "e9bf8560c8a0ed7c3b295df50367caf510d0bf2ec6a6d2230279fbdc0b4c4d8e",
+    "r.-1.0.mca": "ed310e6acec4c07e84e36b76db564b37379dc848509ba1374011bf7545f4bcbe",
+    "r.-2.-1.mca": "6f2cc1e644d59d9cc6dc081499344cf0bf1c37bffbe280fa94682b30a26b8058",
+    "r.-2.-2.mca": "9fdb85e11d71bf2c5ba7a950e8127a04f450d3959cb37174b1c50c976791d66d",
+    "r.-2.0.mca": "bf72cda32c1cb53c1adef4d8253f14429dbcb41906adc36ec7f61a0540bf0bf2",
+    "r.0.-1.mca": "0e4bafada6ca563b62ee664a7a1778e5cc35df2ee35a96f45d36a76b58db319b",
+    "r.0.-2.mca": "85c65b0b4c594ee72de65d6e9551f7d94785a58aadd06cd7589e7161a959f483",
+    "r.0.0.mca": "a97df6b7c0686621326bc3269859b7483edeb15a52dd82d0d21ca5e49092400e",
+    "r.1.-1.mca": "0b3a3a858cc115a344d883e2f8a0f19bc1ea804cd1dc9c3c5a3447b0e3dec625",
+    "r.1.-2.mca": "2fa004015b4dc073047dbd49b3f87fb5e66de1021da1f1271d9a998b14b4d13a",
+    "r.1.0.mca": "6167e0cda6d211e185b9608f2f1d7bef3e16436ce7351ff5ef38872330726fe0"
+  },
+  "tiles": [
+    {
+      "chunk_x": -11,
+      "chunk_z": -22,
+      "resource": "tile_-11_-22.nbt",
+      "blocks": 91
+    },
+    {
+      "chunk_x": -11,
+      "chunk_z": -21,
+      "resource": "tile_-11_-21.nbt",
+      "blocks": 79
+    },
+    {
+      "chunk_x": -10,
+      "chunk_z": -23,
+      "resource": "tile_-10_-23.nbt",
+      "blocks": 289
+    },
+    {
+      "chunk_x": -10,
+      "chunk_z": -22,
+      "resource": "tile_-10_-22.nbt",
+      "blocks": 848
+    },
+    {
+      "chunk_x": -10,
+      "chunk_z": -21,
+      "resource": "tile_-10_-21.nbt",
+      "blocks": 350
+    },
+    {
+      "chunk_x": -9,
+      "chunk_z": -24,
+      "resource": "tile_-9_-24.nbt",
+      "blocks": 302
+    },
+    {
+      "chunk_x": -9,
+      "chunk_z": -23,
+      "resource": "tile_-9_-23.nbt",
+      "blocks": 1010
+    },
+    {
+      "chunk_x": -9,
+      "chunk_z": -22,
+      "resource": "tile_-9_-22.nbt",
+      "blocks": 1045
+    },
+    {
+      "chunk_x": -9,
+      "chunk_z": -21,
+      "resource": "tile_-9_-21.nbt",
+      "blocks": 475
+    },
+    {
+      "chunk_x": -8,
+      "chunk_z": -25,
+      "resource": "tile_-8_-25.nbt",
+      "blocks": 176
+    },
+    {
+      "chunk_x": -8,
+      "chunk_z": -24,
+      "resource": "tile_-8_-24.nbt",
+      "blocks": 907
+    },
+    {
+      "chunk_x": -8,
+      "chunk_z": -23,
+      "resource": "tile_-8_-23.nbt",
+      "blocks": 1066
+    },
+    {
+      "chunk_x": -8,
+      "chunk_z": -22,
+      "resource": "tile_-8_-22.nbt",
+      "blocks": 1038
+    },
+    {
+      "chunk_x": -8,
+      "chunk_z": -21,
+      "resource": "tile_-8_-21.nbt",
+      "blocks": 662
+    },
+    {
+      "chunk_x": -7,
+      "chunk_z": -26,
+      "resource": "tile_-7_-26.nbt",
+      "blocks": 27
+    },
+    {
+      "chunk_x": -7,
+      "chunk_z": -25,
+      "resource": "tile_-7_-25.nbt",
+      "blocks": 730
+    },
+    {
+      "chunk_x": -7,
+      "chunk_z": -24,
+      "resource": "tile_-7_-24.nbt",
+      "blocks": 1467
+    },
+    {
+      "chunk_x": -7,
+      "chunk_z": -23,
+      "resource": "tile_-7_-23.nbt",
+      "blocks": 1059
+    },
+    {
+      "chunk_x": -7,
+      "chunk_z": -22,
+      "resource": "tile_-7_-22.nbt",
+      "blocks": 1032
+    },
+    {
+      "chunk_x": -7,
+      "chunk_z": -21,
+      "resource": "tile_-7_-21.nbt",
+      "blocks": 891
+    },
+    {
+      "chunk_x": -7,
+      "chunk_z": -20,
+      "resource": "tile_-7_-20.nbt",
+      "blocks": 115
+    },
+    {
+      "chunk_x": -6,
+      "chunk_z": -26,
+      "resource": "tile_-6_-26.nbt",
+      "blocks": 302
+    },
+    {
+      "chunk_x": -6,
+      "chunk_z": -25,
+      "resource": "tile_-6_-25.nbt",
+      "blocks": 1254
+    },
+    {
+      "chunk_x": -6,
+      "chunk_z": -24,
+      "resource": "tile_-6_-24.nbt",
+      "blocks": 1366
+    },
+    {
+      "chunk_x": -6,
+      "chunk_z": -23,
+      "resource": "tile_-6_-23.nbt",
+      "blocks": 1078
+    },
+    {
+      "chunk_x": -6,
+      "chunk_z": -22,
+      "resource": "tile_-6_-22.nbt",
+      "blocks": 1046
+    },
+    {
+      "chunk_x": -6,
+      "chunk_z": -21,
+      "resource": "tile_-6_-21.nbt",
+      "blocks": 1083
+    },
+    {
+      "chunk_x": -6,
+      "chunk_z": -20,
+      "resource": "tile_-6_-20.nbt",
+      "blocks": 989
+    },
+    {
+      "chunk_x": -6,
+      "chunk_z": -19,
+      "resource": "tile_-6_-19.nbt",
+      "blocks": 81
+    },
+    {
+      "chunk_x": -5,
+      "chunk_z": -26,
+      "resource": "tile_-5_-26.nbt",
+      "blocks": 652
+    },
+    {
+      "chunk_x": -5,
+      "chunk_z": -25,
+      "resource": "tile_-5_-25.nbt",
+      "blocks": 1565
+    },
+    {
+      "chunk_x": -5,
+      "chunk_z": -24,
+      "resource": "tile_-5_-24.nbt",
+      "blocks": 1310
+    },
+    {
+      "chunk_x": -5,
+      "chunk_z": -23,
+      "resource": "tile_-5_-23.nbt",
+      "blocks": 1236
+    },
+    {
+      "chunk_x": -5,
+      "chunk_z": -22,
+      "resource": "tile_-5_-22.nbt",
+      "blocks": 1110
+    },
+    {
+      "chunk_x": -5,
+      "chunk_z": -21,
+      "resource": "tile_-5_-21.nbt",
+      "blocks": 1035
+    },
+    {
+      "chunk_x": -5,
+      "chunk_z": -20,
+      "resource": "tile_-5_-20.nbt",
+      "blocks": 1068
+    },
+    {
+      "chunk_x": -5,
+      "chunk_z": -19,
+      "resource": "tile_-5_-19.nbt",
+      "blocks": 768
+    },
+    {
+      "chunk_x": -5,
+      "chunk_z": -18,
+      "resource": "tile_-5_-18.nbt",
+      "blocks": 85
+    },
+    {
+      "chunk_x": -4,
+      "chunk_z": -27,
+      "resource": "tile_-4_-27.nbt",
+      "blocks": 88
+    },
+    {
+      "chunk_x": -4,
+      "chunk_z": -26,
+      "resource": "tile_-4_-26.nbt",
+      "blocks": 1068
+    },
+    {
+      "chunk_x": -4,
+      "chunk_z": -25,
+      "resource": "tile_-4_-25.nbt",
+      "blocks": 1507
+    },
+    {
+      "chunk_x": -4,
+      "chunk_z": -24,
+      "resource": "tile_-4_-24.nbt",
+      "blocks": 1404
+    },
+    {
+      "chunk_x": -4,
+      "chunk_z": -23,
+      "resource": "tile_-4_-23.nbt",
+      "blocks": 1369
+    },
+    {
+      "chunk_x": -4,
+      "chunk_z": -22,
+      "resource": "tile_-4_-22.nbt",
+      "blocks": 1238
+    },
+    {
+      "chunk_x": -4,
+      "chunk_z": -21,
+      "resource": "tile_-4_-21.nbt",
+      "blocks": 1360
+    },
+    {
+      "chunk_x": -4,
+      "chunk_z": -20,
+      "resource": "tile_-4_-20.nbt",
+      "blocks": 1374
+    },
+    {
+      "chunk_x": -4,
+      "chunk_z": -19,
+      "resource": "tile_-4_-19.nbt",
+      "blocks": 1441
+    },
+    {
+      "chunk_x": -4,
+      "chunk_z": -18,
+      "resource": "tile_-4_-18.nbt",
+      "blocks": 889
+    },
+    {
+      "chunk_x": -4,
+      "chunk_z": -17,
+      "resource": "tile_-4_-17.nbt",
+      "blocks": 375
+    },
+    {
+      "chunk_x": -4,
+      "chunk_z": -16,
+      "resource": "tile_-4_-16.nbt",
+      "blocks": 37
+    },
+    {
+      "chunk_x": -3,
+      "chunk_z": -27,
+      "resource": "tile_-3_-27.nbt",
+      "blocks": 219
+    },
+    {
+      "chunk_x": -3,
+      "chunk_z": -26,
+      "resource": "tile_-3_-26.nbt",
+      "blocks": 1198
+    },
+    {
+      "chunk_x": -3,
+      "chunk_z": -25,
+      "resource": "tile_-3_-25.nbt",
+      "blocks": 1580
+    },
+    {
+      "chunk_x": -3,
+      "chunk_z": -24,
+      "resource": "tile_-3_-24.nbt",
+      "blocks": 1511
+    },
+    {
+      "chunk_x": -3,
+      "chunk_z": -23,
+      "resource": "tile_-3_-23.nbt",
+      "blocks": 1410
+    },
+    {
+      "chunk_x": -3,
+      "chunk_z": -22,
+      "resource": "tile_-3_-22.nbt",
+      "blocks": 1288
+    },
+    {
+      "chunk_x": -3,
+      "chunk_z": -21,
+      "resource": "tile_-3_-21.nbt",
+      "blocks": 1235
+    },
+    {
+      "chunk_x": -3,
+      "chunk_z": -20,
+      "resource": "tile_-3_-20.nbt",
+      "blocks": 1778
+    },
+    {
+      "chunk_x": -3,
+      "chunk_z": -19,
+      "resource": "tile_-3_-19.nbt",
+      "blocks": 1363
+    },
+    {
+      "chunk_x": -3,
+      "chunk_z": -18,
+      "resource": "tile_-3_-18.nbt",
+      "blocks": 1080
+    },
+    {
+      "chunk_x": -3,
+      "chunk_z": -17,
+      "resource": "tile_-3_-17.nbt",
+      "blocks": 883
+    },
+    {
+      "chunk_x": -3,
+      "chunk_z": -16,
+      "resource": "tile_-3_-16.nbt",
+      "blocks": 1141
+    },
+    {
+      "chunk_x": -3,
+      "chunk_z": -15,
+      "resource": "tile_-3_-15.nbt",
+      "blocks": 588
+    },
+    {
+      "chunk_x": -3,
+      "chunk_z": -14,
+      "resource": "tile_-3_-14.nbt",
+      "blocks": 344
+    },
+    {
+      "chunk_x": -3,
+      "chunk_z": -13,
+      "resource": "tile_-3_-13.nbt",
+      "blocks": 165
+    },
+    {
+      "chunk_x": -3,
+      "chunk_z": -12,
+      "resource": "tile_-3_-12.nbt",
+      "blocks": 29
+    },
+    {
+      "chunk_x": -3,
+      "chunk_z": -11,
+      "resource": "tile_-3_-11.nbt",
+      "blocks": 1
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -27,
+      "resource": "tile_-2_-27.nbt",
+      "blocks": 301
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -26,
+      "resource": "tile_-2_-26.nbt",
+      "blocks": 1373
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -25,
+      "resource": "tile_-2_-25.nbt",
+      "blocks": 2150
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -24,
+      "resource": "tile_-2_-24.nbt",
+      "blocks": 2525
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -23,
+      "resource": "tile_-2_-23.nbt",
+      "blocks": 2378
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -22,
+      "resource": "tile_-2_-22.nbt",
+      "blocks": 1599
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -21,
+      "resource": "tile_-2_-21.nbt",
+      "blocks": 1459
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -20,
+      "resource": "tile_-2_-20.nbt",
+      "blocks": 1859
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -19,
+      "resource": "tile_-2_-19.nbt",
+      "blocks": 1820
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -18,
+      "resource": "tile_-2_-18.nbt",
+      "blocks": 1779
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -17,
+      "resource": "tile_-2_-17.nbt",
+      "blocks": 1557
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -16,
+      "resource": "tile_-2_-16.nbt",
+      "blocks": 1408
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -15,
+      "resource": "tile_-2_-15.nbt",
+      "blocks": 1384
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -14,
+      "resource": "tile_-2_-14.nbt",
+      "blocks": 1315
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -13,
+      "resource": "tile_-2_-13.nbt",
+      "blocks": 1010
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -12,
+      "resource": "tile_-2_-12.nbt",
+      "blocks": 1188
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -11,
+      "resource": "tile_-2_-11.nbt",
+      "blocks": 666
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -10,
+      "resource": "tile_-2_-10.nbt",
+      "blocks": 589
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -9,
+      "resource": "tile_-2_-9.nbt",
+      "blocks": 504
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -8,
+      "resource": "tile_-2_-8.nbt",
+      "blocks": 436
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -7,
+      "resource": "tile_-2_-7.nbt",
+      "blocks": 372
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -6,
+      "resource": "tile_-2_-6.nbt",
+      "blocks": 289
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -5,
+      "resource": "tile_-2_-5.nbt",
+      "blocks": 202
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -4,
+      "resource": "tile_-2_-4.nbt",
+      "blocks": 78
+    },
+    {
+      "chunk_x": -2,
+      "chunk_z": -3,
+      "resource": "tile_-2_-3.nbt",
+      "blocks": 2
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -27,
+      "resource": "tile_-1_-27.nbt",
+      "blocks": 400
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -26,
+      "resource": "tile_-1_-26.nbt",
+      "blocks": 1635
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -25,
+      "resource": "tile_-1_-25.nbt",
+      "blocks": 4240
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -24,
+      "resource": "tile_-1_-24.nbt",
+      "blocks": 4374
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -23,
+      "resource": "tile_-1_-23.nbt",
+      "blocks": 3071
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -22,
+      "resource": "tile_-1_-22.nbt",
+      "blocks": 2683
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -21,
+      "resource": "tile_-1_-21.nbt",
+      "blocks": 2700
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -20,
+      "resource": "tile_-1_-20.nbt",
+      "blocks": 2947
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -19,
+      "resource": "tile_-1_-19.nbt",
+      "blocks": 4872
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -18,
+      "resource": "tile_-1_-18.nbt",
+      "blocks": 4412
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -17,
+      "resource": "tile_-1_-17.nbt",
+      "blocks": 2318
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -16,
+      "resource": "tile_-1_-16.nbt",
+      "blocks": 1509
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -15,
+      "resource": "tile_-1_-15.nbt",
+      "blocks": 1440
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -14,
+      "resource": "tile_-1_-14.nbt",
+      "blocks": 1164
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -13,
+      "resource": "tile_-1_-13.nbt",
+      "blocks": 1175
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -12,
+      "resource": "tile_-1_-12.nbt",
+      "blocks": 1326
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -11,
+      "resource": "tile_-1_-11.nbt",
+      "blocks": 1387
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -10,
+      "resource": "tile_-1_-10.nbt",
+      "blocks": 1125
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -9,
+      "resource": "tile_-1_-9.nbt",
+      "blocks": 932
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -8,
+      "resource": "tile_-1_-8.nbt",
+      "blocks": 818
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -7,
+      "resource": "tile_-1_-7.nbt",
+      "blocks": 789
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -6,
+      "resource": "tile_-1_-6.nbt",
+      "blocks": 834
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -5,
+      "resource": "tile_-1_-5.nbt",
+      "blocks": 687
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -4,
+      "resource": "tile_-1_-4.nbt",
+      "blocks": 543
+    },
+    {
+      "chunk_x": -1,
+      "chunk_z": -3,
+      "resource": "tile_-1_-3.nbt",
+      "blocks": 262
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -27,
+      "resource": "tile_0_-27.nbt",
+      "blocks": 309
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -26,
+      "resource": "tile_0_-26.nbt",
+      "blocks": 1369
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -25,
+      "resource": "tile_0_-25.nbt",
+      "blocks": 2452
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -24,
+      "resource": "tile_0_-24.nbt",
+      "blocks": 2481
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -23,
+      "resource": "tile_0_-23.nbt",
+      "blocks": 2354
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -22,
+      "resource": "tile_0_-22.nbt",
+      "blocks": 1666
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -21,
+      "resource": "tile_0_-21.nbt",
+      "blocks": 1781
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -20,
+      "resource": "tile_0_-20.nbt",
+      "blocks": 2535
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -19,
+      "resource": "tile_0_-19.nbt",
+      "blocks": 2277
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -18,
+      "resource": "tile_0_-18.nbt",
+      "blocks": 2345
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -17,
+      "resource": "tile_0_-17.nbt",
+      "blocks": 1293
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -16,
+      "resource": "tile_0_-16.nbt",
+      "blocks": 1510
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -15,
+      "resource": "tile_0_-15.nbt",
+      "blocks": 946
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -14,
+      "resource": "tile_0_-14.nbt",
+      "blocks": 935
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -13,
+      "resource": "tile_0_-13.nbt",
+      "blocks": 845
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -12,
+      "resource": "tile_0_-12.nbt",
+      "blocks": 1212
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -11,
+      "resource": "tile_0_-11.nbt",
+      "blocks": 718
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -10,
+      "resource": "tile_0_-10.nbt",
+      "blocks": 642
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -9,
+      "resource": "tile_0_-9.nbt",
+      "blocks": 555
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -8,
+      "resource": "tile_0_-8.nbt",
+      "blocks": 480
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -7,
+      "resource": "tile_0_-7.nbt",
+      "blocks": 397
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -6,
+      "resource": "tile_0_-6.nbt",
+      "blocks": 319
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -5,
+      "resource": "tile_0_-5.nbt",
+      "blocks": 243
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -4,
+      "resource": "tile_0_-4.nbt",
+      "blocks": 110
+    },
+    {
+      "chunk_x": 0,
+      "chunk_z": -3,
+      "resource": "tile_0_-3.nbt",
+      "blocks": 10
+    },
+    {
+      "chunk_x": 1,
+      "chunk_z": -27,
+      "resource": "tile_1_-27.nbt",
+      "blocks": 226
+    },
+    {
+      "chunk_x": 1,
+      "chunk_z": -26,
+      "resource": "tile_1_-26.nbt",
+      "blocks": 1205
+    },
+    {
+      "chunk_x": 1,
+      "chunk_z": -25,
+      "resource": "tile_1_-25.nbt",
+      "blocks": 1666
+    },
+    {
+      "chunk_x": 1,
+      "chunk_z": -24,
+      "resource": "tile_1_-24.nbt",
+      "blocks": 1645
+    },
+    {
+      "chunk_x": 1,
+      "chunk_z": -23,
+      "resource": "tile_1_-23.nbt",
+      "blocks": 1679
+    },
+    {
+      "chunk_x": 1,
+      "chunk_z": -22,
+      "resource": "tile_1_-22.nbt",
+      "blocks": 1527
+    },
+    {
+      "chunk_x": 1,
+      "chunk_z": -21,
+      "resource": "tile_1_-21.nbt",
+      "blocks": 2394
+    },
+    {
+      "chunk_x": 1,
+      "chunk_z": -20,
+      "resource": "tile_1_-20.nbt",
+      "blocks": 2279
+    },
+    {
+      "chunk_x": 1,
+      "chunk_z": -19,
+      "resource": "tile_1_-19.nbt",
+      "blocks": 2000
+    },
+    {
+      "chunk_x": 1,
+      "chunk_z": -18,
+      "resource": "tile_1_-18.nbt",
+      "blocks": 1340
+    },
+    {
+      "chunk_x": 1,
+      "chunk_z": -17,
+      "resource": "tile_1_-17.nbt",
+      "blocks": 817
+    },
+    {
+      "chunk_x": 1,
+      "chunk_z": -16,
+      "resource": "tile_1_-16.nbt",
+      "blocks": 1199
+    },
+    {
+      "chunk_x": 1,
+      "chunk_z": -15,
+      "resource": "tile_1_-15.nbt",
+      "blocks": 592
+    },
+    {
+      "chunk_x": 1,
+      "chunk_z": -14,
+      "resource": "tile_1_-14.nbt",
+      "blocks": 414
+    },
+    {
+      "chunk_x": 1,
+      "chunk_z": -13,
+      "resource": "tile_1_-13.nbt",
+      "blocks": 230
+    },
+    {
+      "chunk_x": 1,
+      "chunk_z": -12,
+      "resource": "tile_1_-12.nbt",
+      "blocks": 74
+    },
+    {
+      "chunk_x": 1,
+      "chunk_z": -11,
+      "resource": "tile_1_-11.nbt",
+      "blocks": 2
+    },
+    {
+      "chunk_x": 2,
+      "chunk_z": -27,
+      "resource": "tile_2_-27.nbt",
+      "blocks": 97
+    },
+    {
+      "chunk_x": 2,
+      "chunk_z": -26,
+      "resource": "tile_2_-26.nbt",
+      "blocks": 1086
+    },
+    {
+      "chunk_x": 2,
+      "chunk_z": -25,
+      "resource": "tile_2_-25.nbt",
+      "blocks": 1507
+    },
+    {
+      "chunk_x": 2,
+      "chunk_z": -24,
+      "resource": "tile_2_-24.nbt",
+      "blocks": 1411
+    },
+    {
+      "chunk_x": 2,
+      "chunk_z": -23,
+      "resource": "tile_2_-23.nbt",
+      "blocks": 1436
+    },
+    {
+      "chunk_x": 2,
+      "chunk_z": -22,
+      "resource": "tile_2_-22.nbt",
+      "blocks": 1429
+    },
+    {
+      "chunk_x": 2,
+      "chunk_z": -21,
+      "resource": "tile_2_-21.nbt",
+      "blocks": 1579
+    },
+    {
+      "chunk_x": 2,
+      "chunk_z": -20,
+      "resource": "tile_2_-20.nbt",
+      "blocks": 1652
+    },
+    {
+      "chunk_x": 2,
+      "chunk_z": -19,
+      "resource": "tile_2_-19.nbt",
+      "blocks": 1395
+    },
+    {
+      "chunk_x": 2,
+      "chunk_z": -18,
+      "resource": "tile_2_-18.nbt",
+      "blocks": 957
+    },
+    {
+      "chunk_x": 2,
+      "chunk_z": -17,
+      "resource": "tile_2_-17.nbt",
+      "blocks": 456
+    },
+    {
+      "chunk_x": 2,
+      "chunk_z": -16,
+      "resource": "tile_2_-16.nbt",
+      "blocks": 70
+    },
+    {
+      "chunk_x": 3,
+      "chunk_z": -27,
+      "resource": "tile_3_-27.nbt",
+      "blocks": 2
+    },
+    {
+      "chunk_x": 3,
+      "chunk_z": -26,
+      "resource": "tile_3_-26.nbt",
+      "blocks": 704
+    },
+    {
+      "chunk_x": 3,
+      "chunk_z": -25,
+      "resource": "tile_3_-25.nbt",
+      "blocks": 1568
+    },
+    {
+      "chunk_x": 3,
+      "chunk_z": -24,
+      "resource": "tile_3_-24.nbt",
+      "blocks": 1299
+    },
+    {
+      "chunk_x": 3,
+      "chunk_z": -23,
+      "resource": "tile_3_-23.nbt",
+      "blocks": 1363
+    },
+    {
+      "chunk_x": 3,
+      "chunk_z": -22,
+      "resource": "tile_3_-22.nbt",
+      "blocks": 1356
+    },
+    {
+      "chunk_x": 3,
+      "chunk_z": -21,
+      "resource": "tile_3_-21.nbt",
+      "blocks": 1242
+    },
+    {
+      "chunk_x": 3,
+      "chunk_z": -20,
+      "resource": "tile_3_-20.nbt",
+      "blocks": 1132
+    },
+    {
+      "chunk_x": 3,
+      "chunk_z": -19,
+      "resource": "tile_3_-19.nbt",
+      "blocks": 856
+    },
+    {
+      "chunk_x": 3,
+      "chunk_z": -18,
+      "resource": "tile_3_-18.nbt",
+      "blocks": 110
+    },
+    {
+      "chunk_x": 4,
+      "chunk_z": -26,
+      "resource": "tile_4_-26.nbt",
+      "blocks": 316
+    },
+    {
+      "chunk_x": 4,
+      "chunk_z": -25,
+      "resource": "tile_4_-25.nbt",
+      "blocks": 1273
+    },
+    {
+      "chunk_x": 4,
+      "chunk_z": -24,
+      "resource": "tile_4_-24.nbt",
+      "blocks": 1375
+    },
+    {
+      "chunk_x": 4,
+      "chunk_z": -23,
+      "resource": "tile_4_-23.nbt",
+      "blocks": 1288
+    },
+    {
+      "chunk_x": 4,
+      "chunk_z": -22,
+      "resource": "tile_4_-22.nbt",
+      "blocks": 1255
+    },
+    {
+      "chunk_x": 4,
+      "chunk_z": -21,
+      "resource": "tile_4_-21.nbt",
+      "blocks": 1109
+    },
+    {
+      "chunk_x": 4,
+      "chunk_z": -20,
+      "resource": "tile_4_-20.nbt",
+      "blocks": 1029
+    },
+    {
+      "chunk_x": 4,
+      "chunk_z": -19,
+      "resource": "tile_4_-19.nbt",
+      "blocks": 110
+    },
+    {
+      "chunk_x": 5,
+      "chunk_z": -26,
+      "resource": "tile_5_-26.nbt",
+      "blocks": 36
+    },
+    {
+      "chunk_x": 5,
+      "chunk_z": -25,
+      "resource": "tile_5_-25.nbt",
+      "blocks": 767
+    },
+    {
+      "chunk_x": 5,
+      "chunk_z": -24,
+      "resource": "tile_5_-24.nbt",
+      "blocks": 1613
+    },
+    {
+      "chunk_x": 5,
+      "chunk_z": -23,
+      "resource": "tile_5_-23.nbt",
+      "blocks": 1245
+    },
+    {
+      "chunk_x": 5,
+      "chunk_z": -22,
+      "resource": "tile_5_-22.nbt",
+      "blocks": 1048
+    },
+    {
+      "chunk_x": 5,
+      "chunk_z": -21,
+      "resource": "tile_5_-21.nbt",
+      "blocks": 902
+    },
+    {
+      "chunk_x": 5,
+      "chunk_z": -20,
+      "resource": "tile_5_-20.nbt",
+      "blocks": 141
+    },
+    {
+      "chunk_x": 6,
+      "chunk_z": -25,
+      "resource": "tile_6_-25.nbt",
+      "blocks": 211
+    },
+    {
+      "chunk_x": 6,
+      "chunk_z": -24,
+      "resource": "tile_6_-24.nbt",
+      "blocks": 982
+    },
+    {
+      "chunk_x": 6,
+      "chunk_z": -23,
+      "resource": "tile_6_-23.nbt",
+      "blocks": 1079
+    },
+    {
+      "chunk_x": 6,
+      "chunk_z": -22,
+      "resource": "tile_6_-22.nbt",
+      "blocks": 1039
+    },
+    {
+      "chunk_x": 6,
+      "chunk_z": -21,
+      "resource": "tile_6_-21.nbt",
+      "blocks": 678
+    },
+    {
+      "chunk_x": 7,
+      "chunk_z": -24,
+      "resource": "tile_7_-24.nbt",
+      "blocks": 345
+    },
+    {
+      "chunk_x": 7,
+      "chunk_z": -23,
+      "resource": "tile_7_-23.nbt",
+      "blocks": 1023
+    },
+    {
+      "chunk_x": 7,
+      "chunk_z": -22,
+      "resource": "tile_7_-22.nbt",
+      "blocks": 1039
+    },
+    {
+      "chunk_x": 7,
+      "chunk_z": -21,
+      "resource": "tile_7_-21.nbt",
+      "blocks": 483
+    },
+    {
+      "chunk_x": 8,
+      "chunk_z": -23,
+      "resource": "tile_8_-23.nbt",
+      "blocks": 344
+    },
+    {
+      "chunk_x": 8,
+      "chunk_z": -22,
+      "resource": "tile_8_-22.nbt",
+      "blocks": 894
+    },
+    {
+      "chunk_x": 8,
+      "chunk_z": -21,
+      "resource": "tile_8_-21.nbt",
+      "blocks": 356
+    },
+    {
+      "chunk_x": 9,
+      "chunk_z": -22,
+      "resource": "tile_9_-22.nbt",
+      "blocks": 122
+    },
+    {
+      "chunk_x": 9,
+      "chunk_z": -21,
+      "resource": "tile_9_-21.nbt",
+      "blocks": 98
+    }
+  ]
+}

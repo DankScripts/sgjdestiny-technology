@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "sgjdestiny_dhd:block/oxidized_smooth_naquadah_copper_wall_filler",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "sgjdestiny_dhd:block/oxidized_smooth_naquadah_copper_wall_filler",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "sgjdestiny_dhd:block/oxidized_smooth_naquadah_copper_wall_filler",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "sgjdestiny_dhd:block/oxidized_smooth_naquadah_copper_wall_filler",
+      "y": 270
+    }
+  }
+}

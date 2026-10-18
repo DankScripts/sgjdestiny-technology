@@ -1,0 +1,15 @@
+{
+  "parent": "minecraft:block/block",
+  "loader": "forge:obj",
+  "model": "sgjdestiny_dhd:models/block/lamp_transition_45_left.obj",
+  "automatic_culling": true,
+  "shade_quads": true,
+  "flip_v": false,
+  "render_type": "minecraft:solid",
+  "textures": {
+    "base": "sgjourney:block/oxidized_polished_naquadah_copper_block",
+    "top": "sgjourney:block/oxidized_polished_naquadah_copper_block",
+    "lens": "sgjourney:block/oxidized_naquadah_copper_lamp_horizontal_on",
+    "particle": "sgjourney:block/oxidized_polished_naquadah_copper_block"
+  }
+}

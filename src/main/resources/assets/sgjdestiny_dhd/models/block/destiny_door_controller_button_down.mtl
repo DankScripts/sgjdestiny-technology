@@ -1,0 +1,14 @@
+newmtl button
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_door_button
+
+newmtl button_highlight
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_door_button_highlight
+
+newmtl shadow
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_door_shadow

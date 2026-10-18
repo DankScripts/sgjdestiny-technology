@@ -17,11 +17,12 @@ The Destiny Kino Remote combines gate dialing and Kino control in a single handh
 - The second side button opens Kino controls.
 - The bottom side button returns home or goes back.
 
+In gate mode, the remote selects the nearest registered Universe gate in the current dimension, with no distance limit. In a dimension without a Universe gate, using the remote opens Kino controls. Deploying, flying, and recalling a Kino do not require a nearby gate; a deployed Kino keeps its own chunk loaded as it travels.
+
 ## Remote gate dialing
 
-The remote searches for a usable nearby Universe gate and does not require a Destiny console to be nearby. This allows a player on a destination planet to dial home. Destiny itself has a normal seven-symbol destination entry in addition to its special nine-symbol programmed address.
+The remote uses the nearest registered Universe gate in the player's current dimension, regardless of distance, and does not require a Destiny console nearby. This allows a player on a destination planet to dial home. Destiny itself has a normal seven-symbol destination entry in addition to its special nine-symbol programmed address.
 
 ## Kino controls
 
 The Kino page provides **Deploy/Follow**, **Hold**, **Recall**, directional movement, vertical movement, telemetry scanning, and live video. The player must hold the remote for flight commands to be accepted.
-

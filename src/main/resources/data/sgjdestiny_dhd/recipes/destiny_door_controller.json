@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["CB", "CR"],
+  "key": {
+    "C": { "item": "minecraft:copper_ingot" },
+    "B": { "item": "minecraft:stone_button" },
+    "R": { "item": "minecraft:redstone" }
+  },
+  "result": { "item": "sgjdestiny_dhd:destiny_door_controller", "count": 2 }
+}

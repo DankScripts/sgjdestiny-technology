@@ -1,0 +1,49 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": true,
+  "textures": {
+    "particle": "sgjdestiny_dhd:block/destiny_hull_dark",
+    "frame": "sgjdestiny_dhd:block/destiny_hull_dark",
+    "panel": "sgjdestiny_dhd:block/destiny_hull",
+    "water": "sgjdestiny_dhd:block/destiny_door_blue",
+    "trim": "sgjdestiny_dhd:block/destiny_bronze",
+    "cap": "sgjdestiny_dhd:block/destiny_metal"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "#frame",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        -0.1,
+        2
+      ],
+      "to": [
+        14,
+        0,
+        14
+      ],
+      "faces": {
+        "down": {
+          "texture": "#cap"
+        }
+      }
+    }
+  ]
+}

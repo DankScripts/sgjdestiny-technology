@@ -1,0 +1,7 @@
+{
+  "parent": "sgjdestiny_dhd:block/corner_naquadah_copper_lamp_template",
+  "textures": {
+    "base": "sgjourney:block/weathered_polished_naquadah_copper_block",
+    "lens": "sgjourney:block/weathered_naquadah_copper_lamp_horizontal_on"
+  }
+}

@@ -1,0 +1,24 @@
+newmtl weathered_copper
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_shuttle_door_left
+
+newmtl door_face
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_shuttle_door_left_face
+
+newmtl door_edge
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_shuttle_door_left_edge
+
+newmtl door_panel
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_shuttle_door_left_panel
+
+newmtl emblem_palette
+Kd 1 1 1
+Ka 0 0 0
+map_Kd sgjdestiny_dhd:block/destiny_shuttle_door_left_palette

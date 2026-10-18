@@ -1,0 +1,17 @@
+{
+  "loader": "forge:obj",
+  "model": "sgjdestiny_dhd:models/block/destiny_oxygen_generator.obj",
+  "flip_v": true,
+  "automatic_culling": false,
+  "shade_quads": true,
+  "emissive_ambient": true,
+  "ambientocclusion": false,
+  "render_type": "solid",
+  "textures": {"particle": "sgjdestiny_dhd:block/destiny_hull_dark"},
+  "display": {
+    "gui": {"rotation": [20, -35, 0], "translation": [0, -5, 0], "scale": [0.28, 0.28, 0.28]},
+    "firstperson_righthand": {"rotation": [0, 35, 0], "translation": [0, -4, 0], "scale": [0.28, 0.28, 0.28]},
+    "thirdperson_righthand": {"rotation": [75, 25, 0], "translation": [0, -4, 0], "scale": [0.24, 0.24, 0.24]},
+    "ground": {"translation": [0, 0, 0], "scale": [0.18, 0.18, 0.18]}
+  }
+}

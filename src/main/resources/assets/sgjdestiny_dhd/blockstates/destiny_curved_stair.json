@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "right=false,step=0": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_0"
+    },
+    "right=false,step=1": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_1"
+    },
+    "right=false,step=2": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_2"
+    },
+    "right=false,step=3": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_3"
+    },
+    "right=false,step=4": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_4"
+    },
+    "right=true,step=0": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_0"
+    },
+    "right=true,step=1": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_1"
+    },
+    "right=true,step=2": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_2"
+    },
+    "right=true,step=3": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_3"
+    },
+    "right=true,step=4": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_4"
+    }
+  }
+}

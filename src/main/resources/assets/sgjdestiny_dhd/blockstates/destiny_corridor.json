@@ -1,0 +1,5 @@
+{
+  "multipart": [
+    { "apply": { "model": "sgjdestiny_dhd:block/destiny_corridor" } }
+  ]
+}

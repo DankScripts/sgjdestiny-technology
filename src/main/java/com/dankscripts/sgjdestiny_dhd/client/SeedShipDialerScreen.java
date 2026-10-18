@@ -194,9 +194,11 @@ public final class SeedShipDialerScreen extends Screen {
                 if (videoMode) {
                     exitVideoMode();
                     kinoSection = true;
-                } else {
+                } else if (kinoSection) {
                     kinoSection = false;
                     selected = -1;
+                } else {
+                    onClose();
                 }
                 return true;
             }
@@ -254,13 +256,13 @@ public final class SeedShipDialerScreen extends Screen {
         int selectLeft = l.screenLeft + (l.screenWidth - selectWidth) / 2;
         int selectTop = l.screenTop + l.screenHeight - 26;
         if (gateState > 0 && inside(mouseX, mouseY, selectLeft, selectTop, selectWidth, 24)) {
-            DestinyDialerNetwork.disconnect(console, directGate);
+            DestinyDialerNetwork.disconnect(console, directGate, handheld);
             onClose();
             return true;
         }
         if (inside(mouseX, mouseY, selectLeft, selectTop, selectWidth, 24) && selected >= 0) {
             DestinyDialerNetwork.ClientEntry entry = entries.get(selected);
-            DestinyDialerNetwork.dial(console, directGate, new Address.Immutable(entry.symbols()));
+            DestinyDialerNetwork.dial(console, directGate, handheld, new Address.Immutable(entry.symbols()));
             onClose();
             return true;
         }
@@ -437,11 +439,19 @@ public final class SeedShipDialerScreen extends Screen {
         int glyphX = x;
         for (int symbol : entry.symbols()) {
             if (symbol < 0 || symbol > 38) continue;
-            ResourceLocation texture = new ResourceLocation("sgjourney",
-                    "textures/symbol/universal/universal_" + symbol + ".png");
+            ResourceLocation texture = universeSymbolTexture(symbol);
             graphics.blit(texture, glyphX, y, 12, 12, 0, 0, 32, 32, 32, 32);
             glyphX += 14;
         }
+    }
+
+    private ResourceLocation universeSymbolTexture(int symbol) {
+        String path = "textures/symbol/universal/universal_" + symbol;
+        if (symbol >= 36 && symbol <= 38) {
+            ResourceLocation renamed = new ResourceLocation("sgjourney", path + "_c.png");
+            if (minecraft.getResourceManager().getResource(renamed).isPresent()) return renamed;
+        }
+        return new ResourceLocation("sgjourney", path + ".png");
     }
 
     private record Layout(int left, int top, int width, int height, int screenLeft, int screenTop, int screenWidth,

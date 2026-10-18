@@ -1,0 +1,736 @@
+package com.dankscripts.sgjdestiny_dhd.compat;
+
+import com.dankscripts.sgjdestiny_dhd.DestinyDHD;
+import com.dankscripts.sgjdestiny_dhd.block_entity.KinoDispenserBlockEntity;
+import com.dankscripts.sgjdestiny_dhd.config.DestinyServerConfig;
+import com.dankscripts.sgjdestiny_dhd.block.DestinyCurvedStairBlock;
+import com.dankscripts.sgjdestiny_dhd.registry.ModBlocks;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.FrontAndTop;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.povstalec.sgjourney.common.blocks.ChevronBlock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.WeakHashMap;
+
+/** Installs the captured ship only after a world administrator opts in. */
+@Mod.EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+public final class DestinyShipInstallEvents {
+    private static final Logger LOGGER = LoggerFactory.getLogger("SGJ Destiny Ship");
+    private static final ResourceKey<Level> DESTINY = ResourceKey.create(Registries.DIMENSION,
+            new ResourceLocation("sgjourney", "destiny"));
+    private static final ResourceLocation MANIFEST = new ResourceLocation(DestinyDHD.MOD_ID,
+            "structures/destiny_ship/manifest.json");
+    private static final ResourceLocation SPAWNER_POSITIONS = new ResourceLocation(DestinyDHD.MOD_ID,
+            "structures/destiny_ship/spawner_positions.json");
+    private static final BlockPos GATE_CONTROLLER = new BlockPos(-8, 74, -299);
+    private static final BlockPos GATE_CHEVRON = new BlockPos(-8, 75, -300);
+    private static final BlockPos GATE_CHEVRON_SUPPORT = GATE_CHEVRON.below();
+    private static final BlockPos DIALING_CONSOLE = new BlockPos(-4, 75, -316);
+    private static final BlockPos KINO_DISPENSER = new BlockPos(18, 85, -330);
+    private static final BlockPos ORIGINAL_ROOM_MIN = new BlockPos(-16, 69, -310);
+    private static final BlockPos ORIGINAL_ROOM_MAX = new BlockPos(0, 84, -278);
+    private static final BlockPos CAPTURE_MIN = new BlockPos(-165, 47, -424);
+    private static final BlockPos CAPTURE_MAX = new BlockPos(149, 117, -40);
+    private static final int RESET_CLEAR_BLOCKS_PER_TICK = 8192;
+    private static final int RESET_CLEAR_CHANGES_PER_TICK = 512;
+    // The captured world's older entrance corridor extends beyond the
+    // SGJourney gate-room structure and has no tile entries for its removed
+    // stairs, wooden door, and trim. Clear it as part of the same reset.
+    private static final int LEGACY_CORRIDOR_MIN_Z = -326;
+    private static final int STRUCTURE_MIN_Y = 47;
+    private static final List<String> SHIP_BLOCK_MODS = List.of(
+            "simplylight", "gtceu", "sgj_deco");
+    private static final List<ShipAirlock> SHIP_AIRLOCKS = List.of(
+            new ShipAirlock(-8, 85, -253, Direction.NORTH),
+            new ShipAirlock(-8, 85, -246, Direction.NORTH),
+            new ShipAirlock(-8, 75, -288, Direction.NORTH),
+            new ShipAirlock(-8, 75, -325, Direction.SOUTH),
+            new ShipAirlock(-8, 80, -325, Direction.SOUTH),
+            new ShipAirlock(-20, 80, -288, Direction.NORTH),
+            new ShipAirlock(-23, 75, -309, Direction.EAST),
+            new ShipAirlock(4, 80, -289, Direction.NORTH),
+            new ShipAirlock(7, 75, -309, Direction.WEST),
+            new ShipAirlock(0, 85, -308, Direction.WEST),
+            new ShipAirlock(16, 86, -324, Direction.SOUTH));
+    private static final WeakHashMap<MinecraftServer, Progress> ACTIVE = new WeakHashMap<>();
+    private static final WeakHashMap<MinecraftServer, SpawnerCleanupProgress> SPAWNER_CLEANUP = new WeakHashMap<>();
+    private static final Set<MinecraftServer> FAILED = Collections.newSetFromMap(new WeakHashMap<>());
+    private static final Set<MinecraftServer> STAIRS_CHECKED = Collections.newSetFromMap(new WeakHashMap<>());
+
+    private DestinyShipInstallEvents() {}
+
+    @SubscribeEvent
+    public static void registerCommands(RegisterCommandsEvent event) {
+        event.getDispatcher().register(Commands.literal("sgjdestiny")
+                .requires(source -> source.hasPermission(2))
+                .then(Commands.literal("ship")
+                        .then(Commands.literal("reset")
+                                .executes(context -> requestReset(context.getSource())))
+                        .then(Commands.literal("air")
+                                .then(Commands.literal("reset")
+                                        .executes(context -> resetAirReserve(context.getSource()))))
+                        .then(Commands.literal("retrofitAirlocks")
+                                .executes(context -> retrofitAirlocks(context.getSource())))
+                        .then(Commands.literal("retrofitStairs")
+                                .executes(context -> retrofitStairs(context.getSource())))));
+    }
+
+    private static int resetAirReserve(CommandSourceStack source) {
+        ServerLevel level = source.getServer().getLevel(DESTINY);
+        if (level == null) {
+            source.sendFailure(Component.literal("The SGJourney Destiny dimension is not available."));
+            return 0;
+        }
+        DestinyAtmosphere.resetAirReserve(level);
+        source.sendSuccess(() -> Component.literal("Destiny air quality reset to 75% (CO2 at 25%)."), true);
+        return 1;
+    }
+
+    private static int retrofitStairs(CommandSourceStack source) {
+        ServerLevel level = source.getServer().getLevel(DESTINY);
+        if (level == null) {
+            source.sendFailure(Component.literal("The SGJourney Destiny dimension is not available."));
+            return 0;
+        }
+        int[][] oldCurvedX = {{-15, -15, -14, -13, -12}, {-1, -1, -2, -3, -4}};
+        int[] oldMacawX = {-15, -1};
+        int[][] newX = {{-13, -13, -13, -12, -11}, {-3, -3, -3, -4, -5}};
+        boolean alreadyInstalled = true;
+        for (int side = 0; side < 2; side++) {
+            for (int step = 0; step < 5; step++) {
+                BlockState expected = ModBlocks.DESTINY_CURVED_STAIR.get().defaultBlockState()
+                        .setValue(DestinyCurvedStairBlock.RIGHT, side == 1)
+                        .setValue(DestinyCurvedStairBlock.STEP, step);
+                if (!level.getBlockState(new BlockPos(newX[side][step], 75 + step, -313 - step)).equals(expected)) {
+                    alreadyInstalled = false;
+                }
+            }
+        }
+        if (alreadyInstalled) {
+            source.sendSuccess(() -> Component.literal("Destiny's curved stairs are already installed."), false);
+            return 1;
+        }
+        ResourceLocation firstId = ForgeRegistries.BLOCKS.getKey(
+                level.getBlockState(new BlockPos(-15, 75, -314)).getBlock());
+        boolean macaw = "mcwbridges:iron_bridge_stair".equals(String.valueOf(firstId));
+        boolean earlierCurved = level.getBlockState(new BlockPos(-15, 75, -314))
+                .is(ModBlocks.DESTINY_CURVED_STAIR.get());
+        if (!macaw && !earlierCurved) {
+            source.sendFailure(Component.literal("No recognized older Destiny stair pair was found; no blocks were changed."));
+            return 0;
+        }
+        // Validate the entire footprint before changing anything in an existing world.
+        for (int side = 0; side < 2; side++) {
+            for (int step = 0; step < 5; step++) {
+                BlockPos oldPos = new BlockPos(macaw ? oldMacawX[side] : oldCurvedX[side][step],
+                        75 + step, -314 - step);
+                BlockPos newPos = new BlockPos(newX[side][step], 75 + step, -313 - step);
+                BlockState oldState = level.getBlockState(oldPos);
+                BlockState expectedCurved = ModBlocks.DESTINY_CURVED_STAIR.get().defaultBlockState()
+                        .setValue(DestinyCurvedStairBlock.RIGHT, side == 1)
+                        .setValue(DestinyCurvedStairBlock.STEP, step);
+                ResourceLocation oldId = ForgeRegistries.BLOCKS.getKey(oldState.getBlock());
+                if (!(macaw ? "mcwbridges:iron_bridge_stair".equals(String.valueOf(oldId))
+                        : oldState.equals(expectedCurved)) || !level.getBlockState(newPos).isAir()) {
+                    source.sendFailure(Component.literal("Stair footprint has been altered; no blocks were changed."));
+                    return 0;
+                }
+            }
+        }
+        for (int side = 0; side < 2; side++) {
+            for (int step = 0; step < 5; step++) {
+                level.setBlock(new BlockPos(macaw ? oldMacawX[side] : oldCurvedX[side][step],
+                                75 + step, -314 - step),
+                        Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            }
+        }
+        for (int side = 0; side < 2; side++) {
+            for (int step = 0; step < 5; step++) {
+                level.setBlock(new BlockPos(newX[side][step], 75 + step, -313 - step),
+                        ModBlocks.DESTINY_CURVED_STAIR.get().defaultBlockState()
+                                .setValue(DestinyCurvedStairBlock.RIGHT, side == 1)
+                                .setValue(DestinyCurvedStairBlock.STEP, step), Block.UPDATE_ALL);
+            }
+        }
+        source.sendSuccess(() -> Component.literal("Upgraded both Destiny gate-room staircases."), true);
+        return 1;
+    }
+
+    private static int retrofitAirlocks(CommandSourceStack source) {
+        ServerLevel level = source.getServer().getLevel(DESTINY);
+        if (level == null) {
+            source.sendFailure(Component.literal("The SGJourney Destiny dimension is not available."));
+            return 0;
+        }
+        int converted = 0;
+        int skipped = 0;
+        for (ShipAirlock airlock : SHIP_AIRLOCKS) {
+            BlockPos center = new BlockPos(airlock.x(), airlock.y(), airlock.z());
+            BlockPos anchor = center.relative(airlock.facing().getCounterClockWise());
+            int old = 0;
+            int current = 0;
+            for (int row = 0; row < 3; row++) {
+                for (int column = 0; column < 3; column++) {
+                    BlockPos pos = anchor.relative(airlock.facing().getClockWise(), column).above(row);
+                    BlockState state = level.getBlockState(pos);
+                    ResourceLocation id = ForgeRegistries.BLOCKS.getKey(state.getBlock());
+                    if (id != null && id.toString().equals("ad_astra:airlock")) old++;
+                    else if (state.is(com.dankscripts.sgjdestiny_dhd.registry.ModBlocks.DESTINY_SHIP_AIRLOCK.get())) current++;
+                }
+            }
+            if (current == 9) continue;
+            if (old != 9) { skipped++; continue; }
+            BlockState oldCenter = level.getBlockState(center);
+            var property = oldCenter.getBlock().getStateDefinition().getProperty("open");
+            boolean open = property instanceof BooleanProperty booleanProperty && oldCenter.getValue(booleanProperty);
+            for (int row = 0; row < 3; row++) {
+                for (int column = 0; column < 3; column++) {
+                    BlockPos pos = anchor.relative(airlock.facing().getClockWise(), column).above(row);
+                    BlockState replacement = com.dankscripts.sgjdestiny_dhd.registry.ModBlocks.DESTINY_SHIP_AIRLOCK.get()
+                            .defaultBlockState()
+                            .setValue(com.dankscripts.sgjdestiny_dhd.block.DestinyShipAirlockBlock.FACING, airlock.facing())
+                            .setValue(com.dankscripts.sgjdestiny_dhd.block.DestinyShipAirlockBlock.COLUMN, column)
+                            .setValue(com.dankscripts.sgjdestiny_dhd.block.DestinyShipAirlockBlock.ROW, row)
+                            .setValue(com.dankscripts.sgjdestiny_dhd.block.DestinyShipAirlockBlock.OPEN, open);
+                    level.setBlock(pos, replacement, Block.UPDATE_ALL);
+                }
+            }
+            converted++;
+        }
+        final int changed = converted;
+        final int left = skipped;
+        source.sendSuccess(() -> Component.literal("Destiny airlocks upgraded: " + changed
+                + "; incomplete or altered doorways skipped: " + left + "."), true);
+        return converted;
+    }
+
+    private static int requestReset(CommandSourceStack source) {
+        if (!DestinyServerConfig.INSTALL_CUSTOM_DESTINY_SHIP.get()) {
+            source.sendFailure(Component.literal("Enable destinyShip.installCustomDestinyShip in this world's server config first."));
+            return 0;
+        }
+        List<String> missing = missingShipMods();
+        if (!missing.isEmpty()) {
+            source.sendFailure(Component.literal("Missing Destiny ship dependencies: " + String.join(", ", missing)));
+            return 0;
+        }
+        MinecraftServer server = source.getServer();
+        if (server.getLevel(DESTINY) == null) {
+            source.sendFailure(Component.literal("The SGJourney Destiny dimension is not available."));
+            return 0;
+        }
+        if (ACTIVE.containsKey(server)) {
+            source.sendFailure(Component.literal("A Destiny ship installation is already running."));
+            return 0;
+        }
+        ShipInstallData saved = ShipInstallData.get(server);
+        BlockPos support = null;
+        if (source.getEntity() instanceof ServerPlayer player && player.level().dimension().equals(DESTINY)) {
+            BlockPos beneath = BlockPos.containing(player.getX(), player.getY() - 0.2, player.getZ());
+            if (!player.level().getBlockState(beneath).isAir()) support = beneath;
+        }
+        saved.requestReset(support);
+        FAILED.remove(server);
+        source.sendSuccess(() -> Component.literal("Destiny ship reset queued. The captured ship area will be cleared, preserving the Stargate and your standing block, then rebuilt from the package."), true);
+        LOGGER.info("Operator requested Destiny ship reset");
+        return 1;
+    }
+
+    @SubscribeEvent
+    public static void requireShipBlockMods(ServerAboutToStartEvent event) {
+        // Forge has loaded this world's SERVER config, but the server has not
+        // begun loading the world. Abort here, before any ship chunks are touched.
+        if (!DestinyServerConfig.INSTALL_CUSTOM_DESTINY_SHIP.get()) return;
+        List<String> missingMods = missingShipMods();
+        if (!missingMods.isEmpty()) {
+            throw new IllegalStateException("Destiny ship is enabled, but required ship mods are missing: "
+                    + String.join(", ", missingMods)
+                    + ". Install these mods on the server and every client, or set "
+                    + "destinyShip.installCustomDestinyShip=false before loading the world.");
+        }
+    }
+
+    private static List<String> missingShipMods() {
+        return SHIP_BLOCK_MODS.stream().filter(modId -> !ModList.get().isLoaded(modId)).toList();
+    }
+
+    @SubscribeEvent
+    public static void installOnServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END || !DestinyServerConfig.INSTALL_CUSTOM_DESTINY_SHIP.get()) return;
+        MinecraftServer server = event.getServer();
+        ShipInstallData saved = ShipInstallData.get(server);
+        if (FAILED.contains(server)) return;
+        List<String> missingMods = missingShipMods();
+        if (!missingMods.isEmpty()) {
+            FAILED.add(server);
+            LOGGER.error("Destiny ship is enabled but these ship-block mods are missing: {}. "
+                    + "Install them on both client and server before opening this world with the ship enabled.",
+                    String.join(", ", missingMods));
+            return;
+        }
+        if (saved.installed && !saved.resetRequested) {
+            // Existing ships predate the curved stairs. Upgrade only the known
+            // Macaw footprint, once per server, after validating every target.
+            if (!STAIRS_CHECKED.contains(server)) {
+                ServerLevel destiny = server.getLevel(DESTINY);
+                if (destiny != null) {
+                    STAIRS_CHECKED.add(server);
+                    BlockPos firstStair = new BlockPos(-15, 75, -314);
+                    ResourceLocation id = ForgeRegistries.BLOCKS.getKey(destiny.getBlockState(firstStair).getBlock());
+                    if ("mcwbridges:iron_bridge_stair".equals(String.valueOf(id))
+                            || destiny.getBlockState(firstStair).is(ModBlocks.DESTINY_CURVED_STAIR.get())) {
+                        retrofitStairs(server.createCommandSourceStack());
+                    }
+                }
+            }
+            if (!saved.spawnersCleaned) cleanCapturedSpawners(server, saved);
+            return;
+        }
+        ServerLevel level = server.getLevel(DESTINY);
+        if (level == null) return;
+
+        Progress progress = ACTIVE.get(server);
+        if (progress == null) {
+            if (server.getTickCount() % 100 != 0) return;
+            progress = prepare(server, level, saved);
+            if (progress == null) return;
+            com.dankscripts.sgjdestiny_dhd.elevator.DestinyLiftEvents.beforeShipReset(level);
+            ACTIVE.put(server, progress);
+            LOGGER.info("Destiny ship {} started ({} tiles)", saved.resetRequested ? "reset" : "installation", progress.tiles.size());
+        }
+
+        try {
+            if (progress.reset && !progress.clearComplete()) {
+                progress.clearNextBatch(level);
+                return;
+            }
+            if (progress.nextTile < progress.tiles.size()) {
+                Tile tile = progress.tiles.get(progress.nextTile);
+                BlockPos origin = new BlockPos(tile.chunkX << 4, STRUCTURE_MIN_Y, tile.chunkZ << 4);
+                level.getChunk(tile.chunkX, tile.chunkZ);
+                Optional<StructureTemplate> template = level.getStructureManager().get(
+                        new ResourceLocation(DestinyDHD.MOD_ID,
+                                "destiny_ship/" + tile.resource.substring(0, tile.resource.length() - 4)));
+                if (template.isEmpty()) throw new IllegalStateException("Missing ship tile " + tile.resource);
+                // First-time installation still clears SGJourney's generated
+                // room. Reset has already cleared the entire captured volume.
+                if (!progress.reset) clearOriginalRoomTile(level, tile, progress.preservedGatePositions);
+                if (!template.get().placeInWorld(level, origin, origin,
+                        new StructurePlaceSettings().setIgnoreEntities(true), level.random, Block.UPDATE_CLIENTS)) {
+                    throw new IllegalStateException("Unable to place ship tile " + tile.resource);
+                }
+                progress.restoreProtectedBlocks(level, tile);
+                progress.nextTile++;
+                return;
+            }
+
+            progress.restoreProtectedBlocks(level, null);
+            if (!(level.getBlockEntity(KINO_DISPENSER) instanceof KinoDispenserBlockEntity dispenser)
+                    || dispenser.getStoredKinos() != 2) {
+                throw new IllegalStateException("Packaged dispenser did not retain its two Kino kits");
+            }
+            if (!level.getBlockState(DIALING_CONSOLE).is(
+                    com.dankscripts.sgjdestiny_dhd.registry.ModBlocks.DESTINY_DHD.get())) {
+                throw new IllegalStateException("Destiny dialing console was not installed");
+            }
+            if (!gateIntact(level, progress.gateBlocks)) {
+                throw new IllegalStateException("The original Destiny Stargate changed during installation");
+            }
+            LOGGER.info("Destiny elevator: {}", com.dankscripts.sgjdestiny_dhd.elevator.DestinyLiftEvents.install(level));
+            saved.markInstalled();
+            ACTIVE.remove(server);
+            LOGGER.info("Opt-in Destiny ship installed. Original Stargate and address remain intact; dispenser contains two Kino kits.");
+        } catch (Exception exception) {
+            ACTIVE.remove(server);
+            FAILED.add(server);
+            saved.cancelReset();
+            LOGGER.error("Destiny ship installation stopped without writing the completion marker. Fix the issue before explicitly retrying.", exception);
+        }
+    }
+
+    private static void cleanCapturedSpawners(MinecraftServer server, ShipInstallData saved) {
+        ServerLevel level = server.getLevel(DESTINY);
+        if (level == null) return;
+        try {
+            SpawnerCleanupProgress progress = SPAWNER_CLEANUP.get(server);
+            if (progress == null) {
+                var resource = server.getResourceManager().getResource(SPAWNER_POSITIONS);
+                if (resource.isEmpty()) throw new IllegalStateException("Packaged spawner position list is missing");
+                List<BlockPos> positions = new ArrayList<>();
+                try (var reader = new InputStreamReader(resource.get().open(), StandardCharsets.UTF_8)) {
+                    JsonArray values = JsonParser.parseReader(reader).getAsJsonObject().getAsJsonArray("positions");
+                    for (JsonElement value : values) positions.add(pos(value.getAsJsonArray()));
+                }
+                if (positions.size() != 662 || positions.stream().distinct().count() != 662) {
+                    throw new IllegalStateException("Packaged spawner position list is incomplete");
+                }
+                progress = new SpawnerCleanupProgress(positions);
+                SPAWNER_CLEANUP.put(server, progress);
+            }
+            int end = Math.min(progress.next + 32, progress.positions.size());
+            for (; progress.next < end; progress.next++) {
+                BlockPos position = progress.positions.get(progress.next);
+                if (level.getBlockState(position).is(Blocks.SPAWNER)) {
+                    level.setBlock(position, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+                    progress.removed++;
+                }
+            }
+            if (progress.next == progress.positions.size()) {
+                saved.markSpawnersCleaned();
+                SPAWNER_CLEANUP.remove(server);
+                LOGGER.info("Removed {} captured armor-stand spawners from the installed Destiny ship", progress.removed);
+            }
+        } catch (Exception exception) {
+            SPAWNER_CLEANUP.remove(server);
+            FAILED.add(server);
+            LOGGER.error("Unable to clean captured Destiny ship spawners", exception);
+        }
+    }
+
+    private static Progress prepare(MinecraftServer server, ServerLevel level, ShipInstallData saved) {
+        try {
+            JsonObject manifest;
+            var resource = server.getResourceManager().getResource(MANIFEST);
+            if (resource.isEmpty()) throw new IllegalStateException("Ship manifest is missing");
+            try (var reader = new InputStreamReader(resource.get().open(), StandardCharsets.UTF_8)) {
+                manifest = JsonParser.parseReader(reader).getAsJsonObject();
+            }
+            if (!"sgjourney:destiny".equals(manifest.get("source_dimension").getAsString())
+                    || manifest.get("kino_dispenser_stored_kits").getAsInt() != 2) {
+                throw new IllegalStateException("Ship manifest has an unexpected dimension or Kino inventory");
+            }
+            if (!ORIGINAL_ROOM_MIN.equals(pos(manifest.getAsJsonArray("original_room_min")))
+                    || !ORIGINAL_ROOM_MAX.equals(pos(manifest.getAsJsonArray("original_room_max")))
+                    || !CAPTURE_MIN.equals(pos(manifest.getAsJsonArray("capture_min")))
+                    || !CAPTURE_MAX.equals(pos(manifest.getAsJsonArray("capture_max")))) {
+                throw new IllegalStateException("Ship manifest has an unexpected capture footprint");
+            }
+            List<GateBlock> gateBlocks = new ArrayList<>();
+            for (JsonElement item : manifest.getAsJsonArray("preserved_gate_positions")) {
+                JsonObject block = item.getAsJsonObject();
+                gateBlocks.add(new GateBlock(block.get("name").getAsString(), pos(block.getAsJsonArray("pos"))));
+            }
+            if (gateBlocks.size() != 26 || gateBlocks.stream().noneMatch(
+                    block -> block.pos.equals(GATE_CONTROLLER))) {
+                throw new IllegalStateException("Ship manifest does not identify the original 26-block Stargate");
+            }
+            level.getChunk(GATE_CONTROLLER.getX() >> 4, GATE_CONTROLLER.getZ() >> 4);
+            restoreMissingGateChevron(level, gateBlocks);
+            if (!gateIntact(level, gateBlocks)) {
+                if (saved.resetRequested) {
+                    saved.cancelReset();
+                    FAILED.add(server);
+                    LOGGER.error("Destiny ship reset canceled: the original SGJourney Stargate is incomplete at {}. The reset will not repeat on restart.", GATE_CONTROLLER);
+                } else {
+                    LOGGER.warn("Opt-in Destiny ship is waiting for the original SGJourney Stargate at {}", GATE_CONTROLLER);
+                }
+                return null;
+            }
+            List<Tile> tiles = new ArrayList<>();
+            for (JsonElement item : manifest.getAsJsonArray("tiles")) {
+                JsonObject tile = item.getAsJsonObject();
+                String name = tile.get("resource").getAsString();
+                if (!name.matches("tile_-?\\d+_-?\\d+\\.nbt")) {
+                    throw new IllegalStateException("Invalid ship tile name: " + name);
+                }
+                tiles.add(new Tile(tile.get("chunk_x").getAsInt(), tile.get("chunk_z").getAsInt(), name));
+            }
+            if (tiles.size() != manifest.get("tile_count").getAsInt() || tiles.isEmpty()) {
+                throw new IllegalStateException("Ship tile count does not match the manifest");
+            }
+            // Fail before touching the world if a JAR is missing any of its ship tiles.
+            for (Tile tile : tiles) {
+                ResourceLocation id = new ResourceLocation(DestinyDHD.MOD_ID,
+                        "destiny_ship/" + tile.resource.substring(0, tile.resource.length() - 4));
+                if (level.getStructureManager().get(id).isEmpty()) {
+                    throw new IllegalStateException("Ship tile is missing: " + tile.resource);
+                }
+            }
+            return new Progress(tiles, gateBlocks, saved.resetRequested, saved.resetSupport, level);
+        } catch (Exception exception) {
+            FAILED.add(server);
+            saved.cancelReset();
+            LOGGER.error("Cannot prepare opt-in Destiny ship installation", exception);
+            return null;
+        }
+    }
+
+    private static BlockPos pos(JsonArray values) {
+        return new BlockPos(values.get(0).getAsInt(), values.get(1).getAsInt(), values.get(2).getAsInt());
+    }
+
+    private static void restoreMissingGateChevron(ServerLevel level, List<GateBlock> gateBlocks) {
+        // dev-61 briefly removed this floor support during the original-room clear.
+        // SGJourney's attached chevron consequently popped off. Repair only that
+        // known failure when every other captured gate block still matches.
+        if (!level.getBlockState(GATE_CHEVRON).isAir()
+                || level.getBlockState(GATE_CHEVRON_SUPPORT).isAir()
+                || !(level.getBlockEntity(GATE_CONTROLLER) instanceof
+                        net.povstalec.sgjourney.common.block_entities.stargate.AbstractStargateEntity<?>)) return;
+        boolean expectedChevron = false;
+        for (GateBlock gate : gateBlocks) {
+            if (gate.pos.equals(GATE_CHEVRON)) {
+                expectedChevron = gate.name.equals("sgjourney:universe_stargate_chevron");
+                continue;
+            }
+            ResourceLocation found = ForgeRegistries.BLOCKS.getKey(level.getBlockState(gate.pos).getBlock());
+            if (found == null || !found.toString().equals(gate.name)) return;
+        }
+        if (!expectedChevron) return;
+        Block chevron = ForgeRegistries.BLOCKS.getValue(new ResourceLocation("sgjourney", "universe_stargate_chevron"));
+        if (!(chevron instanceof ChevronBlock)) return;
+        BlockState state = chevron.defaultBlockState().setValue(ChevronBlock.ORIENTATION, FrontAndTop.UP_SOUTH);
+        if (level.setBlock(GATE_CHEVRON, state, Block.UPDATE_CLIENTS)) {
+            LOGGER.warn("Restored the Destiny Stargate chevron displaced by the previous ship reset at {}", GATE_CHEVRON);
+        }
+    }
+
+    private static void clearOriginalRoomTile(ServerLevel level, Tile tile, Set<BlockPos> preservedGatePositions) {
+        int minX = Math.max(ORIGINAL_ROOM_MIN.getX(), tile.chunkX << 4);
+        int maxX = Math.min(ORIGINAL_ROOM_MAX.getX(), (tile.chunkX << 4) + 15);
+        int minZ = Math.max(LEGACY_CORRIDOR_MIN_Z, tile.chunkZ << 4);
+        int maxZ = Math.min(ORIGINAL_ROOM_MAX.getZ(), (tile.chunkZ << 4) + 15);
+        if (minX > maxX || minZ > maxZ) return;
+        for (BlockPos position : BlockPos.betweenClosed(minX, ORIGINAL_ROOM_MIN.getY(), minZ,
+                maxX, ORIGINAL_ROOM_MAX.getY(), maxZ)) {
+            if (preservedGatePositions.contains(position)) continue;
+            if (!level.getBlockState(position).isAir())
+                level.setBlock(position, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+        }
+    }
+
+    private static boolean gateIntact(ServerLevel level, List<GateBlock> gateBlocks) {
+        for (GateBlock gate : gateBlocks) {
+            level.getChunk(gate.pos.getX() >> 4, gate.pos.getZ() >> 4);
+            ResourceLocation found = ForgeRegistries.BLOCKS.getKey(level.getBlockState(gate.pos).getBlock());
+            if (found == null || !found.toString().equals(gate.name)) return false;
+        }
+        return level.getBlockEntity(GATE_CONTROLLER) instanceof
+                net.povstalec.sgjourney.common.block_entities.stargate.AbstractStargateEntity<?>;
+    }
+
+    private record Tile(int chunkX, int chunkZ, String resource) {}
+    private record ClearColumn(int chunkX, int chunkZ, int minX, int maxX, int minZ, int maxZ) {
+        private int volume() {
+            return (maxX - minX + 1) * (maxZ - minZ + 1)
+                    * (CAPTURE_MAX.getY() - CAPTURE_MIN.getY() + 1);
+        }
+    }
+    private record PreservedBlock(BlockPos pos, BlockState state, CompoundTag entityTag) {}
+    private record ShipAirlock(int x, int y, int z, Direction facing) {}
+    private record GateBlock(String name, BlockPos pos) {}
+
+    private static final class SpawnerCleanupProgress {
+        private final List<BlockPos> positions;
+        private int next;
+        private int removed;
+
+        private SpawnerCleanupProgress(List<BlockPos> positions) {
+            this.positions = positions;
+        }
+    }
+
+    private static final class Progress {
+        private final List<Tile> tiles;
+        private final List<GateBlock> gateBlocks;
+        private final Set<BlockPos> preservedGatePositions;
+        private final List<PreservedBlock> protectedBlocks = new ArrayList<>();
+        private final List<ClearColumn> clearColumns = new ArrayList<>();
+        private final boolean reset;
+        private int clearColumnIndex;
+        private int clearCellIndex;
+        private long clearedBlocks;
+        private int nextTile;
+
+        private Progress(List<Tile> tiles, List<GateBlock> gateBlocks, boolean reset,
+                         BlockPos standingBlock, ServerLevel level) {
+            this.tiles = tiles;
+            this.gateBlocks = gateBlocks;
+            this.reset = reset;
+            preservedGatePositions = new HashSet<>();
+            for (GateBlock gate : gateBlocks) preservedGatePositions.add(gate.pos());
+            // This floor block supports the free-standing Universe chevron.
+            preservedGatePositions.add(GATE_CHEVRON_SUPPORT);
+            snapshot(level, GATE_CHEVRON_SUPPORT);
+            if (reset) {
+                if (standingBlock != null && standingBlock.getX() >= CAPTURE_MIN.getX()
+                        && standingBlock.getX() <= CAPTURE_MAX.getX()
+                        && standingBlock.getY() >= CAPTURE_MIN.getY()
+                        && standingBlock.getY() <= CAPTURE_MAX.getY()
+                        && standingBlock.getZ() >= CAPTURE_MIN.getZ()
+                        && standingBlock.getZ() <= CAPTURE_MAX.getZ()) {
+                    if (preservedGatePositions.add(standingBlock)) snapshot(level, standingBlock);
+                }
+                for (int chunkZ = CAPTURE_MIN.getZ() >> 4; chunkZ <= CAPTURE_MAX.getZ() >> 4; chunkZ++) {
+                    for (int chunkX = CAPTURE_MIN.getX() >> 4; chunkX <= CAPTURE_MAX.getX() >> 4; chunkX++) {
+                        clearColumns.add(new ClearColumn(chunkX, chunkZ,
+                                Math.max(CAPTURE_MIN.getX(), chunkX << 4),
+                                Math.min(CAPTURE_MAX.getX(), (chunkX << 4) + 15),
+                                Math.max(CAPTURE_MIN.getZ(), chunkZ << 4),
+                                Math.min(CAPTURE_MAX.getZ(), (chunkZ << 4) + 15)));
+                    }
+                }
+            }
+        }
+
+        private void snapshot(ServerLevel level, BlockPos pos) {
+            if (protectedBlocks.stream().anyMatch(block -> block.pos().equals(pos))) return;
+            BlockState state = level.getBlockState(pos);
+            if (state.isAir()) return;
+            BlockEntity entity = level.getBlockEntity(pos);
+            protectedBlocks.add(new PreservedBlock(pos.immutable(), state,
+                    entity == null ? null : entity.saveWithFullMetadata()));
+        }
+
+        private boolean clearComplete() {
+            return clearColumnIndex == clearColumns.size();
+        }
+
+        private void clearNextBatch(ServerLevel level) {
+            int budget = RESET_CLEAR_BLOCKS_PER_TICK;
+            int changed = 0;
+            int height = CAPTURE_MAX.getY() - CAPTURE_MIN.getY() + 1;
+            BlockPos.MutableBlockPos position = new BlockPos.MutableBlockPos();
+            while (budget > 0 && changed < RESET_CLEAR_CHANGES_PER_TICK && !clearComplete()) {
+                ClearColumn column = clearColumns.get(clearColumnIndex);
+                if (clearCellIndex == 0) level.getChunk(column.chunkX(), column.chunkZ());
+                int width = column.maxX() - column.minX() + 1;
+                int index = clearCellIndex++;
+                int x = column.minX() + (index / height) % width;
+                int y = CAPTURE_MIN.getY() + index % height;
+                int z = column.minZ() + index / (height * width);
+                position.set(x, y, z);
+                if (!preservedGatePositions.contains(position) && !level.getBlockState(position).isAir()) {
+                    if (!level.setBlock(position, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS))
+                        throw new IllegalStateException("Unable to clear old ship block at " + position);
+                    clearedBlocks++;
+                    changed++;
+                }
+                budget--;
+                if (clearCellIndex == column.volume()) {
+                    clearColumnIndex++;
+                    clearCellIndex = 0;
+                }
+            }
+            if (clearComplete()) LOGGER.info("Cleared {} old Destiny blocks across the captured ship volume before reset", clearedBlocks);
+        }
+
+        private void restoreProtectedBlocks(ServerLevel level, Tile tile) {
+            for (PreservedBlock block : protectedBlocks) {
+                BlockPos pos = block.pos();
+                if (tile != null && ((pos.getX() >> 4) != tile.chunkX() || (pos.getZ() >> 4) != tile.chunkZ()
+                        || pos.getY() < CAPTURE_MIN.getY() || pos.getY() > CAPTURE_MAX.getY())) continue;
+                if (!level.getBlockState(pos).equals(block.state())) {
+                    if (!level.setBlock(pos, block.state(), Block.UPDATE_CLIENTS))
+                        throw new IllegalStateException("Protected standing or gate support block was lost at " + pos);
+                }
+                if (block.entityTag() != null) {
+                    BlockEntity entity = level.getBlockEntity(pos);
+                    if (entity == null) throw new IllegalStateException("Protected block entity was lost at " + pos);
+                    entity.load(block.entityTag().copy());
+                    entity.setChanged();
+                }
+            }
+        }
+    }
+
+    private static final class ShipInstallData extends SavedData {
+        private static final String FILE_NAME = "sgjdestiny_ship_install";
+        private boolean installed;
+        private boolean resetRequested;
+        private boolean spawnersCleaned;
+        private BlockPos resetSupport;
+
+        private static ShipInstallData get(MinecraftServer server) {
+            return server.overworld().getDataStorage().computeIfAbsent(ShipInstallData::load,
+                    ShipInstallData::new, FILE_NAME);
+        }
+
+        private static ShipInstallData load(CompoundTag tag) {
+            ShipInstallData data = new ShipInstallData();
+            data.installed = tag.getBoolean("Installed");
+            data.resetRequested = tag.getBoolean("ResetRequested");
+            data.spawnersCleaned = tag.getBoolean("SpawnersCleaned");
+            int[] support = tag.getIntArray("ResetSupport");
+            if (support.length == 3) data.resetSupport = new BlockPos(support[0], support[1], support[2]);
+            return data;
+        }
+
+        private void requestReset(BlockPos standingBlock) {
+            resetRequested = true;
+            resetSupport = standingBlock == null ? null : standingBlock.immutable();
+            setDirty();
+        }
+
+        private void cancelReset() {
+            if (resetRequested) {
+                resetRequested = false;
+                resetSupport = null;
+                setDirty();
+            }
+        }
+
+        private void markInstalled() {
+            installed = true;
+            resetRequested = false;
+            resetSupport = null;
+            spawnersCleaned = true;
+            setDirty();
+        }
+
+        private void markSpawnersCleaned() {
+            spawnersCleaned = true;
+            setDirty();
+        }
+
+        @Override
+        public CompoundTag save(CompoundTag tag) {
+            tag.putBoolean("Installed", installed);
+            tag.putBoolean("ResetRequested", resetRequested);
+            tag.putBoolean("SpawnersCleaned", spawnersCleaned);
+            if (resetSupport != null) tag.putIntArray("ResetSupport",
+                    new int[] {resetSupport.getX(), resetSupport.getY(), resetSupport.getZ()});
+            return tag;
+        }
+    }
+}

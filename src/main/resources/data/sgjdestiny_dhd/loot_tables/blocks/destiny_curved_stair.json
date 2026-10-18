@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:block",
+  "pools": [{
+    "rolls": 1,
+    "entries": [
+      {
+        "type": "minecraft:item",
+        "name": "sgjdestiny_dhd:destiny_curved_stair",
+        "conditions": [{
+          "condition": "minecraft:block_state_property",
+          "block": "sgjdestiny_dhd:destiny_curved_stair",
+          "properties": { "right": "false" }
+        }]
+      },
+      {
+        "type": "minecraft:item",
+        "name": "sgjdestiny_dhd:destiny_curved_stair_counterclockwise",
+        "conditions": [{
+          "condition": "minecraft:block_state_property",
+          "block": "sgjdestiny_dhd:destiny_curved_stair",
+          "properties": { "right": "true" }
+        }]
+      }
+    ],
+    "conditions": [{ "condition": "minecraft:survives_explosion" }]
+  }]
+}

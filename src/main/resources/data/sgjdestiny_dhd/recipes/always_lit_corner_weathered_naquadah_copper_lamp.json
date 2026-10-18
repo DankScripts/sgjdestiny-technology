@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "sgjdestiny_dhd:always_lit_weathered_naquadah_copper_lamp"
+    }
+  ],
+  "result": {
+    "item": "sgjdestiny_dhd:always_lit_corner_weathered_naquadah_copper_lamp"
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "variants": {
+    "part=0": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_0"
+    },
+    "part=1": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_1"
+    },
+    "part=2": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_2"
+    },
+    "part=3": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_3"
+    },
+    "part=4": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_4"
+    },
+    "part=5": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_5"
+    },
+    "part=6": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_6"
+    },
+    "part=7": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_7"
+    },
+    "part=8": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_8"
+    },
+    "part=9": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_9"
+    },
+    "part=10": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_10"
+    },
+    "part=11": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_11"
+    },
+    "part=12": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_12"
+    },
+    "part=13": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_13"
+    },
+    "part=14": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_14"
+    },
+    "part=15": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_15"
+    },
+    "part=16": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_16"
+    },
+    "part=17": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_17"
+    },
+    "part=18": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_18"
+    },
+    "part=19": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_19"
+    },
+    "part=20": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_20"
+    },
+    "part=21": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_21"
+    },
+    "part=22": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_22"
+    },
+    "part=23": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_23"
+    },
+    "part=24": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_24"
+    },
+    "part=25": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_25"
+    },
+    "part=26": {
+      "model": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_26"
+    }
+  }
+}

@@ -97,10 +97,20 @@ public final class KinoDispenserScreen extends AbstractContainerScreen<KinoDispe
     @Mod.EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static final class Registration {
         private Registration() {}
+        private static boolean registered;
 
         @SubscribeEvent
         public static void registerScreens(FMLClientSetupEvent event) {
-            event.enqueueWork(() -> MenuScreens.register(ModMenus.KINO_DISPENSER.get(), KinoDispenserScreen::new));
+            event.enqueueWork(() -> {
+                if (registered) return;
+                registered = true;
+                try {
+                    MenuScreens.register(ModMenus.KINO_DISPENSER.get(), KinoDispenserScreen::new);
+                } catch (IllegalStateException duplicate) {
+                    if (!duplicate.getMessage().startsWith("Duplicate registration for sgjdestiny_dhd:kino_dispenser"))
+                        throw duplicate;
+                }
+            });
         }
     }
 }

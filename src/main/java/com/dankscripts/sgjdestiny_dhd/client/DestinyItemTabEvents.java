@@ -14,6 +14,7 @@ public final class DestinyItemTabEvents {
     @SubscribeEvent
     public static void addItems(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey().location().equals(new ResourceLocation("minecraft", "tools_and_utilities"))) {
+            event.accept(ModItems.DESTINY_LIFT_REPAIR_KIT.get());
             event.accept(ModItems.EARTH_GATE_DESIGNATOR.get());
             event.accept(ModItems.DESTINY_ENVIRONMENTAL_HELMET.get());
             event.accept(ModItems.DESTINY_ENVIRONMENTAL_CHESTPLATE.get());
@@ -21,5 +22,7 @@ public final class DestinyItemTabEvents {
             event.accept(ModItems.DESTINY_ENVIRONMENTAL_BOOTS.get());
             event.accept(ModItems.DESTINY_OXYGEN_TANK.get());
         }
+        if (event.getTabKey().location().equals(new ResourceLocation("minecraft", "ingredients")))
+            event.accept(ModItems.SQUIGGLER_VENOM_SAC.get());
     }
 }

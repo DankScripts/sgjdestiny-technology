@@ -1,0 +1,8 @@
+{
+  "parent": "sgjdestiny_dhd:block/destiny_water_holding_tank/part_18",
+  "display": {
+    "gui": {"rotation": [25, 135, 0], "scale": [0.72, 0.72, 0.72]},
+    "ground": {"scale": [0.35, 0.35, 0.35]},
+    "fixed": {"scale": [0.55, 0.55, 0.55]}
+  }
+}

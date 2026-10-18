@@ -1,0 +1,24 @@
+{
+  "multipart": [
+    { "when": { "facing": "north" }, "apply": { "model": "sgjdestiny_dhd:block/destiny_shuttle_dev" } },
+    { "when": { "facing": "north" }, "apply": { "model": "sgjdestiny_dhd:block/destiny_shuttle_glass" } },
+    { "when": { "facing": "north" }, "apply": { "model": "sgjdestiny_dhd:block/destiny_shuttle_door_left" } },
+    { "when": { "facing": "north" }, "apply": { "model": "sgjdestiny_dhd:block/destiny_shuttle_door_right" } },
+    { "when": { "facing": "north" }, "apply": { "model": "sgjdestiny_dhd:block/destiny_shuttle_door_gear" } },
+    { "when": { "facing": "east" }, "apply": { "model": "sgjdestiny_dhd:block/destiny_shuttle_dev", "y": 90 } },
+    { "when": { "facing": "east" }, "apply": { "model": "sgjdestiny_dhd:block/destiny_shuttle_glass", "y": 90 } },
+    { "when": { "facing": "east" }, "apply": { "model": "sgjdestiny_dhd:block/destiny_shuttle_door_left", "y": 90 } },
+    { "when": { "facing": "east" }, "apply": { "model": "sgjdestiny_dhd:block/destiny_shuttle_door_right", "y": 90 } },
+    { "when": { "facing": "east" }, "apply": { "model": "sgjdestiny_dhd:block/destiny_shuttle_door_gear", "y": 90 } },
+    { "when": { "facing": "south" }, "apply": { "model": "sgjdestiny_dhd:block/destiny_shuttle_dev", "y": 180 } },
+    { "when": { "facing": "south" }, "apply": { "model": "sgjdestiny_dhd:block/destiny_shuttle_glass", "y": 180 } },
+    { "when": { "facing": "south" }, "apply": { "model": "sgjdestiny_dhd:block/destiny_shuttle_door_left", "y": 180 } },
+    { "when": { "facing": "south" }, "apply": { "model": "sgjdestiny_dhd:block/destiny_shuttle_door_right", "y": 180 } },
+    { "when": { "facing": "south" }, "apply": { "model": "sgjdestiny_dhd:block/destiny_shuttle_door_gear", "y": 180 } },
+    { "when": { "facing": "west" }, "apply": { "model": "sgjdestiny_dhd:block/destiny_shuttle_dev", "y": 270 } },
+    { "when": { "facing": "west" }, "apply": { "model": "sgjdestiny_dhd:block/destiny_shuttle_glass", "y": 270 } },
+    { "when": { "facing": "west" }, "apply": { "model": "sgjdestiny_dhd:block/destiny_shuttle_door_left", "y": 270 } },
+    { "when": { "facing": "west" }, "apply": { "model": "sgjdestiny_dhd:block/destiny_shuttle_door_right", "y": 270 } },
+    { "when": { "facing": "west" }, "apply": { "model": "sgjdestiny_dhd:block/destiny_shuttle_door_gear", "y": 270 } }
+  ]
+}

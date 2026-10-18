@@ -22,6 +22,8 @@ import net.povstalec.sgjourney.common.block_entities.dhd.UniverseDHDEntity;
 import net.povstalec.sgjourney.common.block_entities.stargate.UniverseStargateEntity;
 import net.povstalec.sgjourney.common.sgjourney.Address;
 import net.povstalec.sgjourney.common.sgjourney.StargateInfo;
+import net.povstalec.sgjourney.common.data.StargateNetwork;
+import net.povstalec.sgjourney.common.init.StargateInit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +41,7 @@ import qouteall.imm_ptl.core.chunk_loading.DimensionalChunkPos;
 
 public final class DestinyDialerNetwork {
     private static final Logger LOGGER = LoggerFactory.getLogger("SGJ Destiny DHD/Dial");
-    private static final String VERSION = "10";
+    private static final String VERSION = "11";
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(DestinyDHD.MOD_ID, "seed_ship_dialer"),
             () -> VERSION, VERSION::equals, VERSION::equals);
@@ -119,12 +121,12 @@ public final class DestinyDialerNetwork {
                         KinoRemoteItem.hasDeployedKino(player)));
     }
 
-    public static void dial(BlockPos target, boolean directGate, Address address) {
-        CHANNEL.sendToServer(new DialAddress(target, directGate, address.toArray()));
+    public static void dial(BlockPos target, boolean directGate, boolean handheld, Address address) {
+        CHANNEL.sendToServer(new DialAddress(target, directGate, handheld, address.toArray()));
     }
 
-    public static void disconnect(BlockPos target, boolean directGate) {
-        CHANNEL.sendToServer(new Disconnect(target, directGate));
+    public static void disconnect(BlockPos target, boolean directGate, boolean handheld) {
+        CHANNEL.sendToServer(new Disconnect(target, directGate, handheld));
     }
 
     public static void kinoCommand(int command) { CHANNEL.sendToServer(new KinoCommand(command)); }
@@ -215,20 +217,22 @@ public final class DestinyDialerNetwork {
     public static final class DialAddress {
         private final BlockPos console;
         private final boolean directGate;
+        private final boolean handheld;
         private final int[] symbols;
-        DialAddress(BlockPos console, boolean directGate, int[] symbols) {
-            this.console = console; this.directGate = directGate; this.symbols = symbols;
+        DialAddress(BlockPos console, boolean directGate, boolean handheld, int[] symbols) {
+            this.console = console; this.directGate = directGate; this.handheld = handheld; this.symbols = symbols;
         }
         DialAddress(FriendlyByteBuf buffer) {
-            console = buffer.readBlockPos(); directGate = buffer.readBoolean(); symbols = buffer.readVarIntArray();
+            console = buffer.readBlockPos(); directGate = buffer.readBoolean();
+            handheld = buffer.readBoolean(); symbols = buffer.readVarIntArray();
         }
         void encode(FriendlyByteBuf buffer) {
-            buffer.writeBlockPos(console); buffer.writeBoolean(directGate); buffer.writeVarIntArray(symbols);
+            buffer.writeBlockPos(console); buffer.writeBoolean(directGate);
+            buffer.writeBoolean(handheld); buffer.writeVarIntArray(symbols);
         }
         static void handle(DialAddress message, Supplier<NetworkEvent.Context> context) {
             ServerPlayer player = context.get().getSender();
-            if (player != null && player.distanceToSqr(message.console.getX() + 0.5,
-                    message.console.getY() + 0.5, message.console.getZ() + 0.5) <= 4096.0) {
+            if (player != null && authorizedControlDistance(player, message.console, message.handheld)) {
                 try {
                     Address.Immutable address = new Address.Immutable(message.symbols);
                     if (message.directGate
@@ -278,13 +282,19 @@ public final class DestinyDialerNetwork {
     public static final class Disconnect {
         private final BlockPos console;
         private final boolean directGate;
-        Disconnect(BlockPos console, boolean directGate) { this.console = console; this.directGate = directGate; }
-        Disconnect(FriendlyByteBuf buffer) { console = buffer.readBlockPos(); directGate = buffer.readBoolean(); }
-        void encode(FriendlyByteBuf buffer) { buffer.writeBlockPos(console); buffer.writeBoolean(directGate); }
+        private final boolean handheld;
+        Disconnect(BlockPos console, boolean directGate, boolean handheld) {
+            this.console = console; this.directGate = directGate; this.handheld = handheld;
+        }
+        Disconnect(FriendlyByteBuf buffer) {
+            console = buffer.readBlockPos(); directGate = buffer.readBoolean(); handheld = buffer.readBoolean();
+        }
+        void encode(FriendlyByteBuf buffer) {
+            buffer.writeBlockPos(console); buffer.writeBoolean(directGate); buffer.writeBoolean(handheld);
+        }
         static void handle(Disconnect message, Supplier<NetworkEvent.Context> context) {
             ServerPlayer player = context.get().getSender();
-            if (player != null && player.distanceToSqr(message.console.getX() + .5,
-                    message.console.getY() + .5, message.console.getZ() + .5) <= 4096) {
+            if (player != null && authorizedControlDistance(player, message.console, message.handheld)) {
                 if (message.directGate
                         && player.level().getBlockEntity(message.console) instanceof UniverseStargateEntity gate) {
                     gate.engageStargate();
@@ -297,6 +307,24 @@ public final class DestinyDialerNetwork {
             }
             context.get().setPacketHandled(true);
         }
+    }
+
+    private static boolean authorizedControlDistance(ServerPlayer player, BlockPos target, boolean handheld) {
+        if (handheld) {
+            boolean holdingRemote = player.getMainHandItem().is(
+                    com.dankscripts.sgjdestiny_dhd.registry.ModItems.KINO_REMOTE.get())
+                    || player.getOffhandItem().is(
+                    com.dankscripts.sgjdestiny_dhd.registry.ModItems.KINO_REMOTE.get());
+            if (!holdingRemote) return false;
+            // Authenticate a remote request against the gate network before
+            // looking up the target block entity, which may load its chunk.
+            return StargateNetwork.get(player.server).getStargatesInDimension(
+                    player.level().dimension()).stream()
+                    .anyMatch(record -> record.getStargateType() == StargateInit.UNIVERSE.get()
+                            && record.getPosition() != null
+                            && record.getPosition().distanceToSqr(target.getCenter()) <= 32 * 32);
+        }
+        return player.distanceToSqr(target.getX() + .5, target.getY() + .5, target.getZ() + .5) <= 4096.0;
     }
 
     public static final class KinoCommand {
