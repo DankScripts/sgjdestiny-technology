@@ -137,7 +137,7 @@ public final class KinoEvents {
         var dialingDimension = connection.getDialingStargate().getDimension();
         Set<net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level>> destinationDimensions =
                 connection.getDialedStargates().stream().map(
-                        net.povstalec.sgjourney.common.sgjourney.stargate.Stargate::getDimension)
+                        net.povstalec.sgjourney.api.stargate.Stargate::getDimension)
                         .collect(java.util.stream.Collectors.toSet());
         for (ServerPlayer player : event.getServer().getPlayerList().getPlayers()) {
             if (!player.level().dimension().equals(dialingDimension)) continue;
@@ -160,7 +160,7 @@ public final class KinoEvents {
         var dialingDimension = connection.getDialingStargate().getDimension();
         Set<net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level>> destinationDimensions =
                 connection.getDialedStargates().stream().map(
-                        net.povstalec.sgjourney.common.sgjourney.stargate.Stargate::getDimension)
+                        net.povstalec.sgjourney.api.stargate.Stargate::getDimension)
                         .collect(java.util.stream.Collectors.toSet());
         ACTIVE_ROUTES.put(connection.getID(), new KinoRoute(dialingDimension, destinationDimensions));
         for (ServerPlayer player : event.getServer().getPlayerList().getPlayers()) {

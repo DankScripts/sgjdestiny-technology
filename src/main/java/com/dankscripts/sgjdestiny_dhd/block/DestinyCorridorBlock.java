@@ -247,6 +247,20 @@ public final class DestinyCorridorBlock extends BaseEntityBlock {
         }
     }
 
+    /** Correct helper facings from ship templates installed before helpers supported rotation. */
+    public void refreshCollisionFacings(Level level, BlockPos pos, Direction forward) {
+        for (int z = 0; z < LENGTH; z++)
+            for (int y = 0; y < HEIGHT; y++)
+                for (int x = 0; x < WIDTH; x++) {
+                    BlockPos target = at(pos, forward, x, y, z);
+                    BlockState current = level.getBlockState(target);
+                    if (current.is(ModBlocks.DESTINY_CORRIDOR_COLLISION.get())
+                            && current.getValue(DestinyCorridorCollisionBlock.FACING) != forward)
+                        level.setBlock(target, current.setValue(DestinyCorridorCollisionBlock.FACING, forward),
+                                Block.UPDATE_CLIENTS);
+                }
+    }
+
     /** Existing corridors gain the same ceiling lighting as newly placed ones. */
     private static void refreshRoofLights(Level level, BlockPos pos, Direction forward) {
         for (int z = 0; z < LENGTH; z++) {

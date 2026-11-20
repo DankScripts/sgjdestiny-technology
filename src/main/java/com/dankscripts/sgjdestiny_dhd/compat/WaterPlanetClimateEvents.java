@@ -10,10 +10,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.povstalec.sgjourney.common.block_entities.stargate.UniverseStargateEntity;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.ChunkEvent;
-import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.common.Tags;
@@ -21,12 +19,13 @@ import net.minecraftforge.common.Tags;
 /** Weather and sparse cliff-bound ice formations for SGU's Water Planet. */
 @Mod.EventBusSubscriber(modid = "sgjdestiny_dhd", bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class WaterPlanetClimateEvents {
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("SGJ Destiny DHD/Water Planet");
     private static final ResourceLocation WATER_PLANET = new ResourceLocation("sgjourney", "water_planet");
     private static final java.util.Map<ServerLevel, java.util.Set<Long>> CHECKED_CHUNKS = new java.util.WeakHashMap<>();
     private static final java.util.Map<ServerLevel, java.util.ArrayDeque<ChunkPos>> PENDING_CHUNKS = new java.util.WeakHashMap<>();
     private static final java.util.Map<ServerLevel, Integer> LANDING_HEIGHTS = new java.util.WeakHashMap<>();
-    private static final int GATE_X = 0;
-    private static final int GATE_Z = 800;
+    static final int GATE_X = 0;
+    static final int GATE_Z = 800;
     private static final int FLAT_RADIUS = 208;
     // Give the terrain almost 200 blocks to rise from the landing plain into the
     // native mountains. The old 64-block blend could expose sliced mountain faces.
@@ -43,29 +42,29 @@ public final class WaterPlanetClimateEvents {
         if (!level.dimension().location().equals(WATER_PLANET)) return;
         java.util.ArrayDeque<ChunkPos> queue = PENDING_CHUNKS.get(level);
         if (queue == null || queue.isEmpty()) return;
-        // Prepare the complete landing zone during world startup, before an arriving
-        // player can watch terrain disappear. Spread the one-time work across a few ticks.
-        for (int budget = 0; budget < 16 && !queue.isEmpty(); budget++) {
-            ChunkPos cp = queue.removeFirst();
-            LevelChunk loaded = level.getChunk(cp.x, cp.z);
-            findGateHeight(level, loaded);
-            if (chunkTouchesLandingZone(cp)) {
-                Integer landingY = LANDING_HEIGHTS.get(level);
-                if (landingY == null) {
-                    queue.addLast(cp);
-                    continue;
-                }
+        ChunkPos cp = queue.removeFirst();
+        if (chunkTouchesLandingZone(cp)) {
+            Integer landingY = LANDING_HEIGHTS.get(level);
+            if (landingY != null) {
+                level.getChunk(cp.x, cp.z);
                 flattenLandingZone(level, cp, landingY);
-            } else {
-                generateFrozenWaterfall(level, cp);
             }
+        } else if (level.getChunkSource().getChunkNow(cp.x, cp.z) != null) {
+            generateFrozenWaterfall(level, cp);
+        } else {
+            CHECKED_CHUNKS.get(level).remove(cp.toLong());
         }
     }
 
-    @SubscribeEvent
-    public static void preloadLandingZone(LevelEvent.Load event) {
-        if (!(event.getLevel() instanceof ServerLevel level)
-                || !level.dimension().location().equals(WATER_PLANET)) return;
+    static void prepareLandingZone(ServerLevel level, BlockPos gate) {
+        if (!level.dimension().location().equals(WATER_PLANET) || LANDING_HEIGHTS.containsKey(level)) return;
+        long dxFromCenter = (long) gate.getX() - GATE_X;
+        long dzFromCenter = (long) gate.getZ() - GATE_Z;
+        if (dxFromCenter * dxFromCenter + dzFromCenter * dzFromCenter > (long) FLAT_RADIUS * FLAT_RADIUS) {
+            LOGGER.warn("Skipping landing-zone grading: primary Water Planet gate at {} is outside the clearing", gate);
+            return;
+        }
+        LANDING_HEIGHTS.put(level, gate.getY());
         java.util.ArrayDeque<ChunkPos> queue = PENDING_CHUNKS.computeIfAbsent(level,
                 ignored -> new java.util.ArrayDeque<>());
         java.util.Set<Long> checked = CHECKED_CHUNKS.computeIfAbsent(level,
@@ -93,16 +92,9 @@ public final class WaterPlanetClimateEvents {
         if (!(event.getLevel() instanceof ServerLevel level) || !(event.getChunk() instanceof LevelChunk chunk)) return;
         if (!level.dimension().location().equals(WATER_PLANET)) return;
         ChunkPos cp = chunk.getPos();
-        findGateHeight(level, chunk);
+        if (chunkTouchesLandingZone(cp)) return;
         if (!CHECKED_CHUNKS.computeIfAbsent(level, ignored -> new java.util.HashSet<>()).add(cp.toLong())) return;
         PENDING_CHUNKS.computeIfAbsent(level, ignored -> new java.util.ArrayDeque<>()).addLast(cp);
-    }
-
-    private static void findGateHeight(ServerLevel level, LevelChunk chunk) {
-        chunk.getBlockEntities().values().stream()
-                .filter(UniverseStargateEntity.class::isInstance)
-                .map(blockEntity -> blockEntity.getBlockPos().getY())
-                .findFirst().ifPresent(y -> LANDING_HEIGHTS.put(level, y));
     }
 
     private static boolean chunkTouchesLandingZone(ChunkPos cp) {
@@ -176,17 +168,16 @@ public final class WaterPlanetClimateEvents {
         for (int[] direction : directions) {
             int dx = direction[0];
             int dz = direction[1];
-            int previousY = highY;
             for (int step = 2; step <= 16; step += 2) {
                 int nextX = x + dx * step;
                 int nextZ = z + dz * step;
+                if (level.getChunkSource().getChunkNow(nextX >> 4, nextZ >> 4) == null) break;
                 int nextY = surface(level, nextX, nextZ);
                 // Waterfalls belong on elevated cliff faces, not on low fissure walls.
                 if (highY >= 86 && highY - nextY >= 14) {
                     buildCurtain(level, nextX, nextZ, highY, nextY, dx, dz, random);
                     return true;
                 }
-                previousY = nextY;
             }
         }
         return false;
@@ -200,6 +191,7 @@ public final class WaterPlanetClimateEvents {
         for (int width = -halfWidth; width <= halfWidth; width++) {
             int wx = x + px * width;
             int wz = z + pz * width;
+            if (level.getChunkSource().getChunkNow(wx >> 4, wz >> 4) == null) continue;
             int localBottom = Math.max(bottom + 1, top - 24 - random.nextInt(9));
             for (int y = top; y >= localBottom; y--) {
                 BlockPos pos = new BlockPos(wx, y, wz);

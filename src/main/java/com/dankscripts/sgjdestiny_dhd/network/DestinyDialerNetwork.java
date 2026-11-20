@@ -4,13 +4,18 @@ import com.dankscripts.sgjdestiny_dhd.DestinyDHD;
 import com.dankscripts.sgjdestiny_dhd.client.DestinyDialerClientPackets;
 import com.dankscripts.sgjdestiny_dhd.dialer.SeedShipAddressDatabase;
 import com.dankscripts.sgjdestiny_dhd.compat.DestinyDialDelay;
+import com.dankscripts.sgjdestiny_dhd.compat.DestinyDHDApi;
 import com.dankscripts.sgjdestiny_dhd.compat.KinoEvents;
+import com.dankscripts.sgjdestiny_dhd.compat.HandheldAutoclose;
+import com.dankscripts.sgjdestiny_dhd.compat.HandheldDialSymbols;
+import com.dankscripts.sgjdestiny_dhd.compat.HandheldGateLookup;
 import com.dankscripts.sgjdestiny_dhd.item.KinoRemoteItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.NetworkDirection;
@@ -28,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.Map;
@@ -42,6 +48,8 @@ import qouteall.imm_ptl.core.chunk_loading.DimensionalChunkPos;
 public final class DestinyDialerNetwork {
     private static final Logger LOGGER = LoggerFactory.getLogger("SGJ Destiny DHD/Dial");
     private static final String VERSION = "11";
+    private static final TicketType<BlockPos> HANDHELD_DIAL_TICKET =
+            TicketType.create("destiny_handheld_dial", Comparator.comparingLong(BlockPos::asLong), 1200);
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(DestinyDHD.MOD_ID, "seed_ship_dialer"),
             () -> VERSION, VERSION::equals, VERSION::equals);
@@ -75,8 +83,8 @@ public final class DestinyDialerNetwork {
 
     public static void openSeedShipDatabase(ServerPlayer player, UniverseDHDEntity dhd,
                                             List<SeedShipAddressDatabase.Entry> entries) {
-        var gate = dhd.stargateCache.get() == null ? null : dhd.stargateCache.get().getStargate();
-        var gateEntity = dhd.stargateCache.get();
+        var gateEntity = DestinyDHDApi.connectedStargateEntity(dhd);
+        var gate = gateEntity == null ? null : gateEntity.getStargate();
         int state = gate != null && gate.isConnected() ? 2
                 : gateEntity != null && (gateEntity.isDialingOut() || gateEntity.getChevronsEngaged() > 0
                 || !gateEntity.getEncodedSymbols().isEmpty()) ? 1 : 0;
@@ -94,30 +102,31 @@ public final class DestinyDialerNetwork {
     }
 
     public static void openHandheldDatabase(ServerPlayer player, UniverseDHDEntity dhd,
-                                            List<SeedShipAddressDatabase.Entry> entries) {
-        var gate = dhd.stargateCache.get();
+                                            List<SeedShipAddressDatabase.Entry> entries, boolean kinoInitially) {
+        var gate = DestinyDHDApi.connectedStargateEntity(dhd);
         int state = gate != null && gate.isConnected() ? 2
                 : gate != null && (gate.isDialingOut() || gate.getChevronsEngaged() > 0
                 || !gate.getEncodedSymbols().isEmpty()) ? 1 : 0;
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
-                new OpenDatabase(dhd.getBlockPos(), false, true, entries, state, false,
-                        KinoRemoteItem.hasDeployedKino(player)));
+        sendHandheld(player, dhd.getBlockPos(), false, entries, state, kinoInitially);
     }
 
     public static void openHandheldDatabase(ServerPlayer player, UniverseStargateEntity gate,
-                                            List<SeedShipAddressDatabase.Entry> entries) {
+                                            List<SeedShipAddressDatabase.Entry> entries, boolean kinoInitially) {
         int state = gate.isConnected() ? 2
                 : gate.isDialingOut() || gate.dialFromBuffer() || gate.isRotating()
                 || gate.getChevronsEngaged() > 0 ? 1 : 0;
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
-                new OpenDatabase(gate.getBlockPos(), true, true, entries, state, false,
-                        KinoRemoteItem.hasDeployedKino(player)));
+        sendHandheld(player, gate.getBlockPos(), true, entries, state, kinoInitially);
     }
 
-    public static void openKinoControl(ServerPlayer player) {
-        validateKinoLink(player);
+    public static void openKinoControl(ServerPlayer player, boolean kinoInitially) {
+        sendHandheld(player, player.blockPosition(), false, List.of(), 0, kinoInitially);
+    }
+
+    private static void sendHandheld(ServerPlayer player, BlockPos target, boolean directGate,
+                                     List<SeedShipAddressDatabase.Entry> entries, int state, boolean kinoInitially) {
+        if (kinoInitially) validateKinoLink(player);
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
-                new OpenDatabase(player.blockPosition(), false, true, List.of(), 0, true,
+                new OpenDatabase(target, directGate, true, entries, state, kinoInitially,
                         KinoRemoteItem.hasDeployedKino(player)));
     }
 
@@ -232,17 +241,18 @@ public final class DestinyDialerNetwork {
         }
         static void handle(DialAddress message, Supplier<NetworkEvent.Context> context) {
             ServerPlayer player = context.get().getSender();
-            if (player != null && authorizedControlDistance(player, message.console, message.handheld)) {
+            if (player != null && authorizedControlDistance(player, message.console, message.handheld, message.directGate)) {
                 try {
                     Address.Immutable address = new Address.Immutable(message.symbols);
-                    if (message.directGate
-                            && player.level().getBlockEntity(message.console) instanceof UniverseStargateEntity gate
+                    UniverseStargateEntity gate = message.directGate
+                            ? resolveDirectGate(player, message.console, message.handheld) : null;
+                    if (gate != null
                             && SeedShipAddressDatabase.isAuthorizedSelection(player.server, gate, address)
-                            && queueDirectGateDial(player, gate, message.symbols)) {
+                            && queueDirectGateDial(player, gate, message.symbols, message.handheld)) {
                     } else if (!message.directGate
                             && player.level().getBlockEntity(message.console) instanceof UniverseDHDEntity dhd
                             && SeedShipAddressDatabase.isAuthorizedSelection(player.server, dhd, address)
-                            && DestinyDialDelay.queueProgrammedDial(dhd, message.symbols)) {
+                            && DestinyDialDelay.queueProgrammedDial(dhd, message.symbols, message.handheld)) {
                     } else {
                         player.displayClientMessage(Component.translatable("message.sgjdestiny_dhd.dialer_busy"), true);
                     }
@@ -253,27 +263,42 @@ public final class DestinyDialerNetwork {
             context.get().setPacketHandled(true);
         }
 
-        private static boolean queueDirectGateDial(ServerPlayer player, UniverseStargateEntity gate, int[] symbols) {
-            if (gate.isConnected() || gate.isDialingOut() || gate.dialFromBuffer()
+        private static boolean queueDirectGateDial(ServerPlayer player, UniverseStargateEntity gate, int[] symbols,
+                                                   boolean handheld) {
+            if (gate.isConnected() || gate.isDialingOut() || gate.isDialing()
                     || gate.isRotating() || gate.getChevronsEngaged() > 0) return false;
-            int[] dialSymbols = symbols;
-            if (symbols.length == 6) {
-                dialSymbols = java.util.Arrays.copyOf(symbols, 7);
-                dialSymbols[6] = 0;
+            Address.Immutable dialAddress = Address.Immutable.extendWithPointOfOrigin(new Address.Immutable(symbols));
+            if (!dialAddress.canBeDialed()) {
+                player.displayClientMessage(Component.translatable("message.sgjdestiny_dhd.invalid_destination"), true);
+                return false;
             }
+            int[] dialSymbols = dialAddress.toArray();
             StargateInfo.FeedbackMessage feedback = null;
             for (int i = 0; i < dialSymbols.length; i++) {
-                feedback = gate.indirectEngageSymbol(dialSymbols[i], i == dialSymbols.length - 1);
+                int symbol = handheld
+                        ? HandheldDialSymbols.physicalSymbol(gate.symbolMap, dialSymbols[i], dialSymbols)
+                        : dialSymbols[i];
+                boolean last = i == dialSymbols.length - 1;
+                feedback = handheld && last
+                        ? HandheldAutoclose.engage(gate,
+                                () -> gate.indirectEngageSymbol(symbol, true, StargateInfo.ChevronSound.ENGAGE))
+                        : gate.indirectEngageSymbol(symbol, last, StargateInfo.ChevronSound.ENGAGE);
                 if (feedback.feedback().isError()) break;
             }
             LOGGER.info("Direct dial from {} at {} region={} address={} energy={}/{} feedback={}",
                     gate.getLevel() == null ? "unknown" : gate.getLevel().dimension().location(),
                     gate.getBlockPos(), gate.getStargate() == null ? "none" : gate.getStargate().getAddressRegionKey(),
-                    new Address.Immutable(dialSymbols), gate.energyStorage.getTrueEnergyStored(),
+                    dialAddress, gate.energyStorage.getTrueEnergyStored(),
                     gate.energyStorage.getTrueMaxEnergyStored(), feedback);
             if (feedback != null && feedback.feedback().isError()) {
+                gate.resetStargate(feedback);
                 player.displayClientMessage(feedback.getMessageComponent(), false);
                 return false;
+            }
+            if (handheld && feedback != null) {
+                // Keep the buffered symbol sequence ticking until SGJourney takes over chunk loading.
+                BlockPos pos = gate.getBlockPos();
+                player.serverLevel().getChunkSource().addRegionTicket(HANDHELD_DIAL_TICKET, new ChunkPos(pos), 2, pos);
             }
             return feedback != null;
         }
@@ -294,28 +319,37 @@ public final class DestinyDialerNetwork {
         }
         static void handle(Disconnect message, Supplier<NetworkEvent.Context> context) {
             ServerPlayer player = context.get().getSender();
-            if (player != null && authorizedControlDistance(player, message.console, message.handheld)) {
-                if (message.directGate
-                        && player.level().getBlockEntity(message.console) instanceof UniverseStargateEntity gate) {
+            if (player != null && authorizedControlDistance(player, message.console, message.handheld, message.directGate)) {
+                UniverseStargateEntity gate = message.directGate
+                        ? resolveDirectGate(player, message.console, message.handheld) : null;
+                if (gate != null) {
                     gate.engageStargate();
+                } else if (message.directGate && message.handheld) {
+                    player.displayClientMessage(Component.translatable("message.sgjdestiny_dhd.remote_no_gate"), true);
                 } else if (!message.directGate
                     && player.level().getBlockEntity(message.console) instanceof UniverseDHDEntity dhd
-                    && dhd.stargateCache.get() != null && dhd.stargateCache.get().getStargate() != null) {
+                    && DestinyDHDApi.connectedStargate(dhd) != null) {
                     DestinyDialDelay.cancel(dhd);
-                    dhd.stargateCache.get().dhdDisconnectStargate(dhd);
+                    dhd.engageStargate();
                 }
             }
             context.get().setPacketHandled(true);
         }
     }
 
-    private static boolean authorizedControlDistance(ServerPlayer player, BlockPos target, boolean handheld) {
+    private static UniverseStargateEntity resolveDirectGate(ServerPlayer player, BlockPos target, boolean handheld) {
+        if (handheld) return HandheldGateLookup.at(player.serverLevel(), target);
+        return player.level().getBlockEntity(target) instanceof UniverseStargateEntity gate ? gate : null;
+    }
+
+    private static boolean authorizedControlDistance(ServerPlayer player, BlockPos target, boolean handheld, boolean directGate) {
         if (handheld) {
             boolean holdingRemote = player.getMainHandItem().is(
                     com.dankscripts.sgjdestiny_dhd.registry.ModItems.KINO_REMOTE.get())
                     || player.getOffhandItem().is(
                     com.dankscripts.sgjdestiny_dhd.registry.ModItems.KINO_REMOTE.get());
             if (!holdingRemote) return false;
+            if (directGate) return true; // resolveDirectGate verifies the exact registered position before loading it.
             // Authenticate a remote request against the gate network before
             // looking up the target block entity, which may load its chunk.
             return StargateNetwork.get(player.server).getStargatesInDimension(

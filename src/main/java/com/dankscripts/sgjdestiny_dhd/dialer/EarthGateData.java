@@ -6,7 +6,7 @@ import net.minecraft.world.level.saveddata.SavedData;
 import net.povstalec.sgjourney.common.data.StargateNetwork;
 import net.povstalec.sgjourney.common.init.StargateInit;
 import net.povstalec.sgjourney.common.sgjourney.Address;
-import net.povstalec.sgjourney.common.sgjourney.stargate.Stargate;
+import net.povstalec.sgjourney.api.stargate.Stargate;
 
 import java.util.Optional;
 

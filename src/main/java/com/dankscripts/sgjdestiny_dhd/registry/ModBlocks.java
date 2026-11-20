@@ -129,7 +129,10 @@ public final class ModBlocks {
             BLOCKS.register("lit_destiny_floor_chevron", LitDestinyFloorChevronBlock::new);
     public static final RegistryObject<Block> SQUIGGLER_NEST = BLOCKS.register("squiggler_nest", SquigglerNestBlock::new);
 
-        public static RegistryObject<Block> litDestinyBearing;
+        public static final RegistryObject<Block> DESTINY_BEARING_FALLBACK =
+            BLOCKS.register("destiny_bearing_fallback", LitDestinyBearingBlock::new);
+
+    public static RegistryObject<Block> litDestinyBearing;
 
         public static void registerOptionalBlocks() {
                 if (ModList.get().isLoaded("sgj_deco")) {

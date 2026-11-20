@@ -23,6 +23,7 @@ public final class DestinyCorridorBlockEntity extends BlockEntity {
         if (!entity.checkedLegacyFootprint) {
             entity.checkedLegacyFootprint = true;
             corridor.rebuildLegacyFootprint(level, pos, state);
+            corridor.refreshCollisionFacings(level, pos, state.getValue(DestinyCorridorBlock.FACING));
         }
         // A removed controller leaves air in its socket. Restore the selectable
         // mount so the next controller can be placed on the same backing plate.

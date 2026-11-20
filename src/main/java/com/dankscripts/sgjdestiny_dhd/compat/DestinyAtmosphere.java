@@ -91,9 +91,11 @@ public final class DestinyAtmosphere {
 
     /** Only enclosed spaces inside the captured Destiny hull have ship-supplied oxygen. */
     public static boolean isShipInterior(ServerLevel level, BlockPos pos) {
-        if (!isDestiny(level) || pos.getX() < -165 || pos.getX() > 149
+        if (!isDestiny(level)) return false;
+        int[] bounds = DestinyShipInstallEvents.shipBounds(level);
+        if (pos.getX() < bounds[0] || pos.getX() > bounds[1]
                 || pos.getY() < 47 || pos.getY() > 117
-                || pos.getZ() < -424 || pos.getZ() > -40) return false;
+                || pos.getZ() < bounds[2] || pos.getZ() > bounds[3]) return false;
         // Destiny has no skylight, so canSeeSky is not a reliable roof test here.
         boolean roof = false;
         for (int dy = 2; dy <= 24; dy++) {

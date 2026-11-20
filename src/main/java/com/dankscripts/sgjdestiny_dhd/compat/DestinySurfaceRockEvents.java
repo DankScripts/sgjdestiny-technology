@@ -41,8 +41,9 @@ public final class DestinySurfaceRockEvents {
         if (!(event.getLevel() instanceof ServerLevel level) || !level.dimension().equals(DESTINY)
                 || !(event.getChunk() instanceof LevelChunk chunk)) return;
         ChunkPos pos = chunk.getPos();
-        if ((pos.x << 4) > MAX_X || ((pos.x << 4) + 15) < MIN_X
-                || (pos.z << 4) > MAX_Z || ((pos.z << 4) + 15) < MIN_Z) return;
+        int[] bounds = DestinyShipInstallEvents.shipBounds(level);
+        if ((pos.x << 4) > bounds[1] || ((pos.x << 4) + 15) < bounds[0]
+                || (pos.z << 4) > bounds[3] || ((pos.z << 4) + 15) < bounds[2]) return;
         // GTCEu injects indicator placement during biome decoration. Scan on
         // the server tick, after the generated chunk has finished loading.
         PENDING.computeIfAbsent(level, ignored -> new ConcurrentLinkedQueue<>()).add(pos);
@@ -62,10 +63,11 @@ public final class DestinySurfaceRockEvents {
     }
 
     private static void removeSurfaceRocks(ServerLevel level, LevelChunk chunk) {
-        int minX = Math.max(MIN_X, chunk.getPos().getMinBlockX());
-        int maxX = Math.min(MAX_X, chunk.getPos().getMaxBlockX());
-        int minZ = Math.max(MIN_Z, chunk.getPos().getMinBlockZ());
-        int maxZ = Math.min(MAX_Z, chunk.getPos().getMaxBlockZ());
+        int[] bounds = DestinyShipInstallEvents.shipBounds(level);
+        int minX = Math.max(bounds[0], chunk.getPos().getMinBlockX());
+        int maxX = Math.min(bounds[1], chunk.getPos().getMaxBlockX());
+        int minZ = Math.max(bounds[2], chunk.getPos().getMinBlockZ());
+        int maxZ = Math.min(bounds[3], chunk.getPos().getMaxBlockZ());
         LevelChunkSection[] sections = chunk.getSections();
         for (int index = 0; index < sections.length; index++) {
             int sectionY = level.getMinBuildHeight() + index * 16;

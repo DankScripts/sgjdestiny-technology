@@ -4,7 +4,11 @@
   "package": "com.dankscripts.sgjdestiny_dhd.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "AbstractDHDEntityMixin"
+    "AbstractDHDEntityMixin",
+    "SGJourneyDHDMixin",
+    "HandheldStargateLifecycleMixin",
+    "HandheldStargateAutocloseMixin",
+    "DestinySnowGuardMixin"
   ],
   "injectors": {
     "defaultRequire": 1

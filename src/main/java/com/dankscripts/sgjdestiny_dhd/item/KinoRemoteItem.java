@@ -1,6 +1,8 @@
 package com.dankscripts.sgjdestiny_dhd.item;
 
 import com.dankscripts.sgjdestiny_dhd.DestinyDHD;
+import com.dankscripts.sgjdestiny_dhd.compat.DestinyDHDApi;
+import com.dankscripts.sgjdestiny_dhd.compat.HandheldGateLookup;
 import com.dankscripts.sgjdestiny_dhd.dialer.SeedShipAddressDatabase;
 import com.dankscripts.sgjdestiny_dhd.network.DestinyDialerNetwork;
 import com.dankscripts.sgjdestiny_dhd.registry.ModItems;
@@ -33,9 +35,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.ClipContext;
 import net.povstalec.sgjourney.common.block_entities.dhd.UniverseDHDEntity;
 import net.povstalec.sgjourney.common.block_entities.stargate.UniverseStargateEntity;
-import net.povstalec.sgjourney.common.data.StargateNetwork;
-import net.povstalec.sgjourney.common.init.StargateInit;
-import net.povstalec.sgjourney.common.sgjourney.stargate.Stargate;
 import net.minecraftforge.common.world.ForgeChunkManager;
 
 import java.util.Comparator;
@@ -75,57 +74,33 @@ public final class KinoRemoteItem extends Item {
                     ? "message.sgjdestiny_dhd.remote_kino_mode" : "message.sgjdestiny_dhd.remote_gate_mode"), true);
             return InteractionResultHolder.consume(stack);
         }
-        if (tag.getBoolean(MODE)) DestinyDialerNetwork.openKinoControl(serverPlayer);
-        else openGateDatabase(serverPlayer);
+        openHandheld(serverPlayer, tag.getBoolean(MODE));
         player.getCooldowns().addCooldown(this, 8);
         return InteractionResultHolder.consume(stack);
     }
 
-    private static void openGateDatabase(ServerPlayer player) {
+    private static void openHandheld(ServerPlayer player, boolean kinoInitially) {
         UniverseDHDEntity dhd = BlockPos.betweenClosedStream(player.blockPosition().offset(-16, -8, -16),
                         player.blockPosition().offset(16, 8, 16))
                 .map(player.level()::getBlockEntity).filter(UniverseDHDEntity.class::isInstance)
                 .map(UniverseDHDEntity.class::cast)
+                .filter(candidate -> DestinyDHDApi.connectedStargate(candidate) != null)
                 .min(Comparator.comparingDouble(be -> be.getBlockPos().distSqr(player.blockPosition())))
                 .orElse(null);
         if (dhd != null) {
             DestinyDialerNetwork.openHandheldDatabase(player, dhd,
-                    SeedShipAddressDatabase.entriesFor(player.server, dhd));
+                    SeedShipAddressDatabase.entriesFor(player.server, dhd), kinoInitially);
             return;
         }
-        UniverseStargateEntity gate = StargateNetwork.get(player.server)
-                .getStargatesInDimension(player.level().dimension()).stream()
-                .filter(record -> record.getStargateType() == StargateInit.UNIVERSE.get()
-                        && record.getPosition() != null)
-                .sorted(Comparator.comparingDouble(record -> record.getPosition().distanceToSqr(player.position())))
-                .map(record -> findGateController(player.serverLevel(), record))
-                .filter(java.util.Objects::nonNull)
-                .findFirst().orElse(null);
+        UniverseStargateEntity gate = HandheldGateLookup.nearest(player.serverLevel(), player.position());
         if (gate == null) {
-            // The gate database needs a nearby controller, but deploying and
-            // flying a Kino must remain available everywhere.
-            DestinyDialerNetwork.openKinoControl(player);
+            if (!kinoInitially)
+                player.displayClientMessage(Component.translatable("message.sgjdestiny_dhd.remote_no_gate"), true);
+            DestinyDialerNetwork.openKinoControl(player, kinoInitially);
             return;
         }
         DestinyDialerNetwork.openHandheldDatabase(player, gate,
-                SeedShipAddressDatabase.entriesFor(player.server, gate));
-    }
-
-    private static UniverseStargateEntity findGateController(ServerLevel level, Stargate record) {
-        // SGJourney records the gate's center, which can be several blocks from
-        // its controller. Only the selected gate's small area is loaded here.
-        BlockPos center = BlockPos.containing(record.getPosition());
-        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
-        for (int x = center.getX() - 8; x <= center.getX() + 8; x++)
-            for (int y = center.getY() - 8; y <= center.getY() + 8; y++)
-                for (int z = center.getZ() - 8; z <= center.getZ() + 8; z++) {
-                    cursor.set(x, y, z);
-                    if (!(level.getBlockEntity(cursor) instanceof UniverseStargateEntity gate)) continue;
-                    Stargate candidate = gate.getStargate();
-                    if (candidate == record || (candidate != null && candidate.get9ChevronAddress() != null
-                            && candidate.get9ChevronAddress().equals(record.get9ChevronAddress()))) return gate;
-                }
-        return null;
+                SeedShipAddressDatabase.entriesFor(player.server, gate), kinoInitially);
     }
 
     private static void operateKino(ServerPlayer player) {

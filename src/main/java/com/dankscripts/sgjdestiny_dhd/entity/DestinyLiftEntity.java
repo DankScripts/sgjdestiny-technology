@@ -3,6 +3,7 @@ package com.dankscripts.sgjdestiny_dhd.entity;
 import com.dankscripts.sgjdestiny_dhd.elevator.DestinyLiftEvents;
 import com.dankscripts.sgjdestiny_dhd.elevator.DestinyLiftStops;
 import com.dankscripts.sgjdestiny_dhd.elevator.LiftMotion;
+import com.dankscripts.sgjdestiny_dhd.compat.DestinyShipInstallEvents;
 import com.dankscripts.sgjdestiny_dhd.network.DestinyLiftNetwork;
 import com.dankscripts.sgjdestiny_dhd.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
@@ -48,6 +49,9 @@ public final class DestinyLiftEntity extends Entity {
     private static final EntityDataAccessor<Float> HELD_FEET = SynchedEntityData.defineId(DestinyLiftEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Integer> OPEN_TICKS = SynchedEntityData.defineId(DestinyLiftEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> CLOSE_FROM_OPEN = SynchedEntityData.defineId(DestinyLiftEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> BASE_X = SynchedEntityData.defineId(DestinyLiftEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> BASE_Z = SynchedEntityData.defineId(DestinyLiftEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> ROTATION = SynchedEntityData.defineId(DestinyLiftEntity.class, EntityDataSerializers.INT);
     private static final TicketType<UUID> TICKET = TicketType.create("destiny_lift", Comparator.comparing(UUID::toString), 40);
     private final LinkedHashSet<Integer> calls = new LinkedHashSet<>();
     private long waitUntil;
@@ -73,13 +77,21 @@ public final class DestinyLiftEntity extends Entity {
         entityData.define(HELD_FEET, 70.0F);
         entityData.define(OPEN_TICKS, 0);
         entityData.define(CLOSE_FROM_OPEN, false);
+        entityData.define(BASE_X, -3);
+        entityData.define(BASE_Z, -386);
+        entityData.define(ROTATION, 0);
     }
 
     public void initialize(int floor) {
+        ServerLevel server = (ServerLevel) level();
+        double[] base = DestinyShipInstallEvents.shipXZ(server, -3, -386);
+        entityData.set(BASE_X, (int) base[0]);
+        entityData.set(BASE_Z, (int) base[1]);
+        entityData.set(ROTATION, DestinyShipInstallEvents.shipQuarterTurns(server));
         entityData.set(DOCK, floor);
         entityData.set(TO, floor);
         entityData.set(FROM, (float) floor);
-        setPos(-3, floor - 1, -386);
+        setPos(base[0], floor - 1, base[1]);
         waitUntil = level().getGameTime() + 100;
     }
 
@@ -88,6 +100,38 @@ public final class DestinyLiftEntity extends Entity {
     public boolean canRelease() { return true; }
     public boolean emergency() { return entityData.get(EMERGENCY); }
     public boolean landingDoorsOpen() { return doorsReady() && entityData.get(OPEN_TICKS) > 0; }
+    public int rotation() { return entityData.get(ROTATION); }
+    private double[] point(double x, double z) {
+        double dx = x + 3, dz = z + 386;
+        return switch (rotation()) {
+            case 1 -> new double[] {entityData.get(BASE_X) - dz, entityData.get(BASE_Z) + dx};
+            case 2 -> new double[] {entityData.get(BASE_X) - dx, entityData.get(BASE_Z) - dz};
+            case 3 -> new double[] {entityData.get(BASE_X) + dz, entityData.get(BASE_Z) - dx};
+            default -> new double[] {entityData.get(BASE_X) + dx, entityData.get(BASE_Z) + dz};
+        };
+    }
+    private double[] unpoint(double x, double z) {
+        double dx = x - entityData.get(BASE_X), dz = z - entityData.get(BASE_Z);
+        return switch (rotation()) {
+            case 1 -> new double[] {-3 + dz, -386 - dx};
+            case 2 -> new double[] {-3 - dx, -386 - dz};
+            case 3 -> new double[] {-3 - dz, -386 + dx};
+            default -> new double[] {-3 + dx, -386 + dz};
+        };
+    }
+    private AABB box(double x0, double y0, double z0, double x1, double y1, double z1) {
+        double[] a = point(x0, z0), b = point(x1, z1);
+        return new AABB(Math.min(a[0], b[0]), y0, Math.min(a[1], b[1]),
+                Math.max(a[0], b[0]), y1, Math.max(a[1], b[1]));
+    }
+    private BlockPos block(int x, int y, int z) {
+        return DestinyShipInstallEvents.shipPos((ServerLevel) level(), new BlockPos(x, y, z));
+    }
+    private boolean horizontal(Entity e, double x0, double x1, double z0, double z1) {
+        double[] p = unpoint(e.getX(), e.getZ());
+        return p[0] > x0 && p[0] < x1 && p[1] > z0 && p[1] < z1;
+    }
+    private void setFloorPos(double feet) { setPos(entityData.get(BASE_X), feet - 1, entityData.get(BASE_Z)); }
 
     private void openForBoarding() {
         entityData.set(OPEN_TICKS, LiftMotion.BOARDING_TICKS);
@@ -97,7 +141,7 @@ public final class DestinyLiftEntity extends Entity {
     private boolean doorwayOccupied() {
         double feet = getY() + 1;
         return !level().getEntitiesOfClass(LivingEntity.class,
-                new AABB(-5, feet, -387, -3.95, feet + 2.7, -385),
+                box(-5, feet, -387, -3.95, feet + 2.7, -385),
                 e -> e.isAlive() && !e.isSpectator()).isEmpty();
     }
 
@@ -108,13 +152,12 @@ public final class DestinyLiftEntity extends Entity {
 
     private boolean dockSupported() {
         for (int x = -4; x <= -3; x++) for (int z = -387; z <= -386; z++)
-            if (!isDockFloor(level().getBlockState(new BlockPos(x, dock() - 1, z)))) return false;
+            if (!isDockFloor(level().getBlockState(block(x, dock() - 1, z)))) return false;
         return true;
     }
 
     public boolean aboard(Entity entity) {
-        return entity.level() == level() && entity.getX() > -4 && entity.getX() < -2
-                && entity.getZ() > -387 && entity.getZ() < -385
+        return entity.level() == level() && horizontal(entity, -4, -2, -387, -385)
                 && Math.abs(entity.getY() - (getY() + 1)) < 0.4;
     }
 
@@ -149,13 +192,13 @@ public final class DestinyLiftEntity extends Entity {
             tell(requester, "Lift blocked: clear the shaft before travelling.");
             return false;
         }
-        var doorway = new AABB(-5, from, -387, -3.95, from + 2.7, -385);
+        var doorway = box(-5, from, -387, -3.95, from + 2.7, -385);
         if (!server.getEntitiesOfClass(LivingEntity.class, doorway, e -> e.isAlive() && !e.isSpectator()).isEmpty()) {
             tell(requester, "Please stand fully inside or outside the lift doorway.");
             return false;
         }
         var riders = server.getEntitiesOfClass(LivingEntity.class,
-                new AABB(-4, from - 0.1, -387, -2, from + 2.6, -385), e -> e.isAlive() && !e.isSpectator());
+                box(-4, from - 0.1, -387, -2, from + 2.6, -385), e -> e.isAlive() && !e.isSpectator());
         for (var rider : riders) {
             if (!aboard(rider) || rider.isPassenger() || rider.isVehicle()) {
                 tell(requester, "All riders must stand on the lift floor before departure.");
@@ -188,7 +231,7 @@ public final class DestinyLiftEntity extends Entity {
         int max = (int) Math.ceil(Math.max(from, to) + 2.7) - 1;
         for (int x = -4; x <= -3; x++) for (int z = -387; z <= -386; z++) {
             for (int y = min; y <= max; y++) {
-                BlockPos pos = new BlockPos(x, y, z);
+                BlockPos pos = block(x, y, z);
                 var state = level().getBlockState(pos);
                 if (ignoreDockFloor && y == dock() - 1 && isDockFloor(state)) continue;
                 if (!state.isAir()) return false;
@@ -198,7 +241,7 @@ public final class DestinyLiftEntity extends Entity {
     }
 
     private void keepLoaded(ServerLevel server) {
-        server.getChunkSource().addRegionTicket(TICKET, new ChunkPos(-1, -25), 2, getUUID());
+        server.getChunkSource().addRegionTicket(TICKET, new ChunkPos(blockPosition()), 2, getUUID());
     }
 
     @Override public void tick() {
@@ -218,7 +261,7 @@ public final class DestinyLiftEntity extends Entity {
         if (!level().isClientSide && tickCount == 1) DestinyLiftEvents.upgradeLandingDoors((ServerLevel) level());
         if (!level().isClientSide && !travelling() && !getPassengers().isEmpty()) releaseDockedPassengers();
         if (emergency()) {
-            setPos(-3, entityData.get(HELD_FEET) - 1, -386);
+            setFloorPos(entityData.get(HELD_FEET));
             if (!level().isClientSide) {
                 if (tickCount % 20 == 0) keepLoaded((ServerLevel) level());
                 if (tickCount % 10 == 0) DestinyLiftEvents.setLandingDoors((ServerLevel) level(), -1);
@@ -238,7 +281,7 @@ public final class DestinyLiftEntity extends Entity {
                 if (tickCount % 10 == 0) DestinyLiftEvents.setLandingDoors(server, -1);
                 if (level().getGameTime() >= entityData.get(START) && !floorRemoved) {
                     for (int x = -4; x <= -3; x++) for (int z = -387; z <= -386; z++) {
-                        BlockPos p = new BlockPos(x, dock() - 1, z);
+                        BlockPos p = block(x, dock() - 1, z);
                         if (isDockFloor(level().getBlockState(p))) level().setBlock(p, Blocks.AIR.defaultBlockState(), 3);
                     }
                     floorRemoved = true;
@@ -257,7 +300,7 @@ public final class DestinyLiftEntity extends Entity {
                 arrive(entityData.get(TO));
             }
         } else {
-            setPos(-3, dock() - 1, -386);
+            setFloorPos(dock());
             if (!level().isClientSide) {
                 // Upgrade dev168's visible dock blocks in place, including a saved cab.
                 if (tickCount == 1) restoreDockSupport(dock());
@@ -281,7 +324,7 @@ public final class DestinyLiftEntity extends Entity {
     }
 
     private void arrive(int floor) {
-        setPos(-3, floor - 1, -386);
+        setFloorPos(floor);
         entityData.set(DOCK, floor);
         entityData.set(DURATION, 0);
         entityData.set(STOPPED_TICKS, 0);
@@ -294,7 +337,7 @@ public final class DestinyLiftEntity extends Entity {
         waitUntil = level().getGameTime() + LiftMotion.DOCKING_TICKS;
         DestinyLiftEvents.rememberStop((ServerLevel) level(), floor);
         DestinyLiftEvents.setLandingDoors((ServerLevel) level(), -1);
-        ((ServerLevel) level()).getChunkSource().removeRegionTicket(TICKET, new ChunkPos(-1, -25), 2, getUUID());
+        ((ServerLevel) level()).getChunkSource().removeRegionTicket(TICKET, new ChunkPos(blockPosition()), 2, getUUID());
     }
 
     private void releaseDockedPassengers() {
@@ -314,14 +357,14 @@ public final class DestinyLiftEntity extends Entity {
     private void moveFloor(double feet) {
         double previous = getY() + 1, dy = feet - previous;
         var standing = level().getEntitiesOfClass(LivingEntity.class,
-                new AABB(-4, previous - .2, -387, -2, previous + .25, -385),
-                e -> !e.isSpectator() && !e.isPassenger() && e.getX() > -4 && e.getX() < -2
-                        && e.getZ() > -387 && e.getZ() < -385 && Math.abs(e.getY() - previous) < .2
+                box(-4, previous - .2, -387, -2, previous + .25, -385),
+                e -> !e.isSpectator() && !e.isPassenger() && horizontal(e, -4, -2, -387, -385)
+                        && Math.abs(e.getY() - previous) < .2
                         && e.getDeltaMovement().y <= .01);
         // Carry only the floor's vertical displacement. Keep horizontal input, jumping,
         // camera control and crouching under the player's normal movement handling.
         if (dy > 0) for (LivingEntity rider : standing) carry(rider, dy);
-        setPos(-3, feet - 1, -386);
+        setFloorPos(feet);
         if (dy < 0) for (LivingEntity rider : standing) carry(rider, dy);
     }
 
@@ -333,8 +376,7 @@ public final class DestinyLiftEntity extends Entity {
     }
 
     public boolean insideCab(Entity entity) {
-        return entity.level() == level() && entity.getX() > -4 && entity.getX() < -2
-                && entity.getZ() > -387 && entity.getZ() < -385 && entity.getY() >= getY() + .8
+        return entity.level() == level() && horizontal(entity, -4, -2, -387, -385) && entity.getY() >= getY() + .8
                 && entity.getY() < getY() + 3.6;
     }
 
@@ -359,7 +401,7 @@ public final class DestinyLiftEntity extends Entity {
 
     private void restoreDockSupport(int floor) {
         for (int x = -4; x <= -3; x++) for (int z = -387; z <= -386; z++) {
-            BlockPos p = new BlockPos(x, floor - 1, z);
+            BlockPos p = block(x, floor - 1, z);
             var state = level().getBlockState(p);
             if (state.isAir() || state.is(Blocks.SEA_LANTERN))
                 level().setBlock(p, ModBlocks.DESTINY_LIFT_SUPPORT.get().defaultBlockState(), 3);
@@ -369,15 +411,18 @@ public final class DestinyLiftEntity extends Entity {
     public void releaseOnLogout(ServerPlayer player) {
         releasing = true;
         player.stopRiding();
-        player.teleportTo(-5.8, dock(), -386.5);
+        double[] outside = point(-5.8, -386.5);
+        player.teleportTo(outside[0], dock(), outside[1]);
         player.fallDistance = 0;
         releasing = false;
     }
 
     @Override protected void positionRider(Entity rider, MoveFunction move) {
         if (!hasPassenger(rider)) return;
-        move.accept(rider, Math.max(-3.7, Math.min(-2.3, rider.getX())), getY() + 1,
-                Math.max(-386.7, Math.min(-385.3, rider.getZ())));
+        double[] captured = unpoint(rider.getX(), rider.getZ());
+        double[] safe = point(Math.max(-3.7, Math.min(-2.3, captured[0])),
+                Math.max(-386.7, Math.min(-385.3, captured[1])));
+        move.accept(rider, safe[0], getY() + 1, safe[1]);
     }
     @Override protected boolean canAddPassenger(Entity passenger) { return travelling() && !emergency(); }
     public boolean releasingPassengers() { return releasing; }
@@ -405,7 +450,7 @@ public final class DestinyLiftEntity extends Entity {
                 || key.equals(EMERGENCY) || key.equals(HELD_FEET)) && !travelling()) {
             // Apply the dock pose in the packet handler, before a later door-block
             // update can render. Do not interpolate a stale travelling frame at rest.
-            setPos(-3, (emergency() ? entityData.get(HELD_FEET) : dock()) - 1, -386);
+            setFloorPos(emergency() ? entityData.get(HELD_FEET) : dock());
             xo = xOld = getX(); yo = yOld = getY(); zo = zOld = getZ();
         }
     }
@@ -419,9 +464,14 @@ public final class DestinyLiftEntity extends Entity {
         tag.putInt("OpenTicks", entityData.get(OPEN_TICKS));
         tag.putBoolean("CloseFromOpen", entityData.get(CLOSE_FROM_OPEN));
         tag.putBoolean("Emergency", emergency()); tag.putFloat("HeldFeet", entityData.get(HELD_FEET));
+        tag.putInt("BaseX", entityData.get(BASE_X)); tag.putInt("BaseZ", entityData.get(BASE_Z));
+        tag.putInt("Rotation", rotation());
         tag.putIntArray("Calls", calls.stream().mapToInt(Integer::intValue).toArray());
     }
     @Override protected void readAdditionalSaveData(CompoundTag tag) {
+        if (tag.contains("BaseX")) entityData.set(BASE_X, tag.getInt("BaseX"));
+        if (tag.contains("BaseZ")) entityData.set(BASE_Z, tag.getInt("BaseZ"));
+        entityData.set(ROTATION, Math.floorMod(tag.getInt("Rotation"), 4));
         entityData.set(DOCK, Math.max(70, Math.min(111, tag.getInt("Dock"))));
         entityData.set(FROM, tag.getFloat("From")); entityData.set(TO, tag.getInt("To"));
         entityData.set(START, tag.getLong("Start")); entityData.set(DURATION, tag.getInt("Duration"));

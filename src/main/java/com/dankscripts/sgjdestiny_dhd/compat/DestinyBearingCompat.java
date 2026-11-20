@@ -96,7 +96,7 @@ public final class DestinyBearingCompat {
 
     private static void beginNineChevronDischarge(ServerLevel level, UniverseDHDEntity dhd) {
         if (!ModList.get().isLoaded("sgj_deco") || ModBlocks.litDestinyBearing == null) return;
-        AbstractStargateEntity gate = dhd.stargateCache.get();
+        AbstractStargateEntity<?> gate = DestinyDHDApi.connectedStargateEntity(dhd);
         if (gate == null || gate.isRemoved() || gate.isConnected()) return;
         BlockPos gateCenter = gate.getCenterPos();
         int range = communicationRange(dhd);
@@ -117,7 +117,7 @@ public final class DestinyBearingCompat {
             return;
         }
 
-        AbstractStargateEntity gate = dhd.stargateCache.get();
+        AbstractStargateEntity<?> gate = DestinyDHDApi.connectedStargateEntity(dhd);
         if (gate == null || gate.isRemoved() || gate.isConnected()) {
             return;
         }
@@ -139,7 +139,7 @@ public final class DestinyBearingCompat {
         long gameTime = level.getGameTime();
         tickSteamRelease(level, key, gameTime);
         boolean bearingEnabled = ModList.get().isLoaded("sgj_deco") && ModBlocks.litDestinyBearing != null;
-        AbstractStargateEntity gate = dhd.stargateCache.get();
+        AbstractStargateEntity<?> gate = DestinyDHDApi.connectedStargateEntity(dhd);
         if (gate == null || gate.isRemoved()) {
             NINE_CHEVRON_DISCHARGES.remove(key);
             LAST_GATE_ACTIVITY.remove(key);
@@ -445,8 +445,7 @@ public final class DestinyBearingCompat {
 
     private static int communicationRange(UniverseDHDEntity dhd) {
         int range = 16;
-        for (CrystalCache<CrystalDHDEntity>.Slot<CommunicationCrystalItem> slot
-                : dhd.crystalCache.communicationCrystals().getSlots()) {
+        for (var slot : dhd.crystalCache.communicationCrystals().getSlots()) {
             range += slot.crystal.getRangeIncrease();
         }
         return range;

@@ -1,34 +1,154 @@
 {
   "variants": {
-    "right=false,step=0": {
+    "right=false,step=0,turn=0": {
       "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_0"
     },
-    "right=false,step=1": {
+    "right=false,step=0,turn=1": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_0",
+      "y": 90
+    },
+    "right=false,step=0,turn=2": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_0",
+      "y": 180
+    },
+    "right=false,step=0,turn=3": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_0",
+      "y": 270
+    },
+    "right=false,step=1,turn=0": {
       "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_1"
     },
-    "right=false,step=2": {
+    "right=false,step=1,turn=1": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_1",
+      "y": 90
+    },
+    "right=false,step=1,turn=2": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_1",
+      "y": 180
+    },
+    "right=false,step=1,turn=3": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_1",
+      "y": 270
+    },
+    "right=false,step=2,turn=0": {
       "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_2"
     },
-    "right=false,step=3": {
+    "right=false,step=2,turn=1": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_2",
+      "y": 90
+    },
+    "right=false,step=2,turn=2": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_2",
+      "y": 180
+    },
+    "right=false,step=2,turn=3": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_2",
+      "y": 270
+    },
+    "right=false,step=3,turn=0": {
       "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_3"
     },
-    "right=false,step=4": {
+    "right=false,step=3,turn=1": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_3",
+      "y": 90
+    },
+    "right=false,step=3,turn=2": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_3",
+      "y": 180
+    },
+    "right=false,step=3,turn=3": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_3",
+      "y": 270
+    },
+    "right=false,step=4,turn=0": {
       "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_4"
     },
-    "right=true,step=0": {
+    "right=false,step=4,turn=1": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_4",
+      "y": 90
+    },
+    "right=false,step=4,turn=2": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_4",
+      "y": 180
+    },
+    "right=false,step=4,turn=3": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_left_4",
+      "y": 270
+    },
+    "right=true,step=0,turn=0": {
       "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_0"
     },
-    "right=true,step=1": {
+    "right=true,step=0,turn=1": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_0",
+      "y": 90
+    },
+    "right=true,step=0,turn=2": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_0",
+      "y": 180
+    },
+    "right=true,step=0,turn=3": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_0",
+      "y": 270
+    },
+    "right=true,step=1,turn=0": {
       "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_1"
     },
-    "right=true,step=2": {
+    "right=true,step=1,turn=1": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_1",
+      "y": 90
+    },
+    "right=true,step=1,turn=2": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_1",
+      "y": 180
+    },
+    "right=true,step=1,turn=3": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_1",
+      "y": 270
+    },
+    "right=true,step=2,turn=0": {
       "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_2"
     },
-    "right=true,step=3": {
+    "right=true,step=2,turn=1": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_2",
+      "y": 90
+    },
+    "right=true,step=2,turn=2": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_2",
+      "y": 180
+    },
+    "right=true,step=2,turn=3": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_2",
+      "y": 270
+    },
+    "right=true,step=3,turn=0": {
       "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_3"
     },
-    "right=true,step=4": {
+    "right=true,step=3,turn=1": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_3",
+      "y": 90
+    },
+    "right=true,step=3,turn=2": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_3",
+      "y": 180
+    },
+    "right=true,step=3,turn=3": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_3",
+      "y": 270
+    },
+    "right=true,step=4,turn=0": {
       "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_4"
+    },
+    "right=true,step=4,turn=1": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_4",
+      "y": 90
+    },
+    "right=true,step=4,turn=2": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_4",
+      "y": 180
+    },
+    "right=true,step=4,turn=3": {
+      "model": "sgjdestiny_dhd:block/destiny_curved_stair_right_4",
+      "y": 270
     }
   }
 }

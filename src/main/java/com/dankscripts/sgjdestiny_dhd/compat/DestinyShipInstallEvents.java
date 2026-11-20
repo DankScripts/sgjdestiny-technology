@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
@@ -39,6 +40,8 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.povstalec.sgjourney.common.blocks.ChevronBlock;
+import net.povstalec.sgjourney.common.block_entities.stargate.AbstractStargateEntity;
+import net.povstalec.sgjourney.common.data.StargateNetwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,8 +81,8 @@ public final class DestinyShipInstallEvents {
     // stairs, wooden door, and trim. Clear it as part of the same reset.
     private static final int LEGACY_CORRIDOR_MIN_Z = -326;
     private static final int STRUCTURE_MIN_Y = 47;
-    private static final List<String> SHIP_BLOCK_MODS = List.of(
-            "simplylight", "gtceu", "sgj_deco");
+    // The packaged ship no longer makes Simply Light a runtime requirement.
+    private static final List<String> SHIP_BLOCK_MODS = List.of();
     private static final List<ShipAirlock> SHIP_AIRLOCKS = List.of(
             new ShipAirlock(-8, 85, -253, Direction.NORTH),
             new ShipAirlock(-8, 85, -246, Direction.NORTH),
@@ -98,6 +101,93 @@ public final class DestinyShipInstallEvents {
     private static final Set<MinecraftServer> STAIRS_CHECKED = Collections.newSetFromMap(new WeakHashMap<>());
 
     private DestinyShipInstallEvents() {}
+
+    /** Converts a coordinate in the captured ship to this world's gate-relative coordinate. */
+    public static BlockPos shipPos(ServerLevel level, BlockPos captured) {
+        ShipInstallData saved = ShipInstallData.get(level.getServer());
+        return saved.gateAnchor == null ? captured : transformed(captured, saved.gateAnchor, saved.gateRotation);
+    }
+
+    private static BlockPos transformed(BlockPos captured, BlockPos anchor, int quarterTurns) {
+        int dx = captured.getX() - GATE_CONTROLLER.getX();
+        int dz = captured.getZ() - GATE_CONTROLLER.getZ();
+        return switch (quarterTurns) {
+            case 1 -> new BlockPos(anchor.getX() - dz, captured.getY(), anchor.getZ() + dx);
+            case 2 -> new BlockPos(anchor.getX() - dx, captured.getY(), anchor.getZ() - dz);
+            case 3 -> new BlockPos(anchor.getX() + dz, captured.getY(), anchor.getZ() - dx);
+            default -> new BlockPos(anchor.getX() + dx, captured.getY(), anchor.getZ() + dz);
+        };
+    }
+
+    public static Direction shipDirection(ServerLevel level, Direction captured) {
+        Direction result = captured;
+        for (int i = 0; i < ShipInstallData.get(level.getServer()).gateRotation; i++) result = result.getClockWise();
+        return result;
+    }
+
+    public static int shipQuarterTurns(ServerLevel level) {
+        return ShipInstallData.get(level.getServer()).gateRotation;
+    }
+
+    public static BlockPos capturedPos(ServerLevel level, BlockPos world) {
+        ShipInstallData saved = ShipInstallData.get(level.getServer());
+        if (saved.gateAnchor == null) return world;
+        int dx = world.getX() - saved.gateAnchor.getX();
+        int dz = world.getZ() - saved.gateAnchor.getZ();
+        return switch (saved.gateRotation) {
+            case 1 -> new BlockPos(GATE_CONTROLLER.getX() + dz, world.getY(), GATE_CONTROLLER.getZ() - dx);
+            case 2 -> new BlockPos(GATE_CONTROLLER.getX() - dx, world.getY(), GATE_CONTROLLER.getZ() - dz);
+            case 3 -> new BlockPos(GATE_CONTROLLER.getX() - dz, world.getY(), GATE_CONTROLLER.getZ() + dx);
+            default -> new BlockPos(GATE_CONTROLLER.getX() + dx, world.getY(), GATE_CONTROLLER.getZ() + dz);
+        };
+    }
+
+    public static net.minecraft.world.phys.AABB shipBox(ServerLevel level,
+                                                        double minX, double minY, double minZ,
+                                                        double maxX, double maxY, double maxZ) {
+        double[] a = shipXZ(level, minX, minZ);
+        double[] b = shipXZ(level, maxX, maxZ);
+        return new net.minecraft.world.phys.AABB(Math.min(a[0], b[0]), minY, Math.min(a[1], b[1]),
+                Math.max(a[0], b[0]), maxY, Math.max(a[1], b[1]));
+    }
+
+    public static double[] shipXZ(ServerLevel level, double x, double z) {
+        ShipInstallData saved = ShipInstallData.get(level.getServer());
+        if (saved.gateAnchor == null) return new double[] {x, z};
+        double dx = x - GATE_CONTROLLER.getX();
+        double dz = z - GATE_CONTROLLER.getZ();
+        return switch (saved.gateRotation) {
+            case 1 -> new double[] {saved.gateAnchor.getX() - dz + 1, saved.gateAnchor.getZ() + dx};
+            case 2 -> new double[] {saved.gateAnchor.getX() - dx + 1, saved.gateAnchor.getZ() - dz + 1};
+            case 3 -> new double[] {saved.gateAnchor.getX() + dz, saved.gateAnchor.getZ() - dx + 1};
+            default -> new double[] {saved.gateAnchor.getX() + dx, saved.gateAnchor.getZ() + dz};
+        };
+    }
+
+    private static Rotation shipRotation(ShipInstallData saved) {
+        return switch (saved.gateRotation) {
+            case 1 -> Rotation.CLOCKWISE_90;
+            case 2 -> Rotation.CLOCKWISE_180;
+            case 3 -> Rotation.COUNTERCLOCKWISE_90;
+            default -> Rotation.NONE;
+        };
+    }
+
+    public static int shipX(ServerLevel level, int capturedX) {
+        return shipPos(level, new BlockPos(capturedX, 0, 0)).getX();
+    }
+
+    public static int shipZ(ServerLevel level, int capturedZ) {
+        return shipPos(level, new BlockPos(0, 0, capturedZ)).getZ();
+    }
+
+    /** Inclusive horizontal bounding box: minX, maxX, minZ, maxZ. */
+    public static int[] shipBounds(ServerLevel level) {
+        BlockPos a = shipPos(level, CAPTURE_MIN);
+        BlockPos b = shipPos(level, CAPTURE_MAX);
+        return new int[] {Math.min(a.getX(), b.getX()), Math.max(a.getX(), b.getX()),
+                Math.min(a.getZ(), b.getZ()), Math.max(a.getZ(), b.getZ())};
+    }
 
     @SubscribeEvent
     public static void registerCommands(RegisterCommandsEvent event) {
@@ -140,8 +230,9 @@ public final class DestinyShipInstallEvents {
             for (int step = 0; step < 5; step++) {
                 BlockState expected = ModBlocks.DESTINY_CURVED_STAIR.get().defaultBlockState()
                         .setValue(DestinyCurvedStairBlock.RIGHT, side == 1)
-                        .setValue(DestinyCurvedStairBlock.STEP, step);
-                if (!level.getBlockState(new BlockPos(newX[side][step], 75 + step, -313 - step)).equals(expected)) {
+                        .setValue(DestinyCurvedStairBlock.STEP, step)
+                        .setValue(DestinyCurvedStairBlock.TURN, shipQuarterTurns(level));
+                if (!level.getBlockState(shipPos(level, new BlockPos(newX[side][step], 75 + step, -313 - step))).equals(expected)) {
                     alreadyInstalled = false;
                 }
             }
@@ -151,9 +242,9 @@ public final class DestinyShipInstallEvents {
             return 1;
         }
         ResourceLocation firstId = ForgeRegistries.BLOCKS.getKey(
-                level.getBlockState(new BlockPos(-15, 75, -314)).getBlock());
+                level.getBlockState(shipPos(level, new BlockPos(-15, 75, -314))).getBlock());
         boolean macaw = "mcwbridges:iron_bridge_stair".equals(String.valueOf(firstId));
-        boolean earlierCurved = level.getBlockState(new BlockPos(-15, 75, -314))
+        boolean earlierCurved = level.getBlockState(shipPos(level, new BlockPos(-15, 75, -314)))
                 .is(ModBlocks.DESTINY_CURVED_STAIR.get());
         if (!macaw && !earlierCurved) {
             source.sendFailure(Component.literal("No recognized older Destiny stair pair was found; no blocks were changed."));
@@ -162,13 +253,14 @@ public final class DestinyShipInstallEvents {
         // Validate the entire footprint before changing anything in an existing world.
         for (int side = 0; side < 2; side++) {
             for (int step = 0; step < 5; step++) {
-                BlockPos oldPos = new BlockPos(macaw ? oldMacawX[side] : oldCurvedX[side][step],
-                        75 + step, -314 - step);
-                BlockPos newPos = new BlockPos(newX[side][step], 75 + step, -313 - step);
+                BlockPos oldPos = shipPos(level, new BlockPos(macaw ? oldMacawX[side] : oldCurvedX[side][step],
+                        75 + step, -314 - step));
+                BlockPos newPos = shipPos(level, new BlockPos(newX[side][step], 75 + step, -313 - step));
                 BlockState oldState = level.getBlockState(oldPos);
                 BlockState expectedCurved = ModBlocks.DESTINY_CURVED_STAIR.get().defaultBlockState()
                         .setValue(DestinyCurvedStairBlock.RIGHT, side == 1)
-                        .setValue(DestinyCurvedStairBlock.STEP, step);
+                        .setValue(DestinyCurvedStairBlock.STEP, step)
+                        .setValue(DestinyCurvedStairBlock.TURN, shipQuarterTurns(level));
                 ResourceLocation oldId = ForgeRegistries.BLOCKS.getKey(oldState.getBlock());
                 if (!(macaw ? "mcwbridges:iron_bridge_stair".equals(String.valueOf(oldId))
                         : oldState.equals(expectedCurved)) || !level.getBlockState(newPos).isAir()) {
@@ -179,17 +271,18 @@ public final class DestinyShipInstallEvents {
         }
         for (int side = 0; side < 2; side++) {
             for (int step = 0; step < 5; step++) {
-                level.setBlock(new BlockPos(macaw ? oldMacawX[side] : oldCurvedX[side][step],
-                                75 + step, -314 - step),
+                level.setBlock(shipPos(level, new BlockPos(macaw ? oldMacawX[side] : oldCurvedX[side][step],
+                                75 + step, -314 - step)),
                         Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
             }
         }
         for (int side = 0; side < 2; side++) {
             for (int step = 0; step < 5; step++) {
-                level.setBlock(new BlockPos(newX[side][step], 75 + step, -313 - step),
+                level.setBlock(shipPos(level, new BlockPos(newX[side][step], 75 + step, -313 - step)),
                         ModBlocks.DESTINY_CURVED_STAIR.get().defaultBlockState()
                                 .setValue(DestinyCurvedStairBlock.RIGHT, side == 1)
-                                .setValue(DestinyCurvedStairBlock.STEP, step), Block.UPDATE_ALL);
+                                .setValue(DestinyCurvedStairBlock.STEP, step)
+                                .setValue(DestinyCurvedStairBlock.TURN, shipQuarterTurns(level)), Block.UPDATE_ALL);
             }
         }
         source.sendSuccess(() -> Component.literal("Upgraded both Destiny gate-room staircases."), true);
@@ -205,13 +298,14 @@ public final class DestinyShipInstallEvents {
         int converted = 0;
         int skipped = 0;
         for (ShipAirlock airlock : SHIP_AIRLOCKS) {
-            BlockPos center = new BlockPos(airlock.x(), airlock.y(), airlock.z());
-            BlockPos anchor = center.relative(airlock.facing().getCounterClockWise());
+            BlockPos center = shipPos(level, new BlockPos(airlock.x(), airlock.y(), airlock.z()));
+            Direction facing = shipDirection(level, airlock.facing());
+            BlockPos anchor = center.relative(facing.getCounterClockWise());
             int old = 0;
             int current = 0;
             for (int row = 0; row < 3; row++) {
                 for (int column = 0; column < 3; column++) {
-                    BlockPos pos = anchor.relative(airlock.facing().getClockWise(), column).above(row);
+                    BlockPos pos = anchor.relative(facing.getClockWise(), column).above(row);
                     BlockState state = level.getBlockState(pos);
                     ResourceLocation id = ForgeRegistries.BLOCKS.getKey(state.getBlock());
                     if (id != null && id.toString().equals("ad_astra:airlock")) old++;
@@ -225,10 +319,10 @@ public final class DestinyShipInstallEvents {
             boolean open = property instanceof BooleanProperty booleanProperty && oldCenter.getValue(booleanProperty);
             for (int row = 0; row < 3; row++) {
                 for (int column = 0; column < 3; column++) {
-                    BlockPos pos = anchor.relative(airlock.facing().getClockWise(), column).above(row);
+                    BlockPos pos = anchor.relative(facing.getClockWise(), column).above(row);
                     BlockState replacement = com.dankscripts.sgjdestiny_dhd.registry.ModBlocks.DESTINY_SHIP_AIRLOCK.get()
                             .defaultBlockState()
-                            .setValue(com.dankscripts.sgjdestiny_dhd.block.DestinyShipAirlockBlock.FACING, airlock.facing())
+                            .setValue(com.dankscripts.sgjdestiny_dhd.block.DestinyShipAirlockBlock.FACING, facing)
                             .setValue(com.dankscripts.sgjdestiny_dhd.block.DestinyShipAirlockBlock.COLUMN, column)
                             .setValue(com.dankscripts.sgjdestiny_dhd.block.DestinyShipAirlockBlock.ROW, row)
                             .setValue(com.dankscripts.sgjdestiny_dhd.block.DestinyShipAirlockBlock.OPEN, open);
@@ -315,7 +409,7 @@ public final class DestinyShipInstallEvents {
                 ServerLevel destiny = server.getLevel(DESTINY);
                 if (destiny != null) {
                     STAIRS_CHECKED.add(server);
-                    BlockPos firstStair = new BlockPos(-15, 75, -314);
+                    BlockPos firstStair = shipPos(destiny, new BlockPos(-15, 75, -314));
                     ResourceLocation id = ForgeRegistries.BLOCKS.getKey(destiny.getBlockState(firstStair).getBlock());
                     if ("mcwbridges:iron_bridge_stair".equals(String.valueOf(id))
                             || destiny.getBlockState(firstStair).is(ModBlocks.DESTINY_CURVED_STAIR.get())) {
@@ -346,8 +440,9 @@ public final class DestinyShipInstallEvents {
             }
             if (progress.nextTile < progress.tiles.size()) {
                 Tile tile = progress.tiles.get(progress.nextTile);
-                BlockPos origin = new BlockPos(tile.chunkX << 4, STRUCTURE_MIN_Y, tile.chunkZ << 4);
-                level.getChunk(tile.chunkX, tile.chunkZ);
+                BlockPos origin = shipPos(level,
+                        new BlockPos(tile.chunkX << 4, STRUCTURE_MIN_Y, tile.chunkZ << 4));
+                level.getChunk(origin.getX() >> 4, origin.getZ() >> 4);
                 Optional<StructureTemplate> template = level.getStructureManager().get(
                         new ResourceLocation(DestinyDHD.MOD_ID,
                                 "destiny_ship/" + tile.resource.substring(0, tile.resource.length() - 4)));
@@ -356,8 +451,20 @@ public final class DestinyShipInstallEvents {
                 // room. Reset has already cleared the entire captured volume.
                 if (!progress.reset) clearOriginalRoomTile(level, tile, progress.preservedGatePositions);
                 if (!template.get().placeInWorld(level, origin, origin,
-                        new StructurePlaceSettings().setIgnoreEntities(true), level.random, Block.UPDATE_CLIENTS)) {
+                        new StructurePlaceSettings().setIgnoreEntities(true).setRotation(shipRotation(saved)),
+                        level.random, Block.UPDATE_CLIENTS)) {
                     throw new IllegalStateException("Unable to place ship tile " + tile.resource);
+                }
+                // The captured structure has one SGJ Decorations bearing. Keep
+                // the ship complete even when that optional mod is absent.
+                if (!ModList.get().isLoaded("sgj_deco")
+                        && tile.chunkX == -1 && tile.chunkZ == -19) {
+                    BlockPos bearingPos = shipPos(level, new BlockPos(-8, 81, -299));
+                    if (!progress.preservedGatePositions.contains(bearingPos))
+                        level.setBlock(bearingPos, ModBlocks.DESTINY_BEARING_FALLBACK.get()
+                                .defaultBlockState().setValue(
+                                        com.dankscripts.sgjdestiny_dhd.block.LitDestinyBearingBlock.FACING,
+                                        shipDirection(level, Direction.SOUTH)), Block.UPDATE_CLIENTS);
                 }
                 progress.restoreProtectedBlocks(level, tile);
                 progress.nextTile++;
@@ -365,15 +472,15 @@ public final class DestinyShipInstallEvents {
             }
 
             progress.restoreProtectedBlocks(level, null);
-            if (!(level.getBlockEntity(KINO_DISPENSER) instanceof KinoDispenserBlockEntity dispenser)
+            if (!(level.getBlockEntity(shipPos(level, KINO_DISPENSER)) instanceof KinoDispenserBlockEntity dispenser)
                     || dispenser.getStoredKinos() != 2) {
                 throw new IllegalStateException("Packaged dispenser did not retain its two Kino kits");
             }
-            if (!level.getBlockState(DIALING_CONSOLE).is(
+            if (!level.getBlockState(shipPos(level, DIALING_CONSOLE)).is(
                     com.dankscripts.sgjdestiny_dhd.registry.ModBlocks.DESTINY_DHD.get())) {
                 throw new IllegalStateException("Destiny dialing console was not installed");
             }
-            if (!gateIntact(level, progress.gateBlocks)) {
+            if (!gateIntact(level, progress.gateBlocks, saved.gateAnchor, saved.gateRotation)) {
                 throw new IllegalStateException("The original Destiny Stargate changed during installation");
             }
             LOGGER.info("Destiny elevator: {}", com.dankscripts.sgjdestiny_dhd.elevator.DestinyLiftEvents.install(level));
@@ -409,7 +516,7 @@ public final class DestinyShipInstallEvents {
             }
             int end = Math.min(progress.next + 32, progress.positions.size());
             for (; progress.next < end; progress.next++) {
-                BlockPos position = progress.positions.get(progress.next);
+                BlockPos position = shipPos(level, progress.positions.get(progress.next));
                 if (level.getBlockState(position).is(Blocks.SPAWNER)) {
                     level.setBlock(position, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
                     progress.removed++;
@@ -454,18 +561,18 @@ public final class DestinyShipInstallEvents {
                     block -> block.pos.equals(GATE_CONTROLLER))) {
                 throw new IllegalStateException("Ship manifest does not identify the original 26-block Stargate");
             }
-            level.getChunk(GATE_CONTROLLER.getX() >> 4, GATE_CONTROLLER.getZ() >> 4);
-            restoreMissingGateChevron(level, gateBlocks);
-            if (!gateIntact(level, gateBlocks)) {
+            GateAnchor gateAnchor = findGateAnchor(level, saved, gateBlocks);
+            if (gateAnchor == null) {
                 if (saved.resetRequested) {
                     saved.cancelReset();
                     FAILED.add(server);
-                    LOGGER.error("Destiny ship reset canceled: the original SGJourney Stargate is incomplete at {}. The reset will not repeat on restart.", GATE_CONTROLLER);
+                    LOGGER.error("Destiny ship reset canceled: no intact SGJourney Destiny Stargate was found. The reset will not repeat on restart.");
                 } else {
-                    LOGGER.warn("Opt-in Destiny ship is waiting for the original SGJourney Stargate at {}", GATE_CONTROLLER);
+                    LOGGER.warn("Opt-in Destiny ship is waiting for SGJourney's generated Destiny Stargate");
                 }
                 return null;
             }
+            saved.setGateAnchor(gateAnchor);
             List<Tile> tiles = new ArrayList<>();
             for (JsonElement item : manifest.getAsJsonArray("tiles")) {
                 JsonObject tile = item.getAsJsonObject();
@@ -495,17 +602,46 @@ public final class DestinyShipInstallEvents {
         }
     }
 
+    private static GateAnchor findGateAnchor(ServerLevel level, ShipInstallData saved, List<GateBlock> gateBlocks) {
+        if (saved.gateAnchor != null && gateIntact(level, gateBlocks, saved.gateAnchor, saved.gateRotation))
+            return new GateAnchor(saved.gateAnchor, saved.gateRotation);
+        level.getChunk(GATE_CONTROLLER.getX() >> 4, GATE_CONTROLLER.getZ() >> 4);
+        restoreMissingGateChevron(level, gateBlocks, GATE_CONTROLLER, 0);
+        if (gateIntact(level, gateBlocks, GATE_CONTROLLER, 0)) return new GateAnchor(GATE_CONTROLLER, 0);
+        // SGJourney may generate the Destiny gate at a different coordinate in
+        // a fresh world. Resolve its physical controller from the gate network
+        // and align our captured ship with it, leaving its address untouched.
+        for (var record : StargateNetwork.get(level.getServer()).getStargatesInDimension(DESTINY)) {
+            if (record.getPosition() == null) continue;
+            BlockPos center = BlockPos.containing(record.getPosition());
+            for (int x = center.getX() - 8; x <= center.getX() + 8; x++)
+                for (int y = center.getY() - 8; y <= center.getY() + 8; y++)
+                    for (int z = center.getZ() - 8; z <= center.getZ() + 8; z++) {
+                        BlockPos candidate = new BlockPos(x, y, z);
+                        if (level.getBlockEntity(candidate) instanceof AbstractStargateEntity<?>
+                                && candidate.getY() == GATE_CONTROLLER.getY())
+                            for (int rotation = 0; rotation < 4; rotation++)
+                                if (gateIntact(level, gateBlocks, candidate, rotation))
+                                    return new GateAnchor(candidate, rotation);
+                    }
+        }
+        return null;
+    }
+
     private static BlockPos pos(JsonArray values) {
         return new BlockPos(values.get(0).getAsInt(), values.get(1).getAsInt(), values.get(2).getAsInt());
     }
 
-    private static void restoreMissingGateChevron(ServerLevel level, List<GateBlock> gateBlocks) {
+    private static void restoreMissingGateChevron(ServerLevel level, List<GateBlock> gateBlocks,
+                                                  BlockPos anchor, int rotation) {
+        BlockPos chevron = transformed(GATE_CHEVRON, anchor, rotation);
+        BlockPos support = chevron.below();
         // dev-61 briefly removed this floor support during the original-room clear.
         // SGJourney's attached chevron consequently popped off. Repair only that
         // known failure when every other captured gate block still matches.
-        if (!level.getBlockState(GATE_CHEVRON).isAir()
-                || level.getBlockState(GATE_CHEVRON_SUPPORT).isAir()
-                || !(level.getBlockEntity(GATE_CONTROLLER) instanceof
+        if (!level.getBlockState(chevron).isAir()
+                || level.getBlockState(support).isAir()
+                || !(level.getBlockEntity(anchor) instanceof
                         net.povstalec.sgjourney.common.block_entities.stargate.AbstractStargateEntity<?>)) return;
         boolean expectedChevron = false;
         for (GateBlock gate : gateBlocks) {
@@ -513,15 +649,16 @@ public final class DestinyShipInstallEvents {
                 expectedChevron = gate.name.equals("sgjourney:universe_stargate_chevron");
                 continue;
             }
-            ResourceLocation found = ForgeRegistries.BLOCKS.getKey(level.getBlockState(gate.pos).getBlock());
+            BlockPos actual = transformed(gate.pos, anchor, rotation);
+            ResourceLocation found = ForgeRegistries.BLOCKS.getKey(level.getBlockState(actual).getBlock());
             if (found == null || !found.toString().equals(gate.name)) return;
         }
         if (!expectedChevron) return;
-        Block chevron = ForgeRegistries.BLOCKS.getValue(new ResourceLocation("sgjourney", "universe_stargate_chevron"));
-        if (!(chevron instanceof ChevronBlock)) return;
-        BlockState state = chevron.defaultBlockState().setValue(ChevronBlock.ORIENTATION, FrontAndTop.UP_SOUTH);
-        if (level.setBlock(GATE_CHEVRON, state, Block.UPDATE_CLIENTS)) {
-            LOGGER.warn("Restored the Destiny Stargate chevron displaced by the previous ship reset at {}", GATE_CHEVRON);
+        Block chevronBlock = ForgeRegistries.BLOCKS.getValue(new ResourceLocation("sgjourney", "universe_stargate_chevron"));
+        if (!(chevronBlock instanceof ChevronBlock)) return;
+        BlockState state = chevronBlock.defaultBlockState().setValue(ChevronBlock.ORIENTATION, FrontAndTop.UP_SOUTH);
+        if (level.setBlock(chevron, state, Block.UPDATE_CLIENTS)) {
+            LOGGER.warn("Restored the Destiny Stargate chevron displaced by the previous ship reset at {}", chevron);
         }
     }
 
@@ -533,22 +670,26 @@ public final class DestinyShipInstallEvents {
         if (minX > maxX || minZ > maxZ) return;
         for (BlockPos position : BlockPos.betweenClosed(minX, ORIGINAL_ROOM_MIN.getY(), minZ,
                 maxX, ORIGINAL_ROOM_MAX.getY(), maxZ)) {
-            if (preservedGatePositions.contains(position)) continue;
-            if (!level.getBlockState(position).isAir())
-                level.setBlock(position, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+            BlockPos actual = shipPos(level, position);
+            if (preservedGatePositions.contains(actual)) continue;
+            if (!level.getBlockState(actual).isAir())
+                level.setBlock(actual, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
         }
     }
 
-    private static boolean gateIntact(ServerLevel level, List<GateBlock> gateBlocks) {
+    private static boolean gateIntact(ServerLevel level, List<GateBlock> gateBlocks,
+                                      BlockPos anchor, int rotation) {
         for (GateBlock gate : gateBlocks) {
-            level.getChunk(gate.pos.getX() >> 4, gate.pos.getZ() >> 4);
-            ResourceLocation found = ForgeRegistries.BLOCKS.getKey(level.getBlockState(gate.pos).getBlock());
+            BlockPos actual = transformed(gate.pos, anchor, rotation);
+            level.getChunk(actual.getX() >> 4, actual.getZ() >> 4);
+            ResourceLocation found = ForgeRegistries.BLOCKS.getKey(level.getBlockState(actual).getBlock());
             if (found == null || !found.toString().equals(gate.name)) return false;
         }
-        return level.getBlockEntity(GATE_CONTROLLER) instanceof
+        return level.getBlockEntity(anchor) instanceof
                 net.povstalec.sgjourney.common.block_entities.stargate.AbstractStargateEntity<?>;
     }
 
+    private record GateAnchor(BlockPos pos, int rotation) {}
     private record Tile(int chunkX, int chunkZ, String resource) {}
     private record ClearColumn(int chunkX, int chunkZ, int minX, int maxX, int minZ, int maxZ) {
         private int volume() {
@@ -588,26 +729,37 @@ public final class DestinyShipInstallEvents {
             this.gateBlocks = gateBlocks;
             this.reset = reset;
             preservedGatePositions = new HashSet<>();
-            for (GateBlock gate : gateBlocks) preservedGatePositions.add(gate.pos());
+            for (GateBlock gate : gateBlocks) {
+                BlockPos gatePos = shipPos(level, gate.pos());
+                preservedGatePositions.add(gatePos);
+                snapshot(level, gatePos);
+            }
             // This floor block supports the free-standing Universe chevron.
-            preservedGatePositions.add(GATE_CHEVRON_SUPPORT);
-            snapshot(level, GATE_CHEVRON_SUPPORT);
+            BlockPos support = shipPos(level, GATE_CHEVRON_SUPPORT);
+            preservedGatePositions.add(support);
+            snapshot(level, support);
             if (reset) {
-                if (standingBlock != null && standingBlock.getX() >= CAPTURE_MIN.getX()
-                        && standingBlock.getX() <= CAPTURE_MAX.getX()
+                BlockPos cornerA = shipPos(level, CAPTURE_MIN);
+                BlockPos cornerB = shipPos(level, CAPTURE_MAX);
+                int minX = Math.min(cornerA.getX(), cornerB.getX());
+                int maxX = Math.max(cornerA.getX(), cornerB.getX());
+                int minZ = Math.min(cornerA.getZ(), cornerB.getZ());
+                int maxZ = Math.max(cornerA.getZ(), cornerB.getZ());
+                if (standingBlock != null && standingBlock.getX() >= minX
+                        && standingBlock.getX() <= maxX
                         && standingBlock.getY() >= CAPTURE_MIN.getY()
                         && standingBlock.getY() <= CAPTURE_MAX.getY()
-                        && standingBlock.getZ() >= CAPTURE_MIN.getZ()
-                        && standingBlock.getZ() <= CAPTURE_MAX.getZ()) {
+                        && standingBlock.getZ() >= minZ
+                        && standingBlock.getZ() <= maxZ) {
                     if (preservedGatePositions.add(standingBlock)) snapshot(level, standingBlock);
                 }
-                for (int chunkZ = CAPTURE_MIN.getZ() >> 4; chunkZ <= CAPTURE_MAX.getZ() >> 4; chunkZ++) {
-                    for (int chunkX = CAPTURE_MIN.getX() >> 4; chunkX <= CAPTURE_MAX.getX() >> 4; chunkX++) {
+                for (int chunkZ = minZ >> 4; chunkZ <= maxZ >> 4; chunkZ++) {
+                    for (int chunkX = minX >> 4; chunkX <= maxX >> 4; chunkX++) {
                         clearColumns.add(new ClearColumn(chunkX, chunkZ,
-                                Math.max(CAPTURE_MIN.getX(), chunkX << 4),
-                                Math.min(CAPTURE_MAX.getX(), (chunkX << 4) + 15),
-                                Math.max(CAPTURE_MIN.getZ(), chunkZ << 4),
-                                Math.min(CAPTURE_MAX.getZ(), (chunkZ << 4) + 15)));
+                                Math.max(minX, chunkX << 4),
+                                Math.min(maxX, (chunkX << 4) + 15),
+                                Math.max(minZ, chunkZ << 4),
+                                Math.min(maxZ, (chunkZ << 4) + 15)));
                     }
                 }
             }
@@ -658,8 +810,10 @@ public final class DestinyShipInstallEvents {
         private void restoreProtectedBlocks(ServerLevel level, Tile tile) {
             for (PreservedBlock block : protectedBlocks) {
                 BlockPos pos = block.pos();
-                if (tile != null && ((pos.getX() >> 4) != tile.chunkX() || (pos.getZ() >> 4) != tile.chunkZ()
-                        || pos.getY() < CAPTURE_MIN.getY() || pos.getY() > CAPTURE_MAX.getY())) continue;
+                if (tile != null) {
+                    BlockPos captured = capturedPos(level, pos);
+                    if ((captured.getX() >> 4) != tile.chunkX() || (captured.getZ() >> 4) != tile.chunkZ()) continue;
+                }
                 if (!level.getBlockState(pos).equals(block.state())) {
                     if (!level.setBlock(pos, block.state(), Block.UPDATE_CLIENTS))
                         throw new IllegalStateException("Protected standing or gate support block was lost at " + pos);
@@ -680,6 +834,8 @@ public final class DestinyShipInstallEvents {
         private boolean resetRequested;
         private boolean spawnersCleaned;
         private BlockPos resetSupport;
+        private BlockPos gateAnchor;
+        private int gateRotation;
 
         private static ShipInstallData get(MinecraftServer server) {
             return server.overworld().getDataStorage().computeIfAbsent(ShipInstallData::load,
@@ -693,7 +849,20 @@ public final class DestinyShipInstallEvents {
             data.spawnersCleaned = tag.getBoolean("SpawnersCleaned");
             int[] support = tag.getIntArray("ResetSupport");
             if (support.length == 3) data.resetSupport = new BlockPos(support[0], support[1], support[2]);
+            int[] anchor = tag.getIntArray("GateAnchor");
+            if (anchor.length == 3) data.gateAnchor = new BlockPos(anchor[0], anchor[1], anchor[2]);
+            data.gateRotation = Math.floorMod(tag.getInt("GateRotation"), 4);
             return data;
+        }
+
+        private void setGateAnchor(GateAnchor anchor) {
+            if (!anchor.pos().equals(gateAnchor) || anchor.rotation() != gateRotation) {
+                gateAnchor = anchor.pos().immutable();
+                gateRotation = anchor.rotation();
+                setDirty();
+                LOGGER.info("Aligned bundled Destiny ship with SGJourney Stargate at {} ({} quarter turns)",
+                        gateAnchor, gateRotation);
+            }
         }
 
         private void requestReset(BlockPos standingBlock) {
@@ -730,6 +899,9 @@ public final class DestinyShipInstallEvents {
             tag.putBoolean("SpawnersCleaned", spawnersCleaned);
             if (resetSupport != null) tag.putIntArray("ResetSupport",
                     new int[] {resetSupport.getX(), resetSupport.getY(), resetSupport.getZ()});
+            if (gateAnchor != null) tag.putIntArray("GateAnchor",
+                    new int[] {gateAnchor.getX(), gateAnchor.getY(), gateAnchor.getZ()});
+            tag.putInt("GateRotation", gateRotation);
             return tag;
         }
     }

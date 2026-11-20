@@ -26,28 +26,7 @@ side="BOTH"
 [[dependencies.${mod_id}]]
 modId="sgjourney"
 mandatory=true
-versionRange="[0.6.49,)"
-ordering="AFTER"
-side="BOTH"
-
-[[dependencies.${mod_id}]]
-modId="simplylight"
-mandatory=true
-versionRange="[1.4.6,)"
-ordering="AFTER"
-side="BOTH"
-
-[[dependencies.${mod_id}]]
-modId="gtceu"
-mandatory=true
-versionRange="[7.2.0,)"
-ordering="AFTER"
-side="BOTH"
-
-[[dependencies.${mod_id}]]
-modId="mcwbridges"
-mandatory=true
-versionRange="[3.1.0,)"
+versionRange="[0.6.55-alpha,)"
 ordering="AFTER"
 side="BOTH"
 
@@ -60,7 +39,7 @@ side="BOTH"
 
 [[dependencies.${mod_id}]]
 modId="sgj_deco"
-mandatory=true
+mandatory=false
 versionRange="[1.2.0,)"
 ordering="AFTER"
 side="BOTH"

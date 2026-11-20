@@ -1,28 +1,124 @@
 {
   "variants": {
-    "open=false,part=0": {
+    "open=false,part=0,turn=0": {
       "model": "sgjdestiny_dhd:block/destiny_elevator_door_0_closed"
     },
-    "open=true,part=0": {
+    "open=false,part=0,turn=1": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_0_closed",
+      "y": 90
+    },
+    "open=false,part=0,turn=2": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_0_closed",
+      "y": 180
+    },
+    "open=false,part=0,turn=3": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_0_closed",
+      "y": 270
+    },
+    "open=true,part=0,turn=0": {
       "model": "sgjdestiny_dhd:block/destiny_elevator_door_0_open"
     },
-    "open=false,part=1": {
+    "open=true,part=0,turn=1": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_0_open",
+      "y": 90
+    },
+    "open=true,part=0,turn=2": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_0_open",
+      "y": 180
+    },
+    "open=true,part=0,turn=3": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_0_open",
+      "y": 270
+    },
+    "open=false,part=1,turn=0": {
       "model": "sgjdestiny_dhd:block/destiny_elevator_door_1_closed"
     },
-    "open=true,part=1": {
+    "open=false,part=1,turn=1": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_1_closed",
+      "y": 90
+    },
+    "open=false,part=1,turn=2": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_1_closed",
+      "y": 180
+    },
+    "open=false,part=1,turn=3": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_1_closed",
+      "y": 270
+    },
+    "open=true,part=1,turn=0": {
       "model": "sgjdestiny_dhd:block/destiny_elevator_door_1_open"
     },
-    "open=false,part=2": {
+    "open=true,part=1,turn=1": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_1_open",
+      "y": 90
+    },
+    "open=true,part=1,turn=2": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_1_open",
+      "y": 180
+    },
+    "open=true,part=1,turn=3": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_1_open",
+      "y": 270
+    },
+    "open=false,part=2,turn=0": {
       "model": "sgjdestiny_dhd:block/destiny_elevator_door_2_closed"
     },
-    "open=true,part=2": {
+    "open=false,part=2,turn=1": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_2_closed",
+      "y": 90
+    },
+    "open=false,part=2,turn=2": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_2_closed",
+      "y": 180
+    },
+    "open=false,part=2,turn=3": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_2_closed",
+      "y": 270
+    },
+    "open=true,part=2,turn=0": {
       "model": "sgjdestiny_dhd:block/destiny_elevator_door_2_open"
     },
-    "open=false,part=3": {
+    "open=true,part=2,turn=1": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_2_open",
+      "y": 90
+    },
+    "open=true,part=2,turn=2": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_2_open",
+      "y": 180
+    },
+    "open=true,part=2,turn=3": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_2_open",
+      "y": 270
+    },
+    "open=false,part=3,turn=0": {
       "model": "sgjdestiny_dhd:block/destiny_elevator_door_3_closed"
     },
-    "open=true,part=3": {
+    "open=false,part=3,turn=1": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_3_closed",
+      "y": 90
+    },
+    "open=false,part=3,turn=2": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_3_closed",
+      "y": 180
+    },
+    "open=false,part=3,turn=3": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_3_closed",
+      "y": 270
+    },
+    "open=true,part=3,turn=0": {
       "model": "sgjdestiny_dhd:block/destiny_elevator_door_3_open"
+    },
+    "open=true,part=3,turn=1": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_3_open",
+      "y": 90
+    },
+    "open=true,part=3,turn=2": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_3_open",
+      "y": 180
+    },
+    "open=true,part=3,turn=3": {
+      "model": "sgjdestiny_dhd:block/destiny_elevator_door_3_open",
+      "y": 270
     }
   }
 }

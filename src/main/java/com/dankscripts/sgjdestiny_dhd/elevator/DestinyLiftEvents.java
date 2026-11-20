@@ -7,6 +7,7 @@ import com.dankscripts.sgjdestiny_dhd.registry.ModEntities;
 import com.dankscripts.sgjdestiny_dhd.registry.ModBlocks;
 import com.dankscripts.sgjdestiny_dhd.block.DestinyLiftAnchorBlock;
 import com.dankscripts.sgjdestiny_dhd.block.DestinyLiftDoorBlock;
+import com.dankscripts.sgjdestiny_dhd.compat.DestinyShipInstallEvents;
 import com.dankscripts.sgjdestiny_dhd.registry.ModItems;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
@@ -40,6 +41,10 @@ import java.util.UUID;
 public final class DestinyLiftEvents {
     public static final BlockPos ANCHOR = new BlockPos(-4, 65, -387);
     private DestinyLiftEvents() {}
+    private static BlockPos at(ServerLevel level, int x, int y, int z) {
+        return DestinyShipInstallEvents.shipPos(level, new BlockPos(x, y, z));
+    }
+    private static BlockPos anchor(ServerLevel level) { return DestinyShipInstallEvents.shipPos(level, ANCHOR); }
     public static boolean isDestiny(Level level) { return level.dimension().location().toString().equals("sgjourney:destiny"); }
 
     public static DestinyLiftEntity find(ServerLevel level) {
@@ -53,17 +58,18 @@ public final class DestinyLiftEvents {
     /** Returns a diagnostic rather than changing an unrecognized/altered moving mechanism. */
     public static String install(ServerLevel level) {
         if (!isDestiny(level)) return "This upgrade is for Destiny's existing elevator.";
-        level.getChunk(-1, -25);
+        BlockPos shaft = anchor(level);
+        level.getChunk(shaft.getX() >> 4, shaft.getZ() >> 4);
         if (Data.get(level).cab != null) return find(level) == null ? "Elevator is loading; try again in a moment." : "Elevator already upgraded.";
-        boolean capturedCab = level.getBlockState(ANCHOR).is(ModBlocks.DESTINY_LIFT_ANCHOR.get());
-        int capturedFloor = capturedCab ? DestinyLiftStops.HEIGHTS[level.getBlockState(ANCHOR).getValue(DestinyLiftAnchorBlock.STOP)] : -1;
+        boolean capturedCab = level.getBlockState(shaft).is(ModBlocks.DESTINY_LIFT_ANCHOR.get());
+        int capturedFloor = capturedCab ? DestinyLiftStops.HEIGHTS[level.getBlockState(shaft).getValue(DestinyLiftAnchorBlock.STOP)] : -1;
         for (int floor : DestinyLiftStops.HEIGHTS) {
             Map<BlockPos, BlockState> motor = capturedCab ? new LinkedHashMap<>() : legacyMotor(level, floor);
             if (capturedCab && floor != capturedFloor) continue;
             if (motor == null) continue;
-            if (!capturedCab && !level.getBlockState(ANCHOR).is(Blocks.OBSIDIAN)) return "The original elevator pit is altered; upgrade canceled.";
+            if (!capturedCab && !level.getBlockState(shaft).is(Blocks.OBSIDIAN)) return "The original elevator pit is altered; upgrade canceled.";
             for (int x = -4; x <= -3; x++) for (int z = -387; z <= -386; z++) for (int y = 69; y <= 113; y++) {
-                BlockPos p = new BlockPos(x, y, z);
+                BlockPos p = at(level, x, y, z);
                 // Captures can contain a docked floor, or no floor if saved during travel.
                 if (capturedCab && DestinyLiftStops.index(y + 1) >= 0
                         && (level.getBlockState(p).is(Blocks.SEA_LANTERN) || level.getBlockState(p).is(ModBlocks.DESTINY_LIFT_SUPPORT.get())))
@@ -71,11 +77,11 @@ public final class DestinyLiftEvents {
                 if (!motor.containsKey(p) && !level.getBlockState(p).isAir()) return "Clear the elevator shaft before upgrading it.";
             }
             for (int landing : DestinyLiftStops.HEIGHTS) {
-                BlockPos button = new BlockPos(-6, landing + 1, -388);
+                BlockPos button = at(level, -6, landing + 1, -388);
                 if (!level.getBlockState(button).isAir() && !(capturedCab && level.getBlockState(button).is(Blocks.STONE_BUTTON)))
                     return "The outside call-button position is occupied at " + button.toShortString();
                 for (int z = -387; z <= -386; z++) for (int y = landing; y <= landing + 1; y++) {
-                    BlockPos p = new BlockPos(-5, y, z);
+                    BlockPos p = at(level, -5, y, z);
                     if (!isLandingDoor(level.getBlockState(p)) && !level.getBlockState(p).isAir())
                         return "The landing doorway is obstructed at " + p.toShortString();
                 }
@@ -86,21 +92,22 @@ public final class DestinyLiftEvents {
             if (!level.addFreshEntity(cab)) return "Elevator spawn was rejected; existing machinery was preserved.";
             Data data = Data.get(level);
             data.original = new ListTag();
-            remember(data, ANCHOR, level.getBlockState(ANCHOR));
+            remember(data, shaft, level.getBlockState(shaft));
             motor.forEach((p, s) -> remember(data, p, s));
             for (BlockPos p : motor.keySet()) level.setBlock(p, Blocks.AIR.defaultBlockState(), 2);
             for (int x = -4; x <= -3; x++) for (int z = -387; z <= -386; z++)
-                level.setBlock(new BlockPos(x, floor - 1, z), ModBlocks.DESTINY_LIFT_SUPPORT.get().defaultBlockState(), 3);
+                level.setBlock(at(level, x, floor - 1, z), ModBlocks.DESTINY_LIFT_SUPPORT.get().defaultBlockState(), 3);
             for (int landing : DestinyLiftStops.HEIGHTS) {
-                BlockPos button = new BlockPos(-6, landing + 1, -388);
+                BlockPos button = at(level, -6, landing + 1, -388);
                 remember(data, button, level.getBlockState(button));
                 level.setBlock(button, Blocks.STONE_BUTTON.defaultBlockState()
                         .setValue(BlockStateProperties.ATTACH_FACE, AttachFace.WALL)
-                        .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), 3);
+                        .setValue(BlockStateProperties.HORIZONTAL_FACING,
+                                DestinyShipInstallEvents.shipDirection(level, Direction.WEST)), 3);
                 for (int z = -387; z <= -386; z++) for (int y = landing; y <= landing + 1; y++) {
-                    BlockPos p = new BlockPos(-5, y, z);
+                    BlockPos p = at(level, -5, y, z);
                     remember(data, p, level.getBlockState(p));
-                    level.setBlock(p, landingDoor(landing, y, z), 18);
+                    level.setBlock(p, landingDoor(level, landing, y, z), 18);
                 }
             }
             data.cab = cab.getUUID();
@@ -114,7 +121,7 @@ public final class DestinyLiftEvents {
 
     public static void rememberStop(ServerLevel level, int floor) {
         int index = DestinyLiftStops.index(floor);
-        if (index >= 0) level.setBlock(ANCHOR, ModBlocks.DESTINY_LIFT_ANCHOR.get().defaultBlockState()
+        if (index >= 0) level.setBlock(anchor(level), ModBlocks.DESTINY_LIFT_ANCHOR.get().defaultBlockState()
                 .setValue(DestinyLiftAnchorBlock.STOP, index), 2);
     }
 
@@ -126,13 +133,13 @@ public final class DestinyLiftEvents {
                 {-4,2,-387,1},{-3,2,-387,1},{-4,2,-386,1},{-3,2,-386,1},
                 {-4,3,-387,5},{-3,3,-387,5},{-4,3,-386,5},{-3,3,-386,5}};
         for (int[] c : cells) {
-            BlockPos p = new BlockPos(c[0], b + c[1], c[2]);
+            BlockPos p = at(level, c[0], b + c[1], c[2]);
             BlockState s = level.getBlockState(p);
             boolean valid = switch (c[3]) {
                 case 0, 4 -> s.is(Blocks.STICKY_PISTON) && !s.getValue(BlockStateProperties.EXTENDED)
                         && s.getValue(BlockStateProperties.FACING) == (c[3] == 0 ? Direction.UP : Direction.DOWN);
                 case 1 -> s.is(Blocks.SLIME_BLOCK);
-                case 2, 3 -> s.is(Blocks.OBSERVER) && s.getValue(BlockStateProperties.FACING) == (c[3] == 2 ? Direction.EAST : Direction.WEST);
+                case 2, 3 -> s.is(Blocks.OBSERVER) && s.getValue(BlockStateProperties.FACING) == DestinyShipInstallEvents.shipDirection(level, c[3] == 2 ? Direction.EAST : Direction.WEST);
                 default -> s.is(Blocks.SEA_LANTERN);
             };
             if (!valid) return null;
@@ -157,7 +164,7 @@ public final class DestinyLiftEvents {
         }
         for (int floor : DestinyLiftStops.HEIGHTS) for (int z = -387; z <= -386; z++) {
             for (int y = floor; y <= floor + 1; y++) {
-                BlockPos p = new BlockPos(-5, y, z);
+                BlockPos p = at(level, -5, y, z);
                 BlockState s = level.getBlockState(p);
                 if (s.is(ModBlocks.DESTINY_LIFT_DOOR.get()) && s.getValue(DestinyLiftDoorBlock.OPEN) != (floor == openFloor))
                     level.setBlock(p, s.setValue(DestinyLiftDoorBlock.OPEN, floor == openFloor), 2);
@@ -181,8 +188,9 @@ public final class DestinyLiftEvents {
 
     public static void rescue(ServerPlayer player, BlockPos clicked) {
         ServerLevel level = player.serverLevel();
-        if (!isDestiny(level) || clicked.getX() < -7 || clicked.getX() > -2 || clicked.getZ() < -389
-                || clicked.getZ() > -384 || clicked.getY() < 65 || clicked.getY() > 114) {
+        BlockPos captured = DestinyShipInstallEvents.capturedPos(level, clicked);
+        if (!isDestiny(level) || captured.getX() < -7 || captured.getX() > -2 || captured.getZ() < -389
+                || captured.getZ() > -384 || captured.getY() < 65 || captured.getY() > 114) {
             player.displayClientMessage(Component.literal("Use emergency release on an elevator landing or shaft wall."), true);
             return;
         }
@@ -198,19 +206,20 @@ public final class DestinyLiftEvents {
                 + " and cab doors unlocked. Lift stopped. Kit kept." : "Lift stopped and cab doors released. Kit kept."), true);
     }
 
-    private static BlockState landingDoor(int floor, int y, int z) {
+    private static BlockState landingDoor(ServerLevel level, int floor, int y, int z) {
         return ModBlocks.DESTINY_LIFT_DOOR.get().defaultBlockState()
-                .setValue(DestinyLiftDoorBlock.PART, (y - floor) * 2 + z + 387);
+                .setValue(DestinyLiftDoorBlock.PART, (y - floor) * 2 + z + 387)
+                .setValue(DestinyLiftDoorBlock.TURN, DestinyShipInstallEvents.shipQuarterTurns(level));
     }
 
     /** Upgrade intact wooden cells only. Missing parts are restored by the repair kit. */
     public static void upgradeLandingDoors(ServerLevel level) {
         for (int floor : DestinyLiftStops.HEIGHTS) for (int z = -387; z <= -386; z++)
             for (int y = floor; y <= floor + 1; y++) {
-                BlockPos pos = new BlockPos(-5, y, z);
+                BlockPos pos = at(level, -5, y, z);
                 // Suppress vanilla two-half neighbor teardown until both old halves
                 // are replaced; otherwise replacing the lower half deletes the upper.
-                if (level.getBlockState(pos).is(Blocks.SPRUCE_DOOR)) level.setBlock(pos, landingDoor(floor, y, z), 18);
+                if (level.getBlockState(pos).is(Blocks.SPRUCE_DOOR)) level.setBlock(pos, landingDoor(level, floor, y, z), 18);
             }
         DestinyLiftEntity cab = find(level);
         setLandingDoors(level, cab != null && cab.doorsReady() ? cab.dock() : -1);
@@ -219,8 +228,9 @@ public final class DestinyLiftEvents {
     /** Repair the registered ship lift in place. Never replace unrelated blocks or spawn a second cab. */
     public static boolean repair(ServerPlayer player, BlockPos clicked) {
         ServerLevel level = player.serverLevel();
-        if (!isDestiny(level) || clicked.getX() < -7 || clicked.getX() > -2
-                || clicked.getZ() < -389 || clicked.getZ() > -384 || clicked.getY() < 65 || clicked.getY() > 114) {
+        BlockPos captured = DestinyShipInstallEvents.capturedPos(level, clicked);
+        if (!isDestiny(level) || captured.getX() < -7 || captured.getX() > -2
+                || captured.getZ() < -389 || captured.getZ() > -384 || captured.getY() < 65 || captured.getY() > 114) {
             player.displayClientMessage(Component.literal("Use the kit on Destiny's elevator doorway, button or shaft wall."), true);
             return false;
         }
@@ -236,26 +246,26 @@ public final class DestinyLiftEvents {
             player.displayClientMessage(Component.literal("Clear the obstruction and call the lift to a landing before repairing."), true);
             return false;
         }
-        plan.put(ANCHOR, ModBlocks.DESTINY_LIFT_ANCHOR.get().defaultBlockState().setValue(DestinyLiftAnchorBlock.STOP, stop));
+        plan.put(anchor(level), ModBlocks.DESTINY_LIFT_ANCHOR.get().defaultBlockState().setValue(DestinyLiftAnchorBlock.STOP, stop));
         for (int floor : DestinyLiftStops.HEIGHTS) {
-            plan.put(new BlockPos(-5, floor + 1, -388), Blocks.LIGHT_GRAY_CONCRETE.defaultBlockState());
-            plan.put(new BlockPos(-6, floor + 1, -388), Blocks.STONE_BUTTON.defaultBlockState()
+            plan.put(at(level, -5, floor + 1, -388), Blocks.LIGHT_GRAY_CONCRETE.defaultBlockState());
+            plan.put(at(level, -6, floor + 1, -388), Blocks.STONE_BUTTON.defaultBlockState()
                     .setValue(BlockStateProperties.ATTACH_FACE, AttachFace.WALL)
-                    .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST));
+                    .setValue(BlockStateProperties.HORIZONTAL_FACING, DestinyShipInstallEvents.shipDirection(level, Direction.WEST)));
             for (int z = -387; z <= -386; z++) for (int y = floor; y <= floor + 1; y++)
-                plan.put(new BlockPos(-5, y, z), landingDoor(floor, y, z)
+                plan.put(at(level, -5, y, z), landingDoor(level, floor, y, z)
                         .setValue(DestinyLiftDoorBlock.OPEN, cab.doorsReady() && cab.dock() == floor));
         }
         if (Math.abs(cab.getY() + 1 - cab.dock()) < .00001)
             for (int x = -4; x <= -3; x++) for (int z = -387; z <= -386; z++)
-                plan.put(new BlockPos(x, cab.dock() - 1, z), ModBlocks.DESTINY_LIFT_SUPPORT.get().defaultBlockState());
+                plan.put(at(level, x, cab.dock() - 1, z), ModBlocks.DESTINY_LIFT_SUPPORT.get().defaultBlockState());
         int repaired = 0, blocked = 0;
         for (var entry : plan.entrySet()) {
             BlockPos pos = entry.getKey(); BlockState desired = entry.getValue(); BlockState old = level.getBlockState(pos);
             // OPEN is runtime state, not damage. A healthy kit use must never consume materials.
             if (old.is(desired.getBlock())) continue;
             boolean replace = old.isAir() || (desired.is(ModBlocks.DESTINY_LIFT_DOOR.get()) && old.is(Blocks.SPRUCE_DOOR))
-                    || (pos.equals(ANCHOR) && old.is(Blocks.OBSIDIAN))
+                    || (pos.equals(anchor(level)) && old.is(Blocks.OBSIDIAN))
                     || (desired.is(ModBlocks.DESTINY_LIFT_SUPPORT.get()) && old.is(Blocks.SEA_LANTERN));
             boolean occupied = !level.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,
                     new net.minecraft.world.phys.AABB(pos), e -> e.isAlive() && !e.isSpectator()).isEmpty();
@@ -285,9 +295,11 @@ public final class DestinyLiftEvents {
         if (!isDestiny(event.getLevel())) return;
         // Let the kit's first-use handler run before buttons and doors consume the click.
         if (event.getItemStack().is(ModItems.DESTINY_LIFT_REPAIR_KIT.get())) return;
-        int floor = controlFloor(event.getPos());
+        if (!(event.getLevel() instanceof ServerLevel server)) return;
+        BlockPos captured = DestinyShipInstallEvents.capturedPos(server, event.getPos());
+        int floor = controlFloor(captured);
         if (floor >= 0 && !event.getLevel().getBlockState(event.getPos()).is(Blocks.STONE_BUTTON)) floor = -1;
-        if (floor < 0 && isLandingDoor(event.getLevel().getBlockState(event.getPos()))) floor = doorFloor(event.getPos());
+        if (floor < 0 && isLandingDoor(event.getLevel().getBlockState(event.getPos()))) floor = doorFloor(captured);
         if (floor < 0) return;
         event.setCanceled(true); event.setCancellationResult(InteractionResult.SUCCESS);
         // Offhand interactions must not fall through to vanilla door toggling.

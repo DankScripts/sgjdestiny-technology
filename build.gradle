@@ -37,14 +37,15 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-    compileOnly files('libs/immersive-portals-3.0.7-all.jar')
+    def configuredImmersivePortalsJar = System.getenv('IMMERSIVE_PORTALS_JAR')
+    compileOnly files(configuredImmersivePortalsJar != null && !configuredImmersivePortalsJar.isBlank()
+            ? configuredImmersivePortalsJar
+            : 'libs/immersive-portals-3.0.7-all.jar')
 
     def configuredSgJourneyJar = System.getenv('SGJOURNEY_JAR')
-    if (configuredSgJourneyJar != null && !configuredSgJourneyJar.isBlank()) {
-        compileOnly files(configuredSgJourneyJar)
-    } else {
-        compileOnly files('libs/Stargate.Journey-1.20.1-0.6.50.jar')
-    }
+    compileOnly files(configuredSgJourneyJar != null && !configuredSgJourneyJar.isBlank()
+            ? configuredSgJourneyJar
+            : 'libs/Stargate.Journey-1.20.1-0.6.55-alpha.jar')
 }
 
 tasks.named('processResources', ProcessResources).configure {
@@ -152,3 +153,33 @@ tasks.register('verifyElevatorMotion', JavaExec) {
     mainClass = 'com.dankscripts.sgjdestiny_dhd.elevator.LiftMotionTest'
 }
 tasks.named('check').configure { dependsOn 'verifyElevatorMotion' }
+
+tasks.register('compileDialInputBufferTest', JavaCompile) {
+    source = files('tools/tests/DialInputBufferTest.java',
+            'src/main/java/com/dankscripts/sgjdestiny_dhd/compat/HandheldDialSymbols.java',
+            'src/main/java/com/dankscripts/sgjdestiny_dhd/compat/HandheldAutoclosePolicy.java',
+            'src/main/java/com/dankscripts/sgjdestiny_dhd/compat/DialInputBuffer.java',
+            'src/main/java/com/dankscripts/sgjdestiny_dhd/compat/ProgrammedDialSequence.java')
+    classpath = sourceSets.main.compileClasspath
+    destinationDirectory = layout.buildDirectory.dir('dial-input-tests')
+}
+tasks.register('verifyDialInputBuffer', JavaExec) {
+    dependsOn 'compileDialInputBufferTest'
+    classpath = files(layout.buildDirectory.dir('dial-input-tests')) + sourceSets.main.compileClasspath
+    mainClass = 'com.dankscripts.sgjdestiny_dhd.compat.DialInputBufferTest'
+}
+tasks.named('check').configure { dependsOn 'verifyDialInputBuffer' }
+
+tasks.register('compileGateTerrainSurveyTest', JavaCompile) {
+    source = files('tools/tests/GateTerrainSurveyTest.java',
+            'src/main/java/com/dankscripts/sgjdestiny_dhd/compat/GateRecordAudit.java',
+            'src/main/java/com/dankscripts/sgjdestiny_dhd/compat/GateTerrainSurvey.java')
+    classpath = files()
+    destinationDirectory = layout.buildDirectory.dir('gate-terrain-tests')
+}
+tasks.register('verifyGateTerrainSurvey', JavaExec) {
+    dependsOn 'compileGateTerrainSurveyTest'
+    classpath = files(layout.buildDirectory.dir('gate-terrain-tests'))
+    mainClass = 'com.dankscripts.sgjdestiny_dhd.compat.GateTerrainSurveyTest'
+}
+tasks.named('check').configure { dependsOn 'verifyGateTerrainSurvey' }

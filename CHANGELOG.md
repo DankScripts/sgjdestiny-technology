@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.0-beta.1 - Forge 1.20.1
+
+- Migrate the Destiny console and handheld dialing to Stargate Journey
+  0.6.55-alpha. Preserve the order of queued inputs and engage after the final
+  symbol locks.
+- Locate registered Universe gates for handheld dialing and retain Kino
+  connection holds.
+- Anchor Jungle Planet gate pedestals to solid terrain. Keep the existing
+  Water Planet landing circle.
+
 ## 0.0.3-alpha
 
 Changes since 0.0.2-alpha-hotfix2:

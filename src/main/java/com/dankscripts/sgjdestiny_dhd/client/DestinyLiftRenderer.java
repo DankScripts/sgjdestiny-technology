@@ -25,6 +25,8 @@ public final class DestinyLiftRenderer extends EntityRenderer<DestinyLiftEntity>
     @Override public void render(DestinyLiftEntity cab, float yaw, float partialTick, PoseStack pose,
                                  MultiBufferSource buffers, int light) {
         light = LightTexture.pack(Math.max(11, LightTexture.block(light)), LightTexture.sky(light));
+        pose.pushPose();
+        pose.mulPose(Axis.YP.rotationDegrees(-90 * cab.rotation()));
         var green = Blocks.GREEN_TERRACOTTA.defaultBlockState();
         var trim = Blocks.POLISHED_DEEPSLATE.defaultBlockState();
         var panel = Blocks.BLACK_CONCRETE.defaultBlockState();
@@ -64,6 +66,7 @@ public final class DestinyLiftRenderer extends EntityRenderer<DestinyLiftEntity>
             box(trim, -.99, 1, -.82, .065, 2.5, .82 * closed, pose, buffers, light);
             box(trim, -.99, 1, .82 - .82 * closed, .065, 2.5, .82 * closed, pose, buffers, light);
         }
+        pose.popPose();
         super.render(cab, yaw, partialTick, pose, buffers, light);
     }
     private void box(BlockState state, double x, double y, double z, double sx, double sy, double sz,

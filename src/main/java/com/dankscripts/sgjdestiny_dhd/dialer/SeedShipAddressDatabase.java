@@ -1,5 +1,6 @@
 package com.dankscripts.sgjdestiny_dhd.dialer;
 
+import com.dankscripts.sgjdestiny_dhd.compat.DestinyDHDApi;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -12,7 +13,7 @@ import net.povstalec.sgjourney.common.init.StargateInit;
 import net.povstalec.sgjourney.common.sgjourney.Address;
 import net.povstalec.sgjourney.common.sgjourney.AddressRegion;
 import net.povstalec.sgjourney.common.sgjourney.Galaxy;
-import net.povstalec.sgjourney.common.sgjourney.stargate.Stargate;
+import net.povstalec.sgjourney.api.stargate.Stargate;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -27,7 +28,7 @@ public final class SeedShipAddressDatabase {
     public record Entry(Component name, Address.Immutable address, boolean earth) {}
 
     public static List<Entry> entriesFor(MinecraftServer server, UniverseDHDEntity dhd) {
-        Stargate source = dhd.stargateCache.get() == null ? null : dhd.stargateCache.get().getStargate();
+        Stargate source = DestinyDHDApi.connectedStargate(dhd);
         return entriesFor(server, source);
     }
 

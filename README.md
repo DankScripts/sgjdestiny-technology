@@ -17,7 +17,7 @@ troubleshooting instructions. Its source is in [`docs`](docs/index.md).
 
 - Minecraft 1.20.1
 - Forge 47.4.0 or newer 47.x build
-- Stargate Journey 0.6.49 or newer (0.6.50 recommended)
+- Stargate Journey 0.6.55-alpha for Minecraft 1.20.1
 - Immersive Portals 3.0.7
 - Cloth Config for Immersive Portals
 - Simply Light 1.4.6+, GTCEu 7.2.0+, Macaw's Bridges 3.1.0+, and

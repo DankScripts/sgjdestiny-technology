@@ -88,12 +88,9 @@ public final class SeedShipDialerScreen extends Screen {
                     l.top + l.height * 38 / 100, kinoSection ? 0xE5D29A : 0x718579);
         }
         if (handheld && kinoSection) {
-            graphics.drawCenteredString(font, Component.translatable("screen.sgjdestiny_dhd.kino_control"),
-                    center, l.screenTop + 15, 0xB9E1CC);
-            graphics.drawCenteredString(font, Component.translatable("screen.sgjdestiny_dhd.kino_link_standby"),
-                    center, l.screenTop + 38, 0x70A894);
-            int panelLeft = l.rowsLeft + 12, panelRight = l.rowsLeft + l.rowsWidth - 12;
-            int panelTop = l.rowsTop + 32, panelBottom = l.screenTop + l.screenHeight - 48;
+            KinoControls controls = kinoControls(l);
+            int panelLeft = controls.left(), panelRight = controls.right();
+            int panelTop = controls.top(), panelBottom = controls.bottom();
             graphics.fill(panelLeft, panelTop, panelRight, panelBottom, 0x88203831);
             if (videoMode && videoCameraPos != null) {
                 int vx = panelLeft + 5, vy = panelTop + 5;
@@ -131,20 +128,22 @@ public final class SeedShipDialerScreen extends Screen {
                 super.render(graphics, mouseX, mouseY, partialTick);
                 return;
             }
+            graphics.drawCenteredString(font, Component.translatable("screen.sgjdestiny_dhd.kino_control"),
+                    center, panelTop + 7, 0xB9E1CC);
             graphics.drawCenteredString(font, Component.translatable("screen.sgjdestiny_dhd.kino_ready"),
-                    center, panelTop + 24, 0xD7CFB1);
-            drawKinoButton(graphics, center - 112, panelTop + 50, 68,
+                    center, panelTop + 20, 0xD7CFB1);
+            drawKinoButton(graphics, controls.x3(0), controls.row(0), controls.threeWidth(), controls.buttonHeight(),
                     kinoDeployed ? "FOLLOW" : "DEPLOY", mouseX, mouseY);
-            drawKinoButton(graphics, center - 34, panelTop + 50, 68, "HOLD", mouseX, mouseY);
-            drawKinoButton(graphics, center + 44, panelTop + 50, 68, "RECALL", mouseX, mouseY);
-            drawKinoButton(graphics, center - 88, panelTop + 84, 52, "LEFT", mouseX, mouseY);
-            drawKinoButton(graphics, center - 26, panelTop + 84, 52, "FWD", mouseX, mouseY);
-            drawKinoButton(graphics, center + 36, panelTop + 84, 52, "RIGHT", mouseX, mouseY);
-            drawKinoButton(graphics, center - 88, panelTop + 112, 52, "UP", mouseX, mouseY);
-            drawKinoButton(graphics, center - 26, panelTop + 112, 52, "BACK", mouseX, mouseY);
-            drawKinoButton(graphics, center + 36, panelTop + 112, 52, "DOWN", mouseX, mouseY);
-            drawKinoButton(graphics, center - 84, panelTop + 144, 78, "SCAN", mouseX, mouseY);
-            drawKinoButton(graphics, center + 6, panelTop + 144, 78, "VIDEO", mouseX, mouseY);
+            drawKinoButton(graphics, controls.x3(1), controls.row(0), controls.threeWidth(), controls.buttonHeight(), "HOLD", mouseX, mouseY);
+            drawKinoButton(graphics, controls.x3(2), controls.row(0), controls.threeWidth(), controls.buttonHeight(), "RECALL", mouseX, mouseY);
+            drawKinoButton(graphics, controls.x3(0), controls.row(1), controls.threeWidth(), controls.buttonHeight(), "LEFT", mouseX, mouseY);
+            drawKinoButton(graphics, controls.x3(1), controls.row(1), controls.threeWidth(), controls.buttonHeight(), "FWD", mouseX, mouseY);
+            drawKinoButton(graphics, controls.x3(2), controls.row(1), controls.threeWidth(), controls.buttonHeight(), "RIGHT", mouseX, mouseY);
+            drawKinoButton(graphics, controls.x3(0), controls.row(2), controls.threeWidth(), controls.buttonHeight(), "UP", mouseX, mouseY);
+            drawKinoButton(graphics, controls.x3(1), controls.row(2), controls.threeWidth(), controls.buttonHeight(), "BACK", mouseX, mouseY);
+            drawKinoButton(graphics, controls.x3(2), controls.row(2), controls.threeWidth(), controls.buttonHeight(), "DOWN", mouseX, mouseY);
+            drawKinoButton(graphics, controls.x2(0), controls.row(3), controls.twoWidth(), controls.buttonHeight(), "SCAN", mouseX, mouseY);
+            drawKinoButton(graphics, controls.x2(1), controls.row(3), controls.twoWidth(), controls.buttonHeight(), "VIDEO", mouseX, mouseY);
             graphics.drawCenteredString(font, "REMOTE SENSOR CHANNEL", center, panelBottom - 14, 0x708F80);
             super.render(graphics, mouseX, mouseY, partialTick);
             return;
@@ -218,30 +217,27 @@ public final class SeedShipDialerScreen extends Screen {
                 return true;
             }
             if (kinoSection) {
-                int panelTop = l.rowsTop + 32;
-                int panelRight = l.rowsLeft + l.rowsWidth - 12;
-                int panelBottom = l.screenTop + l.screenHeight - 48;
-                int center = l.screenLeft + l.screenWidth / 2;
+                KinoControls controls = kinoControls(l);
                 if (videoMode) {
                     return super.mouseClicked(mouseX, mouseY, button);
                 }
-                if (inside(mouseX, mouseY, center - 112, panelTop + 50, 68, 24)) {
+                if (inside(mouseX, mouseY, controls.x3(0), controls.row(0), controls.threeWidth(), controls.buttonHeight())) {
                     DestinyDialerNetwork.kinoCommand(0); return true;
                 }
-                if (inside(mouseX, mouseY, center - 34, panelTop + 50, 68, 24)) {
+                if (inside(mouseX, mouseY, controls.x3(1), controls.row(0), controls.threeWidth(), controls.buttonHeight())) {
                     DestinyDialerNetwork.kinoCommand(1); return true;
                 }
-                if (inside(mouseX, mouseY, center + 44, panelTop + 50, 68, 24)) {
+                if (inside(mouseX, mouseY, controls.x3(2), controls.row(0), controls.threeWidth(), controls.buttonHeight())) {
                     DestinyDialerNetwork.kinoCommand(2); return true;
                 }
-                if (inside(mouseX, mouseY, center - 88, panelTop + 84, 52, 24)) { DestinyDialerNetwork.kinoCommand(5); return true; }
-                if (inside(mouseX, mouseY, center - 26, panelTop + 84, 52, 24)) { DestinyDialerNetwork.kinoCommand(3); return true; }
-                if (inside(mouseX, mouseY, center + 36, panelTop + 84, 52, 24)) { DestinyDialerNetwork.kinoCommand(6); return true; }
-                if (inside(mouseX, mouseY, center - 88, panelTop + 112, 52, 24)) { DestinyDialerNetwork.kinoCommand(7); return true; }
-                if (inside(mouseX, mouseY, center - 26, panelTop + 112, 52, 24)) { DestinyDialerNetwork.kinoCommand(4); return true; }
-                if (inside(mouseX, mouseY, center + 36, panelTop + 112, 52, 24)) { DestinyDialerNetwork.kinoCommand(8); return true; }
-                if (inside(mouseX, mouseY, center - 84, panelTop + 144, 78, 24)) { DestinyDialerNetwork.kinoCommand(9); return true; }
-                if (inside(mouseX, mouseY, center + 6, panelTop + 144, 78, 24) && kinoDeployed) {
+                if (inside(mouseX, mouseY, controls.x3(0), controls.row(1), controls.threeWidth(), controls.buttonHeight())) { DestinyDialerNetwork.kinoCommand(5); return true; }
+                if (inside(mouseX, mouseY, controls.x3(1), controls.row(1), controls.threeWidth(), controls.buttonHeight())) { DestinyDialerNetwork.kinoCommand(3); return true; }
+                if (inside(mouseX, mouseY, controls.x3(2), controls.row(1), controls.threeWidth(), controls.buttonHeight())) { DestinyDialerNetwork.kinoCommand(6); return true; }
+                if (inside(mouseX, mouseY, controls.x3(0), controls.row(2), controls.threeWidth(), controls.buttonHeight())) { DestinyDialerNetwork.kinoCommand(7); return true; }
+                if (inside(mouseX, mouseY, controls.x3(1), controls.row(2), controls.threeWidth(), controls.buttonHeight())) { DestinyDialerNetwork.kinoCommand(4); return true; }
+                if (inside(mouseX, mouseY, controls.x3(2), controls.row(2), controls.threeWidth(), controls.buttonHeight())) { DestinyDialerNetwork.kinoCommand(8); return true; }
+                if (inside(mouseX, mouseY, controls.x2(0), controls.row(3), controls.twoWidth(), controls.buttonHeight())) { DestinyDialerNetwork.kinoCommand(9); return true; }
+                if (inside(mouseX, mouseY, controls.x2(1), controls.row(3), controls.twoWidth(), controls.buttonHeight()) && kinoDeployed) {
                     videoCameraPos = null;
                     videoMode = true;
                     captureVideoCursor();
@@ -269,7 +265,15 @@ public final class SeedShipDialerScreen extends Screen {
         int first = page * PAGE_SIZE;
         for (int row = 0; row < PAGE_SIZE && first + row < entries.size(); row++) {
             int y = l.rowsTop + row * l.rowHeight;
-            if (inside(mouseX, mouseY, l.rowsLeft, y, l.rowsWidth, l.rowHeight - 2)) { selected = first + row; return true; }
+            if (inside(mouseX, mouseY, l.rowsLeft, y, l.rowsWidth, l.rowHeight - 2)) {
+                selected = first + row;
+                if (handheld && gateState == 0) {
+                    DestinyDialerNetwork.ClientEntry entry = entries.get(selected);
+                    DestinyDialerNetwork.dial(console, directGate, true, new Address.Immutable(entry.symbols()));
+                    onClose();
+                }
+                return true;
+            }
         }
         int navY = l.screenTop + l.screenHeight - 22;
         if (page > 0 && inside(mouseX, mouseY, l.rowsLeft, navY, 80, 22)) { page--; selected = -1; return true; }
@@ -390,12 +394,37 @@ public final class SeedShipDialerScreen extends Screen {
         return x >= left && x < left + width && y >= top && y < top + height;
     }
 
-    private void drawKinoButton(GuiGraphics graphics, int x, int y, int width, String text,
+    private KinoControls kinoControls(Layout l) {
+        int panelWidth = Math.min(238, Math.max(1, l.screenWidth - 8));
+        int panelHeight = Math.min(184, Math.max(1, height - 8));
+        int left = l.screenLeft + (l.screenWidth - panelWidth) / 2;
+        int top = (height - panelHeight) / 2;
+        int buttonHeight = panelHeight >= 160 ? 22 : 18;
+        int rowStart = panelHeight >= 140 ? 35 : 20;
+        int footerSpace = panelHeight >= 140 ? 16 : 8;
+        int rowGap = Math.max(2, (panelHeight - rowStart - footerSpace - 4 * buttonHeight) / 3);
+        int columnGap = Math.max(3, Math.min(8, panelWidth / 30));
+        int threeWidth = (panelWidth - 12 - 2 * columnGap) / 3;
+        int twoWidth = (panelWidth - 12 - columnGap) / 2;
+        return new KinoControls(left, top, panelWidth, panelHeight, buttonHeight, rowStart, rowGap,
+                columnGap, threeWidth, twoWidth);
+    }
+
+    private record KinoControls(int left, int top, int width, int height, int buttonHeight, int rowStart,
+                                int rowGap, int columnGap, int threeWidth, int twoWidth) {
+        int right() { return left + width; }
+        int bottom() { return top + height; }
+        int row(int index) { return top + rowStart + index * (buttonHeight + rowGap); }
+        int x3(int index) { return left + 6 + index * (threeWidth + columnGap); }
+        int x2(int index) { return left + 6 + index * (twoWidth + columnGap); }
+    }
+
+    private void drawKinoButton(GuiGraphics graphics, int x, int y, int width, int height, String text,
                                 double mouseX, double mouseY) {
-        boolean hover = inside(mouseX, mouseY, x, y, width, 24);
-        graphics.fill(x, y, x + width, y + 24, hover ? 0xCC496A5A : 0xAA2C493D);
-        graphics.fill(x, y, x + 2, y + 24, 0xFFB49A68);
-        graphics.drawCenteredString(font, text, x + width / 2, y + 8, hover ? 0xFFF0C8 : 0xD7CFB1);
+        boolean hover = inside(mouseX, mouseY, x, y, width, height);
+        graphics.fill(x, y, x + width, y + height, hover ? 0xCC496A5A : 0xAA2C493D);
+        graphics.fill(x, y, x + 2, y + height, 0xFFB49A68);
+        graphics.drawCenteredString(font, text, x + width / 2, y + (height - 8) / 2, hover ? 0xFFF0C8 : 0xD7CFB1);
     }
 
     public void setKinoDeployed(boolean deployed) {

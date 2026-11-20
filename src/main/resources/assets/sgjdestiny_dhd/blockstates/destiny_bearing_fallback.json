@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "facing=north,flashing=false": {"model":"sgjdestiny_dhd:block/destiny_bearing_fallback"},
+    "facing=east,flashing=false": {"model":"sgjdestiny_dhd:block/destiny_bearing_fallback","y":90},
+    "facing=south,flashing=false": {"model":"sgjdestiny_dhd:block/destiny_bearing_fallback","y":180},
+    "facing=west,flashing=false": {"model":"sgjdestiny_dhd:block/destiny_bearing_fallback","y":270},
+    "facing=north,flashing=true": {"model":"sgjdestiny_dhd:block/destiny_bearing_fallback"},
+    "facing=east,flashing=true": {"model":"sgjdestiny_dhd:block/destiny_bearing_fallback","y":90},
+    "facing=south,flashing=true": {"model":"sgjdestiny_dhd:block/destiny_bearing_fallback","y":180},
+    "facing=west,flashing=true": {"model":"sgjdestiny_dhd:block/destiny_bearing_fallback","y":270}
+  }
+}
