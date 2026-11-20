@@ -13,6 +13,10 @@ The [searchable documentation site](https://dankscripts.github.io/sgjdestiny-tec
 contains installation, setup, controls, recipes, configuration, and
 troubleshooting instructions. Its source is in [`docs`](docs/index.md).
 
+Previous Forge source versions are available under the
+[`forge-1.20.1-v*` tags](https://github.com/DankScripts/sgjdestiny-technology/tags).
+Historical baseline notes and one-off patch tools remain in Git history.
+
 ## Requirements
 
 - Minecraft 1.20.1

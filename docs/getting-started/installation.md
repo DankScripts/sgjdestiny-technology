@@ -13,7 +13,7 @@ nav_order: 1
 |:--|:--|
 | Minecraft | 1.20.1 |
 | Forge | 47.4.0 or newer compatible 47.x build |
-| Stargate Journey | 0.6.49 or newer; 0.6.50 recommended |
+| Stargate Journey | 0.6.55-alpha for Minecraft 1.20.1 |
 | Immersive Portals | 3.0.7 for Forge 1.20.1 |
 | Cloth Config | Version required by Immersive Portals |
 | Simply Light | 1.4.6 or newer |
@@ -21,8 +21,7 @@ nav_order: 1
 | Macaw's Bridges | 3.1.0 or newer |
 | SGJourney Deco | 1.2.0 or newer |
 
-Stargate Journey 0.6.50 is the current recommended version. A diamond-tier
-SGJourney graver opens the Universe DHD engraving menu from the Destiny console
+A diamond-tier SGJourney graver opens the Universe DHD engraving menu from the Destiny console
 or its screen; normal clicks still open the Destiny dialer.
 
 Forge displays its normal missing-mods screen before opening a world if a
