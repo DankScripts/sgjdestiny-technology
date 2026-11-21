@@ -52,6 +52,7 @@ public final class DestinyDialDelay {
             return false;
         }
         int[] dialSymbols = dialAddress.toArray();
+        DestinyShipInstallEvents.releaseOneSidedShipDHDLink(level, dhd);
         if (dialSymbols.length == 9) DestinyBearingCompat.beginNineChevronDial(level, dhd);
         PROGRAMMED_DIALS.put(dhd, new PendingAddress(dialSymbols, PRE_DIAL_TICKS, handheld));
         HOLD_UNTIL_GATE_ACTIVITY.put(dhd, level.getGameTime() + FIRST_CHEVRON_TIMEOUT_TICKS);
@@ -69,6 +70,8 @@ public final class DestinyDialDelay {
             DestinyBearingCompat.observeEncodedSymbol(level, dhd, symbol);
             return false;
         }
+        if (dhd instanceof UniverseDHDEntity universe)
+            DestinyShipInstallEvents.releaseOneSidedShipDHDLink(level, universe);
         DialInputBuffer pending = PENDING.get(dhd);
         if (pending != null) {
             if (!pending.addSymbol(symbol)) reportFullQueue(dhd);
@@ -191,10 +194,15 @@ public final class DestinyDialDelay {
                                     AbstractDHDEntity.DHD_INFO_DISTANCE);
                             return false;
                         }
+                        String before = dhd instanceof UniverseDHDEntity universe
+                                ? DestinyShipInstallEvents.shipDHDLinkSnapshot(level, universe) : "not Universe DHD";
                         adapter.receiverCache().markDirtyTwoWays();
                         var gate = adapter.getStargate();
                         if (gate == null || (handheldController != null && handheldController.getStargate() != gate)) {
-                            LOGGER.warn("[Destiny Dial] console lost its Stargate at {}", dhd.getBlockPos());
+                            String after = dhd instanceof UniverseDHDEntity universe
+                                    ? DestinyShipInstallEvents.shipDHDLinkSnapshot(level, universe) : "not Universe DHD";
+                            LOGGER.warn("[Destiny Dial] console lost its Stargate at {}; before: {}; after: {}",
+                                    dhd.getBlockPos(), before, after);
                             dhd.sendMessageToNearbyPlayers(Component.translatable("message.sgjourney.dhd.error.not_connected_to_stargate"),
                                     AbstractDHDEntity.DHD_INFO_DISTANCE);
                             return false;

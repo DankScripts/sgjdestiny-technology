@@ -1,8 +1,8 @@
 {
   "ambientocclusion": false,
   "textures": {
-    "bulb": "sgj_deco:block/bearing_light",
-    "particle": "sgj_deco:block/bearing_light"
+    "bulb": "sgjdestiny_dhd:block/destiny_bearing_light_deco",
+    "particle": "sgjdestiny_dhd:block/destiny_bearing_light_deco"
   },
   "elements": [
     {

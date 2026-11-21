@@ -17,7 +17,9 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
@@ -74,8 +76,20 @@ public final class DestinyRouteEvents {
         // rather than the SpaceLocation object itself. Refresh that mapping
         // after applying our overrides so existing gates gain the new routes.
         Universe.get(server).assignSpaceLocationsToAddressRegions();
+        preloadDestinyGate(server);
         for (Destination destination : DESTINATIONS)
             repairDestinationGateRecords(server, destination);
+    }
+
+    private static void preloadDestinyGate(MinecraftServer server) {
+        ResourceKey<Level> dimension = ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,
+                ResourceLocation.fromNamespaceAndPath("sgjourney", "destiny"));
+        ServerLevel level = server.getLevel(dimension);
+        if (level == null || !StargateNetwork.get(server).getStargatesInDimension(dimension).isEmpty()) return;
+        LOGGER.info("Discovering the Destiny Stargate using SGJourney's structure search");
+        StargateNetwork.findStargatesInLevel(level);
+        if (StargateNetwork.get(server).getStargatesInDimension(dimension).isEmpty())
+            LOGGER.warn("No Destiny Stargate was registered by SGJourney's structure search");
     }
 
     private static void ensureMedioraGalaxy(MinecraftServer server) {
@@ -331,13 +345,29 @@ public final class DestinyRouteEvents {
             return false;
         }
         BlockPos controllerPos = controllers.get(0).pos();
-        BlockPos obstruction = findFootprintObstruction(level, template, origin);
+        BlockPos obstruction = findFootprintObstruction(level, template, origin, jungle);
         if (obstruction != null) {
             LOGGER.warn("Skipping {} gate placement: the surface footprint is occupied at {}",
                     destination.name(), obstruction);
             return false;
         }
-        buildFoundation(level, origin, template);
+        Stargate existing = previous == null ? null : previous.getStargate();
+        var currentPrimary = StargateNetwork.get(level).getPrimaryAddressFromDimension(level.dimension());
+        if ((currentPrimary != null && !currentPrimary.equals(preserved))
+                || StargateNetwork.get(level).getStargatesInDimension(level.dimension()).stream()
+                        .anyMatch(gate -> gate != existing)
+                || records.getStargates().values().stream()
+                        .anyMatch(gate -> gate != null && gate != existing && level.dimension().equals(gate.getDimension()))) {
+            LOGGER.warn("Skipping {} gate placement: loading the site revealed another gate or primary address",
+                    destination.name());
+            return false;
+        }
+        if (jungle) {
+            clearJungleFootprint(level, template, origin);
+            buildJungleFoundation(level, origin, template);
+        } else {
+            buildFoundation(level, origin, template);
+        }
         boolean placed = template.placeInWorld(level, origin, origin, settings, level.random, 3);
         if (!placed) {
             LOGGER.error("Failed to place missing Universe Stargate template in {}", level.dimension().location());
@@ -420,23 +450,83 @@ public final class DestinyRouteEvents {
         for (Candidate candidate : candidates.stream().limit(4).toList()) {
             int centerX = candidate.x() - offset.getX() + template.getSize().getX() / 2;
             int centerZ = candidate.z() - offset.getZ() + template.getSize().getZ() / 2;
-            PlacementSite site = scorePlacement(level, template, centerX, centerZ);
+            PlacementSite site = scoreJunglePlacement(level, template, centerX, centerZ);
             if (site == null || site.variation() > 8 || site.baseY() > candidate.clearing().baseY() + 3) continue;
             var origin = new BlockPos(candidate.x() - offset.getX(), site.baseY(), candidate.z() - offset.getZ());
-            if (findFootprintObstruction(level, template, origin) == null) return site;
+            if (findFootprintObstruction(level, template, origin, true) == null) return site;
         }
         LOGGER.warn("No suitable Jungle gate clearing near {},{} ({} terrain candidates); {}",
                 anchorX, anchorZ, candidates.size(), previous == null ? "placement skipped" : "original gate retained");
         return null;
     }
 
-    private static BlockPos findFootprintObstruction(ServerLevel level, StructureTemplate template, BlockPos origin) {
+    private static BlockPos findFootprintObstruction(ServerLevel level, StructureTemplate template, BlockPos origin,
+                                                     boolean jungle) {
         var size = template.getSize();
         for (BlockPos pos : BlockPos.betweenClosed(origin, origin.offset(size.getX() - 1,
                 size.getY() - 1, size.getZ() - 1))) {
-            if (!level.getBlockState(pos).isAir()) return pos.immutable();
+            BlockState state = level.getBlockState(pos);
+            if (!state.isAir() && !(jungle && isJungleVegetation(state))) return pos.immutable();
         }
         return null;
+    }
+
+    private static boolean isJungleVegetation(BlockState state) {
+        return !state.hasBlockEntity() && state.getFluidState().isEmpty()
+                && (state.is(BlockTags.LEAVES) || state.is(BlockTags.LOGS) || state.is(BlockTags.SAPLINGS)
+                || state.is(BlockTags.FLOWERS) || state.is(Blocks.VINE) || state.is(Blocks.BAMBOO)
+                || state.is(Blocks.BAMBOO_SAPLING) || state.is(Blocks.COCOA) || state.is(Blocks.SHORT_GRASS)
+                || state.is(Blocks.TALL_GRASS) || state.is(Blocks.FERN) || state.is(Blocks.LARGE_FERN)
+                || state.is(Blocks.BROWN_MUSHROOM) || state.is(Blocks.RED_MUSHROOM)
+                || state.is(Blocks.SUGAR_CANE) || state.is(Blocks.GLOW_LICHEN));
+    }
+
+    private static int jungleGroundHeight(ServerLevel level, int x, int z) {
+        int top = level.getChunk(x >> 4, z >> 4).getHeight(Heightmap.Types.WORLD_SURFACE, x & 15, z & 15);
+        int surface = GateTerrainSurvey.surfaceBelowVegetation(top, level.getMinBuildHeight(), y -> {
+            BlockState state = level.getBlockState(new BlockPos(x, y, z));
+            return state.isAir() || isJungleVegetation(state);
+        });
+        if (surface > level.getMinBuildHeight()
+                && !level.getBlockState(new BlockPos(x, surface - 1, z)).getFluidState().isEmpty())
+            return level.getMinBuildHeight();
+        return surface;
+    }
+
+    private static PlacementSite scoreJunglePlacement(ServerLevel level, StructureTemplate template,
+                                                       int centerX, int centerZ) {
+        int halfX = template.getSize().getX() / 2 + 1;
+        int halfZ = template.getSize().getZ() / 2 + 1;
+        GateTerrainSurvey.Result result = GateTerrainSurvey.measure(
+                centerX - halfX, centerX + halfX, centerZ - halfZ, centerZ + halfZ,
+                level.getMinBuildHeight(), level.getMaxBuildHeight(), template.getSize().getY(),
+                (x, z) -> jungleGroundHeight(level, x, z));
+        return result == null ? null
+                : new PlacementSite(centerX, centerZ, result.baseY(), result.variation(), result.score());
+    }
+
+    private static void clearJungleFootprint(ServerLevel level, StructureTemplate template, BlockPos origin) {
+        var size = template.getSize();
+        for (BlockPos pos : BlockPos.betweenClosed(origin, origin.offset(size.getX() - 1,
+                size.getY() - 1, size.getZ() - 1))) {
+            BlockState state = level.getBlockState(pos);
+            if (!state.isAir() && (!isJungleVegetation(state) || !level.setBlock(pos, Blocks.AIR.defaultBlockState(), 18)))
+                throw new IllegalStateException("Could not clear Jungle gate vegetation at " + pos);
+        }
+    }
+
+    private static void buildJungleFoundation(ServerLevel level, BlockPos origin, StructureTemplate template) {
+        for (int x = origin.getX(); x < origin.getX() + template.getSize().getX(); x++) {
+            for (int z = origin.getZ(); z < origin.getZ() + template.getSize().getZ(); z++) {
+                for (int y = origin.getY() - 1; y >= level.getMinBuildHeight(); y--) {
+                    BlockPos pos = new BlockPos(x, y, z);
+                    BlockState state = level.getBlockState(pos);
+                    if (!state.isAir() && !isJungleVegetation(state)) break;
+                    if (!level.setBlock(pos, Blocks.STONE.defaultBlockState(), 18))
+                        throw new IllegalStateException("Could not support Jungle gate foundation at " + pos);
+                }
+            }
+        }
     }
 
     private static PlacementSite waterPlanetPlacement(ServerLevel level, Destination destination,

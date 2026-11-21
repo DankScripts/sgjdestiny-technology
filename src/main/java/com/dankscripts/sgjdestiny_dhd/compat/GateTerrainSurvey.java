@@ -1,6 +1,7 @@
 package com.dankscripts.sgjdestiny_dhd.compat;
 
 import java.util.function.IntBinaryOperator;
+import java.util.function.IntPredicate;
 
 final class GateTerrainSurvey {
     private GateTerrainSurvey() {}
@@ -12,6 +13,13 @@ final class GateTerrainSurvey {
                 && solidSurface.applyAsInt(x + 8, z) >= roof
                 && solidSurface.applyAsInt(x, z - 8) >= roof
                 && solidSurface.applyAsInt(x, z + 8) >= roof;
+    }
+
+    static int surfaceBelowVegetation(int top, int minY, IntPredicate canPass) {
+        for (int y = top; y >= minY; y--) {
+            if (!canPass.test(y)) return y + 1;
+        }
+        return minY;
     }
 
     static Result jungleClearing(int x, int z, int seaLevel, int maxY, int structureHeight,

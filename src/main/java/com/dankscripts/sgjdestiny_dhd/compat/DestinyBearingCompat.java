@@ -13,15 +13,12 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.neoforged.fml.ModList;
 import net.povstalec.sgjourney.common.block_entities.dhd.CrystalDHDEntity;
 import net.povstalec.sgjourney.common.block_entities.dhd.AbstractDHDEntity;
 import net.povstalec.sgjourney.common.block_entities.dhd.UniverseDHDEntity;
 import net.povstalec.sgjourney.common.block_entities.stargate.AbstractStargateEntity;
 import net.povstalec.sgjourney.common.block_entities.stargate.UniverseStargateEntity;
 import net.povstalec.sgjourney.common.blocks.ChevronBlock;
-import net.povstalec.sgjourney.common.items.crystals.CommunicationCrystalItem;
-import net.povstalec.sgjourney.common.items.crystals.CrystalCache;
 import net.povstalec.sgjourney.common.sgjourney.StargateConnection;
 
 import java.util.HashMap;
@@ -95,7 +92,6 @@ public final class DestinyBearingCompat {
     }
 
     private static void beginNineChevronDischarge(ServerLevel level, UniverseDHDEntity dhd) {
-        if (!ModList.get().isLoaded("sgj_deco") || ModBlocks.litDestinyBearing == null) return;
         AbstractStargateEntity<?> gate = DestinyDHDApi.connectedStargateEntity(dhd);
         if (gate == null || gate.isRemoved() || gate.isConnected()) return;
         BlockPos gateCenter = gate.getCenterPos();
@@ -113,10 +109,6 @@ public final class DestinyBearingCompat {
 
     /** Lights nearby Destiny bearings before SGJourney begins the dialing call. */
     public static void lightBeforeDial(ServerLevel level, UniverseDHDEntity dhd) {
-        if (!ModList.get().isLoaded("sgj_deco") || ModBlocks.litDestinyBearing == null) {
-            return;
-        }
-
         AbstractStargateEntity<?> gate = DestinyDHDApi.connectedStargateEntity(dhd);
         if (gate == null || gate.isRemoved() || gate.isConnected()) {
             return;
@@ -138,7 +130,6 @@ public final class DestinyBearingCompat {
         ConsoleKey key = new ConsoleKey(level.dimension().location(), dhd.getBlockPos());
         long gameTime = level.getGameTime();
         tickSteamRelease(level, key, gameTime);
-        boolean bearingEnabled = ModList.get().isLoaded("sgj_deco") && ModBlocks.litDestinyBearing != null;
         AbstractStargateEntity<?> gate = DestinyDHDApi.connectedStargateEntity(dhd);
         if (gate == null || gate.isRemoved()) {
             NINE_CHEVRON_DISCHARGES.remove(key);
@@ -147,7 +138,7 @@ public final class DestinyBearingCompat {
             BEARING_FLASH_UNTIL.remove(key);
             NINE_CHEVRON_DIALS.remove(key);
             FLOOR_CHEVRON_LATCHED.remove(key);
-            if (ACTIVE_CONSOLES.remove(key) && bearingEnabled) restoreTracked(level, key);
+            if (ACTIVE_CONSOLES.remove(key)) restoreTracked(level, key);
             setFloorChevronLit(level, null, false, key, false);
             if (dhd.isRemoved()) KNOWN_BY_CONSOLE.remove(key);
             return;
@@ -177,7 +168,7 @@ public final class DestinyBearingCompat {
         }
         tickNineChevronDischarge(level, dhd, gate, key, canReadGate, gameTime);
         Integer previousChevrons = LAST_CHEVRONS.put(key, chevrons);
-        if (bearingEnabled && canReadGate && previousChevrons != null && chevrons > previousChevrons) {
+        if (canReadGate && previousChevrons != null && chevrons > previousChevrons) {
             BEARING_FLASH_UNTIL.put(key, gameTime + CHEVRON_FLASH_TICKS);
             LOGGER.info("[Destiny Bearing] chevron {} brightness flash at {}", chevrons, key.position());
         }
@@ -208,11 +199,9 @@ public final class DestinyBearingCompat {
             FLOOR_CHEVRON_LATCHED.remove(key);
         }
 
-        if (bearingEnabled) {
-            updateBearings(level, gateCenter, bearingLit, key, bearingLit || firstReconciliation);
-            if (bearingLit) setBearingFlashing(level, key, flashing);
-            if (flashUntil != null && !flashing) BEARING_FLASH_UNTIL.remove(key);
-        }
+        updateBearings(level, gateCenter, bearingLit, key, bearingLit || firstReconciliation);
+        if (bearingLit) setBearingFlashing(level, key, flashing);
+        if (flashUntil != null && !flashing) BEARING_FLASH_UNTIL.remove(key);
 
         // The horizontal Universe chevron in the floor is a connection-status
         // lamp: it stays dark through dialing and lights only for an established wormhole.
@@ -291,14 +280,16 @@ public final class DestinyBearingCompat {
     }
 
     private static boolean isBearingAt(ServerLevel level, BlockPos position) {
-        if (position == null || !level.hasChunkAt(position)
-                || !BuiltInRegistries.BLOCK.containsKey(DECO_BEARING)
-                || ModBlocks.litDestinyBearing == null) {
-            return false;
-        }
+        if (position == null || !level.hasChunkAt(position)) return false;
         BlockState state = level.getBlockState(position);
-        return state.is(BuiltInRegistries.BLOCK.get(DECO_BEARING))
-                || state.is(ModBlocks.litDestinyBearing.get());
+        return isBearing(state);
+    }
+
+    private static boolean isBearing(BlockState state) {
+        return state.is(ModBlocks.DESTINY_BEARING_FALLBACK.get())
+                || (ModBlocks.litDestinyBearing != null && state.is(ModBlocks.litDestinyBearing.get()))
+                || (BuiltInRegistries.BLOCK.containsKey(DECO_BEARING)
+                    && state.is(BuiltInRegistries.BLOCK.get(DECO_BEARING)));
     }
 
     /** Sends two custom bolt particles; each client renders continuous branching geometry. */
@@ -444,18 +435,14 @@ public final class DestinyBearingCompat {
     }
 
     private static int communicationRange(UniverseDHDEntity dhd) {
-        int range = 16;
-        for (var slot : dhd.crystalCache.communicationCrystals().getSlots()) {
-            range += slot.crystal.getRangeIncrease();
-        }
-        return range;
+        return (int) dhd.getMaxConnectionDistance();
     }
 
     private static void updateBearings(
             ServerLevel level, BlockPos center, boolean lit, ConsoleKey key, boolean allowDiscovery) {
-        if (!BuiltInRegistries.BLOCK.containsKey(DECO_BEARING)) return;
-        Block original = BuiltInRegistries.BLOCK.get(DECO_BEARING);
-        Block illuminated = ModBlocks.litDestinyBearing.get();
+        Block original = BuiltInRegistries.BLOCK.containsKey(DECO_BEARING)
+                ? BuiltInRegistries.BLOCK.get(DECO_BEARING) : null;
+        Block illuminated = ModBlocks.litDestinyBearing == null ? null : ModBlocks.litDestinyBearing.get();
         Set<BlockPos> tracked = LIT_BY_CONSOLE.computeIfAbsent(key, ignored -> new HashSet<>());
         Set<BlockPos> known = KNOWN_BY_CONSOLE.computeIfAbsent(key, ignored -> new HashSet<>());
 
@@ -481,7 +468,7 @@ public final class DestinyBearingCompat {
             if (!level.hasChunkAt(candidate)) continue;
             BlockPos position = candidate.immutable();
             BlockState current = level.getBlockState(position);
-            if (current.is(original) || current.is(illuminated)) {
+            if (isBearing(current)) {
                 known.add(position);
                 applyBearingState(level, position, lit, original, illuminated, tracked);
             }
@@ -494,7 +481,18 @@ public final class DestinyBearingCompat {
             Set<BlockPos> tracked) {
         if (!level.hasChunkAt(position)) return true;
         BlockState current = level.getBlockState(position);
-        if (!current.is(original) && !current.is(illuminated)) {
+        if (current.is(ModBlocks.DESTINY_BEARING_FALLBACK.get())) {
+            BlockState next = current.setValue(LitDestinyBearingBlock.LIT, lit);
+            if (!lit) next = next.setValue(LitDestinyBearingBlock.FLASHING, false);
+            if (!next.equals(current)) {
+                level.setBlock(position, next, Block.UPDATE_ALL);
+                level.getChunkSource().getLightEngine().checkBlock(position);
+            }
+            if (lit) tracked.add(position); else tracked.remove(position);
+            return true;
+        }
+        if (original == null || illuminated == null
+                || (!current.is(original) && !current.is(illuminated))) {
             tracked.remove(position);
             return false;
         }
@@ -517,15 +515,20 @@ public final class DestinyBearingCompat {
 
     private static void restoreTracked(ServerLevel level, ConsoleKey key) {
         Set<BlockPos> tracked = LIT_BY_CONSOLE.get(key);
-        if (tracked == null || tracked.isEmpty() || !BuiltInRegistries.BLOCK.containsKey(DECO_BEARING)) return;
-        Block original = BuiltInRegistries.BLOCK.get(DECO_BEARING);
-        Block illuminated = ModBlocks.litDestinyBearing.get();
+        if (tracked == null || tracked.isEmpty()) return;
+        Block original = BuiltInRegistries.BLOCK.containsKey(DECO_BEARING)
+                ? BuiltInRegistries.BLOCK.get(DECO_BEARING) : null;
+        Block illuminated = ModBlocks.litDestinyBearing == null ? null : ModBlocks.litDestinyBearing.get();
         Iterator<BlockPos> iterator = tracked.iterator();
         while (iterator.hasNext()) {
             BlockPos position = iterator.next();
             if (!level.hasChunkAt(position)) continue;
             BlockState current = level.getBlockState(position);
-            if (current.is(illuminated)) {
+            if (current.is(ModBlocks.DESTINY_BEARING_FALLBACK.get())) {
+                level.setBlock(position, current.setValue(LitDestinyBearingBlock.LIT, false)
+                        .setValue(LitDestinyBearingBlock.FLASHING, false), Block.UPDATE_ALL);
+                level.getChunkSource().getLightEngine().checkBlock(position);
+            } else if (original != null && illuminated != null && current.is(illuminated)) {
                 level.setBlock(position, copySharedProperties(current, original.defaultBlockState()), Block.UPDATE_ALL);
                 level.getChunkSource().getLightEngine().checkBlock(position);
                 LOGGER.info("[Destiny Bearing] restored {}", position);
@@ -537,11 +540,12 @@ public final class DestinyBearingCompat {
 
     private static void setBearingFlashing(ServerLevel level, ConsoleKey key, boolean flashing) {
         Set<BlockPos> known = KNOWN_BY_CONSOLE.get(key);
-        if (known == null || ModBlocks.litDestinyBearing == null) return;
+        if (known == null) return;
         for (BlockPos position : known) {
             if (!level.hasChunkAt(position)) continue;
             BlockState state = level.getBlockState(position);
-            if (state.is(ModBlocks.litDestinyBearing.get())
+            if ((state.is(ModBlocks.DESTINY_BEARING_FALLBACK.get())
+                    || (ModBlocks.litDestinyBearing != null && state.is(ModBlocks.litDestinyBearing.get())))
                     && state.hasProperty(LitDestinyBearingBlock.FLASHING)
                     && state.getValue(LitDestinyBearingBlock.FLASHING) != flashing) {
                 level.setBlock(position, state.setValue(LitDestinyBearingBlock.FLASHING, flashing),

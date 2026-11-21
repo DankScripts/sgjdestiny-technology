@@ -196,7 +196,7 @@ public final class DestinyCorridorRenderer implements BlockEntityRenderer<Destin
             ShaderInstance shader = RenderSystem.getShader();
             if (shader != null) {
                 buffer.bind();
-                buffer.drawWithShader(pose.last().pose(), RenderSystem.getProjectionMatrix(), shader);
+                buffer.drawWithShader(DestinyMeshBuffers.modelView(pose), RenderSystem.getProjectionMatrix(), shader);
                 VertexBuffer.unbind();
             }
             RenderSystem.enableCull();

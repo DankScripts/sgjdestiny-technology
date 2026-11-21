@@ -4,6 +4,8 @@ import com.dankscripts.sgjdestiny_dhd.DestinyDHD;
 import com.dankscripts.sgjdestiny_dhd.block_entity.KinoDispenserBlockEntity;
 import com.dankscripts.sgjdestiny_dhd.config.DestinyServerConfig;
 import com.dankscripts.sgjdestiny_dhd.block.DestinyCurvedStairBlock;
+import com.dankscripts.sgjdestiny_dhd.block.DestinyDecorativeDHDConsoleBlock;
+import com.dankscripts.sgjdestiny_dhd.block.LitDestinyBearingBlock;
 import com.dankscripts.sgjdestiny_dhd.registry.ModBlocks;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -47,6 +49,12 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.minecraft.core.registries.Registries;
 import net.povstalec.sgjourney.common.blocks.ChevronBlock;
 import net.povstalec.sgjourney.common.block_entities.stargate.AbstractStargateEntity;
+import net.povstalec.sgjourney.common.block_entities.stargate.UniverseStargateEntity;
+import net.povstalec.sgjourney.common.block_entities.dhd.UniverseDHDEntity;
+import net.povstalec.sgjourney.api.stargate.DHDControlledStargate;
+import net.povstalec.sgjourney.api.dhd.BlockEntityDHD;
+import net.povstalec.sgjourney.api.dhd.DHD;
+import net.povstalec.sgjourney.common.items.crystals.CommunicationCrystalItem;
 import net.povstalec.sgjourney.common.data.StargateNetwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,6 +83,11 @@ public final class DestinyShipInstallEvents {
     private static final BlockPos GATE_CHEVRON = new BlockPos(-8, 75, -300);
     private static final BlockPos GATE_CHEVRON_SUPPORT = GATE_CHEVRON.below();
     private static final BlockPos DIALING_CONSOLE = new BlockPos(-4, 75, -316);
+    private static final BlockPos BEARING = new BlockPos(-8, 81, -299);
+    private static final List<ShipConsole> DECORATIVE_CONSOLES = List.of(
+            new ShipConsole(new BlockPos(-12, 75, -316), Direction.SOUTH),
+            new ShipConsole(new BlockPos(25, 75, -313), Direction.SOUTH),
+            new ShipConsole(new BlockPos(26, 75, -305), Direction.EAST));
     private static final BlockPos KINO_DISPENSER = new BlockPos(18, 85, -330);
     private static final BlockPos ORIGINAL_ROOM_MIN = new BlockPos(-16, 69, -310);
     private static final BlockPos ORIGINAL_ROOM_MAX = new BlockPos(0, 84, -278);
@@ -134,6 +147,89 @@ public final class DestinyShipInstallEvents {
 
     public static int shipQuarterTurns(ServerLevel level) {
         return ShipInstallData.get(level.getServer()).gateRotation;
+    }
+
+    public static void releaseOneSidedShipDHDLink(ServerLevel level, UniverseDHDEntity dhd) {
+        ShipInstallData saved = ShipInstallData.get(level.getServer());
+        if (!level.dimension().equals(DESTINY) || !saved.installed || saved.gateAnchor == null
+                || !dhd.getBlockPos().equals(transformed(DIALING_CONSOLE, saved.gateAnchor, saved.gateRotation))
+                || !level.hasChunkAt(dhd.getBlockPos()) || !level.hasChunkAt(saved.gateAnchor)
+                || level.getBlockEntity(dhd.getBlockPos()) != dhd
+                || !(level.getBlockEntity(saved.gateAnchor) instanceof UniverseStargateEntity gateEntity)) return;
+        var adapter = dhd.getDHD();
+        if (adapter == null || level.getCapability(DHD.DHD_CAPABILITY_BLOCK, dhd.getBlockPos(), null) != adapter)
+            return;
+        DHDControlledStargate gate = level.getCapability(
+                DHDControlledStargate.DHD_CONTROLLED_STARGATE_CAPABILITY_BLOCK, saved.gateAnchor, null);
+        if (gate == null || gateEntity.getStargate() != gate) return;
+        boolean idle = !gate.isConnected() && !gateEntity.isDialingOut() && !gateEntity.isDialing()
+                && !gateEntity.isRotating() && gateEntity.getChevronsEngaged() == 0
+                && gateEntity.getEncodedSymbols().isEmpty() && gateEntity.getAddress().isEmpty();
+        if (!DestinyHardwiredDHD.canReleaseOneSidedOwner(gate.controllerCache().getCached() == adapter,
+                adapter.receiverCache().getCached() == null,
+                dhd.getBlockPos().distSqr(saved.gateAnchor) <= adapter.getMaxConnectionDistanceSqr(), idle)) return;
+
+        gateEntity.setupAutoCache(gate.controllerCache());
+        gate.controllerCache().clearTwoWays();
+        LOGGER.info("Released one-sided SGJourney cache for ship console {} and gate {}; native discovery will retry",
+                dhd.getBlockPos(), saved.gateAnchor);
+    }
+
+    public static String shipDHDLinkSnapshot(ServerLevel level, UniverseDHDEntity dhd) {
+        ShipInstallData saved = ShipInstallData.get(level.getServer());
+        if (!level.dimension().equals(DESTINY) || !saved.installed || saved.gateAnchor == null
+                || !dhd.getBlockPos().equals(transformed(DIALING_CONSOLE, saved.gateAnchor, saved.gateRotation)))
+            return "not installed ship console";
+        var dhdAdapter = dhd.getDHD();
+        if (dhdAdapter == null) return "DHD adapter absent";
+        StringBuilder crystals = new StringBuilder();
+        for (int slot = 0; slot < dhd.crystalHandler.getSlots(); slot++) {
+            var stack = dhd.crystalHandler.getStackInSlot(slot);
+            if (stack.isEmpty()) continue;
+            if (crystals.length() > 0) crystals.append(", ");
+            crystals.append(slot).append(':').append(BuiltInRegistries.ITEM.getKey(stack.getItem()))
+                    .append('x').append(stack.getCount());
+            if (stack.getItem() instanceof CommunicationCrystalItem)
+                crystals.append("(frequencySet=").append(CommunicationCrystalItem.hasFrequency(stack)).append(')');
+        }
+        var receiver = dhdAdapter.receiverCache();
+        String result = "console=" + dhd.getBlockPos() + " adapter=" + identity(dhdAdapter)
+                + " capabilityMatches=" + (level.getCapability(DHD.DHD_CAPABILITY_BLOCK, dhd.getBlockPos(), null) == dhdAdapter)
+                + " distanceSqr=" + dhd.getBlockPos().distSqr(saved.gateAnchor)
+                + " rangeSqr=" + dhdAdapter.getMaxConnectionDistanceSqr() + " crystals=[" + crystals + "]"
+                + " receiverCached=" + identity(receiver.getCached()) + " receiverDirty=" + receiver.isDirty()
+                + " gatePos=" + saved.gateAnchor;
+        if (!level.hasChunkAt(saved.gateAnchor)) return result + " gateChunkLoaded=false";
+        var gateEntity = level.getBlockEntity(saved.gateAnchor);
+        DHDControlledStargate gate = level.getCapability(
+                DHDControlledStargate.DHD_CONTROLLED_STARGATE_CAPABILITY_BLOCK, saved.gateAnchor, null);
+        if (gate == null) return result + " gateCapability=absent gateEntity=" + identity(gateEntity);
+        var controller = gate.controllerCache();
+        DHD owner = controller.getCached();
+        String ownerDetails = owner == null ? "" : " ownerReceiver=" + identity(owner.receiverCache().getCached())
+                + " ownerReceiverDirty=" + owner.receiverCache().isDirty();
+        if (owner instanceof BlockEntityDHD<?> blockOwner) {
+            var ownerEntity = blockOwner.getDHDBlockEntity();
+            if (ownerEntity != null) {
+                boolean loaded = ownerEntity.getLevel() == level && level.hasChunkAt(ownerEntity.getBlockPos());
+                boolean live = loaded && level.getBlockEntity(ownerEntity.getBlockPos()) == ownerEntity;
+                ownerDetails += " ownerPos=" + ownerEntity.getBlockPos() + " ownerRemoved=" + ownerEntity.isRemoved()
+                        + " ownerChunkLoaded=" + loaded
+                        + " ownerIsLiveBlockEntity=" + live
+                        + " ownerCapabilityMatches=" + (live
+                        && level.getCapability(DHD.DHD_CAPABILITY_BLOCK, ownerEntity.getBlockPos(), null) == owner);
+            }
+        }
+        return result + " gateCapability=" + identity(gate)
+                + " gateRecordMatches=" + (gateEntity instanceof UniverseStargateEntity universe && universe.getStargate() == gate)
+                + " receiverIsGate=" + (receiver.getCached() == gate)
+                + " gateController=" + identity(owner) + " controllerIsAdapter=" + (owner == dhdAdapter)
+                + " controllerDirty=" + controller.isDirty() + ownerDetails;
+    }
+
+    private static String identity(Object object) {
+        return object == null ? "null" : object.getClass().getSimpleName() + "@"
+                + Integer.toHexString(System.identityHashCode(object));
     }
 
     public static BlockPos capturedPos(ServerLevel level, BlockPos world) {
@@ -209,7 +305,65 @@ public final class DestinyShipInstallEvents {
                         .then(Commands.literal("retrofitAirlocks")
                                 .executes(context -> retrofitAirlocks(context.getSource())))
                         .then(Commands.literal("retrofitStairs")
-                                .executes(context -> retrofitStairs(context.getSource())))));
+                                .executes(context -> retrofitStairs(context.getSource())))
+                        .then(Commands.literal("repairFixtures")
+                                .executes(context -> repairFixtures(context.getSource())))));
+    }
+
+    private static int repairFixtures(CommandSourceStack source) {
+        MinecraftServer server = source.getServer();
+        ServerLevel level = server.getLevel(DESTINY);
+        ShipInstallData saved = ShipInstallData.get(server);
+        if (level == null || !saved.installed || saved.gateAnchor == null
+                || saved.resetRequested || ACTIVE.containsKey(server)) {
+            source.sendFailure(Component.literal("No completed, aligned Destiny ship is available to repair."));
+            return 0;
+        }
+        int corrected = 0;
+        int skipped = 0;
+        for (ShipConsole console : DECORATIVE_CONSOLES) {
+            BlockPos pos = shipPos(level, console.pos());
+            BlockState state = level.getBlockState(pos);
+            Direction expected = shipDirection(level, console.facing());
+            if (!state.is(ModBlocks.DESTINY_DHD_DECORATIVE.get())) {
+                skipped++;
+            } else if (state.getValue(DestinyDecorativeDHDConsoleBlock.FACING) == expected) {
+                continue;
+            } else if (state.getValue(DestinyDecorativeDHDConsoleBlock.FACING) == console.facing()) {
+                if (!level.setBlock(pos, state.setValue(DestinyDecorativeDHDConsoleBlock.FACING, expected),
+                        Block.UPDATE_ALL)) {
+                    source.sendFailure(Component.literal("Could not rotate the decorative console at " + pos));
+                    return 0;
+                }
+                corrected++;
+            } else {
+                skipped++;
+            }
+        }
+        BlockPos bearingPos = shipPos(level, BEARING);
+        BlockState bearingState = level.getBlockState(bearingPos);
+        boolean installedBearing = false;
+        if (!ModList.get().isLoaded("sgj_deco") && bearingState.isAir()) {
+            if (!level.setBlock(bearingPos, ModBlocks.DESTINY_BEARING_FALLBACK.get().defaultBlockState()
+                    .setValue(LitDestinyBearingBlock.FACING, shipDirection(level, Direction.SOUTH)),
+                    Block.UPDATE_ALL)) {
+                source.sendFailure(Component.literal("Could not place the Destiny bearing at " + bearingPos));
+                return 0;
+            }
+            installedBearing = true;
+        } else if (!bearingState.is(ModBlocks.DESTINY_BEARING_FALLBACK.get())
+                && !(BuiltInRegistries.BLOCK.containsKey(ResourceLocation.fromNamespaceAndPath("sgj_deco", "destiny_bearing"))
+                    && bearingState.is(BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath("sgj_deco", "destiny_bearing"))))
+                && !(ModBlocks.litDestinyBearing != null && bearingState.is(ModBlocks.litDestinyBearing.get()))) {
+            skipped++;
+        }
+        int fixed = corrected;
+        int unchanged = skipped;
+        boolean placed = installedBearing;
+        source.sendSuccess(() -> Component.literal("Destiny fixtures: rotated " + fixed
+                + " decorative consoles; bearing " + (placed ? "placed" : "left unchanged")
+                + "; " + unchanged + " altered or unavailable positions skipped."), true);
+        return 1;
     }
 
     private static int resetAirReserve(CommandSourceStack source) {
@@ -466,7 +620,7 @@ public final class DestinyShipInstallEvents {
                 // the ship complete even when that optional mod is absent.
                 if (!ModList.get().isLoaded("sgj_deco")
                         && tile.chunkX == -1 && tile.chunkZ == -19) {
-                    BlockPos bearingPos = shipPos(level, new BlockPos(-8, 81, -299));
+                    BlockPos bearingPos = shipPos(level, BEARING);
                     if (!progress.preservedGatePositions.contains(bearingPos))
                         level.setBlock(bearingPos, ModBlocks.DESTINY_BEARING_FALLBACK.get()
                                 .defaultBlockState().setValue(
@@ -706,6 +860,7 @@ public final class DestinyShipInstallEvents {
     }
     private record PreservedBlock(BlockPos pos, BlockState state, CompoundTag entityTag) {}
     private record ShipAirlock(int x, int y, int z, Direction facing) {}
+    private record ShipConsole(BlockPos pos, Direction facing) {}
     private record GateBlock(String name, BlockPos pos) {}
 
     private static final class SpawnerCleanupProgress {

@@ -9,19 +9,5 @@
     "trim": "sgjdestiny_dhd:block/destiny_bronze",
     "cap": "sgjdestiny_dhd:block/destiny_metal"
   },
-  "elements": [
-    {
-      "from": [
-        0,
-        0,
-        0
-      ],
-      "to": [
-        16,
-        16,
-        16
-      ],
-      "faces": {}
-    }
-  ]
+  "elements": []
 }

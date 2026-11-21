@@ -198,7 +198,7 @@ public final class DestinyShuttleAirlockRenderer implements BlockEntityRenderer<
             ShaderInstance shader = RenderSystem.getShader();
             if (shader != null) {
                 buffer.bind();
-                buffer.drawWithShader(pose.last().pose(), RenderSystem.getProjectionMatrix(), shader);
+                buffer.drawWithShader(DestinyMeshBuffers.modelView(pose), RenderSystem.getProjectionMatrix(), shader);
                 VertexBuffer.unbind();
             }
             if (twoSided) RenderSystem.enableCull();

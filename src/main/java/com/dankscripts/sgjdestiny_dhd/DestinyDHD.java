@@ -14,6 +14,8 @@ import com.dankscripts.sgjdestiny_dhd.mixin.BlockEntityTypeAccessor;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.povstalec.sgjourney.common.init.BlockEntityInit;
+import net.povstalec.sgjourney.api.dhd.DHD;
+import net.povstalec.sgjourney.common.block_entities.dhd.UniverseDHDEntity;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
@@ -57,6 +59,14 @@ public final class DestinyDHD {
     }
 
     private void registerCapabilities(RegisterCapabilitiesEvent event) {
+        event.registerBlock(DHD.DHD_CAPABILITY_BLOCK,
+                (level, pos, state, blockEntity, side) ->
+                        blockEntity instanceof UniverseDHDEntity dhd ? dhd.getDHD() : null,
+                ModBlocks.DESTINY_DHD.get());
+        event.registerBlock(Capabilities.EnergyStorage.BLOCK,
+                (level, pos, state, blockEntity, side) ->
+                        blockEntity instanceof UniverseDHDEntity dhd ? dhd.getEnergyHandler(side) : null,
+                ModBlocks.DESTINY_DHD.get());
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
                 ModBlockEntities.DESTINY_WATER_HOLDING_TANK.get(),
                 (tank, side) -> tank.fluidHandler());

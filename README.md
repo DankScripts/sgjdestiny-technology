@@ -1,5 +1,19 @@
 # Stargate Journey: Destiny Technology
 
+## Current NeoForge fixes
+
+Destiny consoles use hardwired control, 32-block communication and gate-power
+settings without replacing crystal inventories. Native power and ownership checks
+still apply; gate discovery only examines loaded chunks.
+
+The ship resources and mesh transforms use Minecraft 1.21's resource layout and
+camera rendering. `/sgjdestiny ship repairFixtures` repairs matching old decorative
+console orientations and restores a missing fallback bearing without resetting
+the ship. The bundled bearing uses authorized Stargate journey: Deco assets.
+
+Missing Jungle gates use surveyed ground; missing Destiny gates use SGJourney's
+native structure discovery. Existing gate identities are preserved.
+
 A standalone NeoForge 1.21.1 addon for Stargate Journey that recreates Destiny's
 shipboard dialing console from *Stargate Universe*.
 

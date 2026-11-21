@@ -7,6 +7,7 @@ import com.dankscripts.sgjdestiny_dhd.dialer.SeedShipAddressDatabase;
 import com.dankscripts.sgjdestiny_dhd.network.DestinyDialerNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -102,7 +103,6 @@ public final class DestinyDHDConsoleBlock extends UniverseDHDBlock {
                 }
                 return InteractionResult.CONSUME;
             }
-            dhd.generate();
             DestinyDialerNetwork.openSeedShipDatabase(serverPlayer, dhd,
                     SeedShipAddressDatabase.entriesFor(serverPlayer.server, dhd));
         }
@@ -133,6 +133,10 @@ public final class DestinyDHDConsoleBlock extends UniverseDHDBlock {
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (!level.isClientSide()) {
+            if (!stack.has(DataComponents.BLOCK_ENTITY_DATA)
+                    && level.getBlockEntity(pos) instanceof UniverseDHDEntity dhd) {
+                dhd.generate();
+            }
             placeInteractionTarget(level, pos.above());
             placeInteractionTarget(level, pos.above(2));
         }

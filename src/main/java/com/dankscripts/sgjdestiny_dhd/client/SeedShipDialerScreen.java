@@ -70,7 +70,7 @@ public final class SeedShipDialerScreen extends Screen {
     }
 
     @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
+        super.render(graphics, mouseX, mouseY, partialTick);
         Layout l = layout();
         if (handheld) {
             graphics.blit(HANDHELD_FRAME, l.left, l.top, l.width, l.height, 0, 0,
@@ -125,7 +125,6 @@ public final class SeedShipDialerScreen extends Screen {
                     graphics.drawCenteredString(font, "ESTABLISHING KINO VIDEO LINK...",
                             center, panelTop + (panelBottom - panelTop) / 2, 0xB9E1CC);
                 }
-                super.render(graphics, mouseX, mouseY, partialTick);
                 return;
             }
             graphics.drawCenteredString(font, Component.translatable("screen.sgjdestiny_dhd.kino_control"),
@@ -145,7 +144,6 @@ public final class SeedShipDialerScreen extends Screen {
             drawKinoButton(graphics, controls.x2(0), controls.row(3), controls.twoWidth(), controls.buttonHeight(), "SCAN", mouseX, mouseY);
             drawKinoButton(graphics, controls.x2(1), controls.row(3), controls.twoWidth(), controls.buttonHeight(), "VIDEO", mouseX, mouseY);
             graphics.drawCenteredString(font, "REMOTE SENSOR CHANNEL", center, panelBottom - 14, 0x708F80);
-            super.render(graphics, mouseX, mouseY, partialTick);
             return;
         }
         Component heading = handheld ? Component.translatable("screen.sgjdestiny_dhd.remote_network") : title;
@@ -180,7 +178,6 @@ public final class SeedShipDialerScreen extends Screen {
                 : selected >= 0 ? Component.translatable("screen.sgjdestiny_dhd.select") : Component.translatable("screen.sgjdestiny_dhd.select_destination");
         graphics.drawCenteredString(font, gearText, center, l.screenTop + l.screenHeight - 15,
                 gateState > 0 || selected >= 0 ? 0xE3C46E : 0x6E766D);
-        super.render(graphics, mouseX, mouseY, partialTick);
     }
 
     @Override public boolean mouseClicked(double mouseX, double mouseY, int button) {

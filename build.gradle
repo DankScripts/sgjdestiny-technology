@@ -50,6 +50,17 @@ dependencies {
 
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 
+tasks.named('processResources', ProcessResources).configure {
+    inputs.property('neoShipResourceLayout', '2')
+    filesMatching('data/sgjdestiny_dhd/structures/destiny_ship/*.nbt') {
+        path = path.replace('data/sgjdestiny_dhd/structures/', 'data/sgjdestiny_dhd/structure/')
+    }
+    filesMatching('assets/sgjdestiny_dhd/models/**/*.json') {
+        filteringCharset = 'UTF-8'
+        filter { line -> line.replace('"forge:obj"', '"neoforge:obj"').replace('"forge_data"', '"neoforge_data"') }
+    }
+}
+
 tasks.named('jar', Jar).configure {
     manifest {
         attributes([
@@ -111,6 +122,102 @@ tasks.register('verifyGateTerrainSurvey', JavaExec) {
     mainClass = 'com.dankscripts.sgjdestiny_dhd.compat.GateTerrainSurveyTest'
 }
 tasks.named('check').configure { dependsOn 'verifyGateTerrainSurvey' }
+
+tasks.register('compileDestinyHardwiredDHDTest', JavaCompile) {
+    source = files('tools/tests/DestinyHardwiredDHDTest.java',
+            'src/main/java/com/dankscripts/sgjdestiny_dhd/compat/DestinyHardwiredDHD.java')
+    classpath = sourceSets.main.compileClasspath
+    destinationDirectory = layout.buildDirectory.dir('destiny-hardwired-tests')
+}
+tasks.register('verifyDestinyHardwiredDHD', JavaExec) {
+    dependsOn 'compileDestinyHardwiredDHDTest'
+    classpath = files(layout.buildDirectory.dir('destiny-hardwired-tests')) + sourceSets.main.runtimeClasspath
+    mainClass = 'com.dankscripts.sgjdestiny_dhd.compat.DestinyHardwiredDHDTest'
+}
+tasks.named('check').configure { dependsOn 'verifyDestinyHardwiredDHD' }
+
+tasks.register('verifyShipResources') {
+    dependsOn 'jar'
+    inputs.file(tasks.named('jar').flatMap { it.archiveFile })
+    doLast {
+        def shipRoot = 'data/sgjdestiny_dhd/structures/destiny_ship/'
+        def templateRoot = 'data/sgjdestiny_dhd/structure/destiny_ship/'
+        def archive = new java.util.zip.ZipFile(tasks.named('jar').get().archiveFile.get().asFile)
+        try {
+            def manifestEntry = archive.getEntry(shipRoot + 'manifest.json')
+            if (manifestEntry == null) throw new GradleException('Destiny ship manifest is missing')
+            def manifest = new groovy.json.JsonSlurper().parse(archive.getInputStream(manifestEntry))
+            if (manifest.tiles.size() != manifest.tile_count || manifest.tiles.isEmpty())
+                throw new GradleException('Destiny ship manifest has an invalid tile count')
+            manifest.tiles.each { tile ->
+                def entry = archive.getEntry(templateRoot + tile.resource)
+                if (entry == null) throw new GradleException("Missing NeoForge ship template: ${tile.resource}")
+                def source = file("src/main/resources/${shipRoot}${tile.resource}")
+                if (!source.isFile() || !java.util.Arrays.equals(source.bytes, archive.getInputStream(entry).bytes))
+                    throw new GradleException("Ship template differs from its source: ${tile.resource}")
+            }
+            def models = archive.entries().findAll {
+                !it.directory && it.name.startsWith('assets/sgjdestiny_dhd/models/') && it.name.endsWith('.json')
+            }
+            models.each { model ->
+                def text = archive.getInputStream(model).getText('UTF-8')
+                if (text.contains('"forge:obj"') || text.contains('"forge_data"'))
+                    throw new GradleException("Forge-only data in NeoForge model: ${model.name}")
+                def json = new groovy.json.JsonSlurper().parseText(text)
+                if (json.elements instanceof List && json.elements.any { !it.faces })
+                    throw new GradleException("Empty-faced element in NeoForge model: ${model.name}")
+            }
+            def bearingStateEntry = archive.getEntry('assets/sgjdestiny_dhd/blockstates/destiny_bearing_fallback.json')
+            def bearingState = new groovy.json.JsonSlurper().parse(archive.getInputStream(bearingStateEntry))
+            ['north', 'east', 'south', 'west'].each { facing ->
+                ['true', 'false'].each { lit ->
+                    ['true', 'false'].each { flashing ->
+                        def matches = bearingState.multipart.findAll { part ->
+                            def values = [facing: facing, lit: lit, flashing: flashing]
+                            part.when.every { key, value -> values[key] == value }
+                        }
+                        if (matches.size() != (lit == 'true' ? 2 : 1))
+                            throw new GradleException("Invalid fallback bearing model for ${facing}, lit=${lit}, flashing=${flashing}")
+                        def expectedModels = ['sgjdestiny_dhd:block/destiny_bearing_fallback']
+                        if (lit == 'true')
+                            expectedModels.add(flashing == 'true' ? 'sgjdestiny_dhd:block/bright_destiny_bearing'
+                                    : 'sgjdestiny_dhd:block/lit_destiny_bearing')
+                        if (matches.collect { it.apply.model }.sort() != expectedModels.sort())
+                            throw new GradleException("Wrong fallback bearing models for ${facing}, lit=${lit}, flashing=${flashing}")
+                        matches.each { part ->
+                            def modelPath = part.apply.model.replace('sgjdestiny_dhd:', 'assets/sgjdestiny_dhd/models/') + '.json'
+                            if (archive.getEntry(modelPath) == null)
+                                throw new GradleException("Missing fallback bearing model: ${modelPath}")
+                        }
+                    }
+                    ['assets/sgjdestiny_dhd/models/custom/destiny_bearing.json',
+                     'assets/sgjdestiny_dhd/textures/block/destiny_bearing_deco.png',
+                     'assets/sgjdestiny_dhd/textures/block/destiny_bearing_light_deco.png'].each { path ->
+                        if (archive.getEntry(path) == null)
+                            throw new GradleException("Missing bundled bearing asset: ${path}")
+                    }
+                }
+            }
+            logger.lifecycle("Verified ${manifest.tiles.size()} ship templates and ${models.size()} NeoForge models.")
+        } finally {
+            archive.close()
+        }
+    }
+}
+tasks.named('check').configure { dependsOn 'verifyShipResources' }
+
+tasks.register('compileMeshTransformTest', JavaCompile) {
+    dependsOn 'classes'
+    source = files('tools/tests/DestinyMeshTransformTest.java')
+    classpath = sourceSets.main.output + sourceSets.main.compileClasspath
+    destinationDirectory = layout.buildDirectory.dir('mesh-transform-tests')
+}
+tasks.register('verifyMeshTransform', JavaExec) {
+    dependsOn 'compileMeshTransformTest'
+    classpath = files(layout.buildDirectory.dir('mesh-transform-tests')) + sourceSets.main.runtimeClasspath
+    mainClass = 'com.dankscripts.sgjdestiny_dhd.client.DestinyMeshTransformTest'
+}
+tasks.named('check').configure { dependsOn 'verifyMeshTransform' }
 
 tasks.register('compileHandheldDialSymbolsTest', JavaCompile) {
     source = files('tools/tests/HandheldDialSymbolsTest.java',

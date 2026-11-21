@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.pathfinder.PathComputationType;
@@ -22,6 +23,7 @@ public final class LitDestinyBearingBlock extends HorizontalDirectionalBlock {
     private static final MapCodec<LitDestinyBearingBlock> CODEC = simpleCodec(ignored -> new LitDestinyBearingBlock());
     @Override protected MapCodec<LitDestinyBearingBlock> codec() { return CODEC; }
     public static final BooleanProperty FLASHING = BooleanProperty.create("flashing");
+    public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
     public LitDestinyBearingBlock() {
         super(BlockBehaviour.Properties.of()
@@ -30,15 +32,16 @@ public final class LitDestinyBearingBlock extends HorizontalDirectionalBlock {
                 .sound(SoundType.METAL)
                 .noCollission()
                 .noOcclusion()
-                .lightLevel(state -> 7));
+                .lightLevel(state -> state.getValue(LIT) ? 15 : 7));
         registerDefaultState(stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
+                .setValue(LIT, false)
                 .setValue(FLASHING, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, FLASHING);
+        builder.add(FACING, FLASHING, LIT);
     }
 
     @Override

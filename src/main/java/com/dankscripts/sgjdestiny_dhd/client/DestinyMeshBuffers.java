@@ -4,6 +4,7 @@ import com.dankscripts.sgjdestiny_dhd.DestinyDHD;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.neoforged.api.distmarker.Dist;
@@ -14,6 +15,8 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.common.EventBusSubscriber;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
 /** One reusable native staging buffer, rather than a native allocation per mesh bake. */
 @EventBusSubscriber(modid = DestinyDHD.MOD_ID, value = Dist.CLIENT)
@@ -21,6 +24,14 @@ public final class DestinyMeshBuffers {
     private static ByteBufferBuilder staging;
     private static final Map<Class<?>, Runnable> CLEANUP = new LinkedHashMap<>();
     private DestinyMeshBuffers() {}
+
+    public static Matrix4f modelView(Matrix4fc view, Matrix4fc model) {
+        return new Matrix4f(view).mul(model);
+    }
+
+    public static Matrix4f modelView(PoseStack pose) {
+        return modelView(RenderSystem.getModelViewMatrix(), pose.last().pose());
+    }
 
     public static BufferBuilder staging(RenderType output) {
         RenderSystem.assertOnRenderThread();

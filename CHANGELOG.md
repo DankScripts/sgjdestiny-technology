@@ -1,5 +1,36 @@
 # Changelog
 
+## Unreleased
+
+- Give Destiny consoles hardwired SGJourney control, communication and power
+  settings without generating or replacing crystal inventory. Existing consoles
+  retain their inventories; regular SGJourney DHDs are unchanged.
+- Discover eligible DHD-controlled gates in already-loaded chunks only; do not
+  acquire a gate with a cached controller or outside the console's range.
+- Replace the experimental gate-cache refresh with a guarded native two-way
+  release only when the idle ship gate caches this same in-range console and
+  the console has no cached gate. Normal native discovery retries; failures log
+  reciprocal-cache and inventory diagnostics without claiming a link.
+- Expose the Destiny console through SGJourney's DHD and energy capabilities
+  on NeoForge, and initialize newly placed consoles instead of replacing their
+  crystals and fusion core whenever the dialer is opened.
+- Draw the Destiny dialer after Minecraft's screen blur, and rotate decorative
+  consoles when installing a rotated ship. Administrators can use
+  `/sgjdestiny ship repairFixtures` to fix matching old console orientations
+  and restore a missing fallback bearing without resetting the ship.
+- Bundle the Destiny bearing model and textures from Stargate journey: Deco
+  1.2.0 by Kryzr872 with permission for the NeoForge fallback, with the same
+  DHD-driven lights and discharge.
+- Fix oversized corridor and door meshes following the camera on NeoForge.
+- Correct NeoForge model data for the Destiny bearings and an invisible tank part.
+- Package Destiny ship templates at Minecraft 1.21's structure resource path
+  and use NeoForge's OBJ loader for the ship's models.
+- Restore SGJourney's Destiny structure preload and retry its native discovery
+  when an existing world's Destiny dimension has no registered gate.
+- Survey Jungle gate sites below vegetation and clear only leaves, logs and
+  other vegetation inside the pedestal footprint. Reject other obstructions
+  and preserve existing gate identities and duplicate-record safeguards.
+
 ## 1.0.0-beta.1-watchdog-test.1
 
 - Request Eden shuttle landing chunks with temporary tickets and wait across
@@ -1598,3 +1629,4 @@ Changes since 0.0.2-alpha-hotfix2:
 - Restored all seeded Mediora destinations in the Destiny dialer even while the source gate cache is loading.
 - Reattached migrated space locations to SGJourney's saved Mediora address-region instances.
 - Initialized newly placed destination gates through SGJourney so they receive a valid nine-chevron identity before network registration.
+
