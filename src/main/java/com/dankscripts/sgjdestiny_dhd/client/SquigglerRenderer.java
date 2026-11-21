@@ -11,7 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public final class SquigglerRenderer extends MobRenderer<SquigglerEntity, SilverfishModel<SquigglerEntity>> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation(DestinyDHD.MOD_ID, "textures/entity/squiggler.png");
+            ResourceLocation.fromNamespaceAndPath(DestinyDHD.MOD_ID, "textures/entity/squiggler.png");
 
     public SquigglerRenderer(EntityRendererProvider.Context context) {
         super(context, new SilverfishModel<>(context.bakeLayer(ModelLayers.SILVERFISH)), 0.25F);

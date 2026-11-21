@@ -54,8 +54,8 @@ public final class DestinyLightningParticle extends Particle {
         RenderSystem.disableCull();
         RenderSystem.depthMask(false);
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        BufferBuilder vertices = Tesselator.getInstance().getBuilder();
-        vertices.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder vertices = Tesselator.getInstance().begin(
+                VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
         // A soft cyan sheath and a narrow white-hot core read as an electrical
         // discharge even against the black Universe gate ring.
@@ -65,7 +65,7 @@ public final class DestinyLightningParticle extends Particle {
             drawPath(vertices, cameraPosition, branch, 0.060, 40, 174, 255, 145);
             drawPath(vertices, cameraPosition, branch, 0.021, 215, 246, 255, 235);
         }
-        BufferUploader.drawWithShader(vertices.end());
+        BufferUploader.drawWithShader(vertices.buildOrThrow());
         RenderSystem.depthMask(true);
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
@@ -114,7 +114,7 @@ public final class DestinyLightningParticle extends Particle {
     private static void vertex(
             VertexConsumer vertices, double x, double y, double z,
             int red, int green, int blue, int alpha) {
-        vertices.vertex(x, y, z).color(red, green, blue, alpha).endVertex();
+        vertices.addVertex((float) x, (float) y, (float) z).setColor(red, green, blue, alpha);
     }
 
     private static Point[] createMainPath(

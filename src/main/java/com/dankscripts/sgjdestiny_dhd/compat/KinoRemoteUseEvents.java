@@ -6,13 +6,14 @@ import com.dankscripts.sgjdestiny_dhd.registry.ModItems;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 
 /** Keeps the Kino's armor-stand carrier from equipping the handheld. */
-@Mod.EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
 public final class KinoRemoteUseEvents {
     private KinoRemoteUseEvents() {}
 
@@ -30,8 +31,14 @@ public final class KinoRemoteUseEvents {
         if (!event.getItemStack().is(ModItems.KINO_REMOTE.get())
                 || !target.getTags().contains("sgjdestiny_kino")) return;
 
-        event.setCanceled(true);
-        event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide()));
+        InteractionResult result = InteractionResult.sidedSuccess(event.getLevel().isClientSide());
+        if (event instanceof PlayerInteractEvent.EntityInteract interact) {
+            interact.setCanceled(true);
+            interact.setCancellationResult(result);
+        } else if (event instanceof PlayerInteractEvent.EntityInteractSpecific specific) {
+            specific.setCanceled(true);
+            specific.setCancellationResult(result);
+        }
         if (!event.getLevel().isClientSide() && event.getEntity() instanceof ServerPlayer player) {
             KinoRemoteItem remote = (KinoRemoteItem) ModItems.KINO_REMOTE.get();
             if (!player.getCooldowns().isOnCooldown(remote)) {

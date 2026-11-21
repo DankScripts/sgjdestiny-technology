@@ -1,5 +1,7 @@
 package com.dankscripts.sgjdestiny_dhd.block;
 
+import com.mojang.serialization.MapCodec;
+
 import com.dankscripts.sgjdestiny_dhd.block_entity.DestinyShuttleAirlockBlockEntity;
 import com.dankscripts.sgjdestiny_dhd.registry.ModBlockEntities;
 import com.dankscripts.sgjdestiny_dhd.registry.ModBlocks;
@@ -51,6 +53,8 @@ import java.util.Set;
 
 /** Rear doorway; the lower-left block places the complete shuttle. */
 public final class DestinyShuttleAirlockBlock extends BaseEntityBlock {
+    private static final MapCodec<DestinyShuttleAirlockBlock> CODEC = simpleCodec(ignored -> new DestinyShuttleAirlockBlock());
+    @Override protected MapCodec<DestinyShuttleAirlockBlock> codec() { return CODEC; }
     public static final DirectionProperty FACING = net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING;
     public static final IntegerProperty COLUMN = IntegerProperty.create("column", 0, 1);
     public static final IntegerProperty ROW = IntegerProperty.create("row", 0, 4);
@@ -357,8 +361,9 @@ public final class DestinyShuttleAirlockBlock extends BaseEntityBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
-                                 InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
+                                               BlockHitResult hit) {
+        InteractionHand hand = InteractionHand.MAIN_HAND;
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         BlockPos base = anchor(pos, state);
         BlockState baseState = level.getBlockState(base);
@@ -468,10 +473,10 @@ public final class DestinyShuttleAirlockBlock extends BaseEntityBlock {
     }
 
     @Override
-    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide() && !player.isCreative())
             popResource(level, pos, new ItemStack(ModItems.DESTINY_SHUTTLE_AIRLOCK.get()));
-        super.playerWillDestroy(level, pos, state, player);
+        return super.playerWillDestroy(level, pos, state, player);
     }
 
     @Override

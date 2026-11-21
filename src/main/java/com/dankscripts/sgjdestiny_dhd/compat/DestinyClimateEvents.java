@@ -8,10 +8,14 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.level.ChunkEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.level.ChunkEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 
 import java.util.Map;
 import java.util.Queue;
@@ -19,9 +23,9 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /** Keeps the interior-space Destiny dimension permanently free of weather. */
-@Mod.EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
 public final class DestinyClimateEvents {
-    private static final ResourceLocation DESTINY = new ResourceLocation("sgjourney", "destiny");
+    private static final ResourceLocation DESTINY = ResourceLocation.fromNamespaceAndPath("sgjourney", "destiny");
     // Bounds of the bundled ship. Only remove exposed snow layers on its exterior.
     private static final int MIN_X = -165;
     private static final int MAX_X = 149;
@@ -32,8 +36,8 @@ public final class DestinyClimateEvents {
     private DestinyClimateEvents() {}
 
     @SubscribeEvent
-    public static void keepDestinyClear(TickEvent.LevelTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || !(event.level instanceof ServerLevel level)) return;
+    public static void keepDestinyClear(LevelTickEvent.Post event) {
+        if (!(event.getLevel() instanceof ServerLevel level)) return;
         if (!level.dimension().location().equals(DESTINY)) return;
         if (level.getGameTime() % 20L == 0L) {
             level.setWeatherParameters(24_000, 0, false, false);

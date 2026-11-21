@@ -38,7 +38,7 @@ public final class DestinyLiftScreen extends Screen {
                 .bounds(width / 2 - 50, top + 215, 100, 18).build());
     }
     @Override public void render(GuiGraphics g, int mx, int my, float partialTick) {
-        renderBackground(g);
+        renderBackground(g, mx, my, partialTick);
         int top = height / 2 - 120;
         g.fill(width / 2 - 132, top - 7, width / 2 + 132, top + 240, 0xF01A2E26);
         g.fill(width / 2 - 132, top - 7, width / 2 + 132, top - 5, 0xFFD2B579);

@@ -6,11 +6,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 
 import java.util.UUID;
 import java.util.HashSet;
@@ -18,7 +22,7 @@ import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.povstalec.sgjourney.common.block_entities.stargate.AbstractStargateEntity;
 
-@Mod.EventBusSubscriber(modid = "sgjdestiny_dhd", bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = "sgjdestiny_dhd", bus = EventBusSubscriber.Bus.GAME)
 public final class KinoEvents {
     private static final String FOLLOW_DX = "sgjdestiny_kino_follow_dx";
     private static final String FOLLOW_DY = "sgjdestiny_kino_follow_dy";
@@ -38,15 +42,15 @@ public final class KinoEvents {
     }
 
     @SubscribeEvent
-    public static void floatWithOwner(TickEvent.LevelTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || event.level.isClientSide() || event.level.getGameTime() % 2 != 0) return;
-        for (net.minecraft.world.entity.Entity entity : ((net.minecraft.server.level.ServerLevel) event.level).getAllEntities()) {
+    public static void floatWithOwner(LevelTickEvent.Post event) {
+        if (event.getLevel().isClientSide() || event.getLevel().getGameTime() % 2 != 0) return;
+        for (net.minecraft.world.entity.Entity entity : ((net.minecraft.server.level.ServerLevel) event.getLevel()).getAllEntities()) {
             if (!(entity instanceof ArmorStand kino) || !kino.getTags().contains("sgjdestiny_kino")) continue;
             // The armor stand is only a visual carrier. The handheld resolves
             // movement with the Kino-sized collision box before moving it.
             kino.noPhysics = true;
             KinoRemoteItem.keepKinoChunkLoaded(kino);
-            String now = event.level.dimension().location().toString();
+            String now = event.getLevel().dimension().location().toString();
             String before = kino.getPersistentData().getString(KinoRemoteItem.lastDimensionKey());
             AbstractStargateEntity<?> gate = nearbyConnectedGate(kino);
             if (gate != null && gate.getConnectionID() != null) {
@@ -71,7 +75,7 @@ public final class KinoEvents {
                     kino.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
                 }
                 try {
-                    ServerPlayer owner = ((net.minecraft.server.level.ServerLevel) event.level).getServer()
+                    ServerPlayer owner = ((net.minecraft.server.level.ServerLevel) event.getLevel()).getServer()
                             .getPlayerList().getPlayer(UUID.fromString(kino.getPersistentData()
                                     .getString(KinoRemoteItem.ownerKey())));
                     DestinyDialerNetwork.refreshKinoVideoAfterTransit(owner, kino);
@@ -84,7 +88,7 @@ public final class KinoEvents {
             // event-horizon plane itself and performs its normal wormhole travel.
             if (kino.getPersistentData().getBoolean(KinoRemoteItem.followKey())) {
                 try {
-                    ServerPlayer owner = ((net.minecraft.server.level.ServerLevel) event.level).getServer()
+                    ServerPlayer owner = ((net.minecraft.server.level.ServerLevel) event.getLevel()).getServer()
                             .getPlayerList().getPlayer(UUID.fromString(kino.getPersistentData()
                                     .getString(KinoRemoteItem.ownerKey())));
                     if (owner != null && owner.level() != kino.level()) {
@@ -98,9 +102,9 @@ public final class KinoEvents {
                 } catch (IllegalArgumentException ignored) {}
             }
         }
-        for (net.minecraft.world.entity.player.Player player : event.level.players()) {
+        for (net.minecraft.world.entity.player.Player player : event.getLevel().players()) {
             if (!(player instanceof ServerPlayer owner)) continue;
-            for (ArmorStand kino : event.level.getEntitiesOfClass(ArmorStand.class, owner.getBoundingBox().inflate(112),
+            for (ArmorStand kino : event.getLevel().getEntitiesOfClass(ArmorStand.class, owner.getBoundingBox().inflate(112),
                     e -> e.getTags().contains("sgjdestiny_kino") && owner.getUUID().toString().equals(
                             e.getPersistentData().getString(KinoRemoteItem.ownerKey())))) {
                 if (!kino.getPersistentData().getBoolean(KinoRemoteItem.followKey())) continue;

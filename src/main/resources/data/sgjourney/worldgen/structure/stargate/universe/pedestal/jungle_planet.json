@@ -6,7 +6,7 @@
   "biomes": "#sgjourney:has_structure/stargate_pedestal/jungle_planet",
   "step": "strongholds",
   "start_height": { "absolute": 0 },
-  "project_start_to_heightmap": "OCEAN_FLOOR_WG",
+  "project_start_to_heightmap": "WORLD_SURFACE_WG",
   "use_expansion_hack": false,
   "spawn_overrides": {},
   "terrain_adaptation": "beard_thin",

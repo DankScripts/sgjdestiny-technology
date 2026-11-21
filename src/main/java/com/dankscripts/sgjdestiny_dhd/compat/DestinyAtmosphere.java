@@ -6,23 +6,28 @@ import com.dankscripts.sgjdestiny_dhd.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.WeakHashMap;
 
 /** Destiny's hull supplies oxygen; occupants produce CO2 that wall scrubbers remove. */
-@Mod.EventBusSubscriber(modid = "sgjdestiny_dhd", bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = "sgjdestiny_dhd", bus = EventBusSubscriber.Bus.GAME)
 public final class DestinyAtmosphere {
-    private static final ResourceLocation DESTINY = new ResourceLocation("sgjourney", "destiny");
+    private static final ResourceLocation DESTINY = ResourceLocation.fromNamespaceAndPath("sgjourney", "destiny");
     private static final WeakHashMap<ServerLevel, Set<BlockPos>> LOADED_BAYS = new WeakHashMap<>();
     private static final int MAX_CO2 = 24000;
     private static final int CO2_PER_PLAYER_PER_SECOND = 3;
@@ -138,8 +143,8 @@ public final class DestinyAtmosphere {
     }
 
     @SubscribeEvent
-    public static void tick(TickEvent.LevelTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || !(event.level instanceof ServerLevel level)
+    public static void tick(LevelTickEvent.Post event) {
+        if (!(event.getLevel() instanceof ServerLevel level)
                 || !isDestiny(level) || level.getGameTime() % 20 != 0) return;
         AirData data = data(level);
         int occupants = 0;
@@ -164,19 +169,20 @@ public final class DestinyAtmosphere {
     }
 
     private static AirData data(ServerLevel level) {
-        return level.getDataStorage().computeIfAbsent(AirData::load, AirData::new, "sgjdestiny_ship_air");
+        return level.getDataStorage().computeIfAbsent(
+                new SavedData.Factory<>(AirData::new, AirData::load), "sgjdestiny_ship_air");
     }
 
     private static final class AirData extends SavedData {
         // Existing ships begin with 75% clean air while scrubbers are fitted.
         private int co2 = MAX_CO2 / 4;
-        private static AirData load(CompoundTag tag) {
+        private static AirData load(CompoundTag tag, HolderLookup.Provider registries) {
             AirData data = new AirData();
             if (tag.contains("CO2")) data.co2 = Math.max(0, Math.min(MAX_CO2, tag.getInt("CO2")));
             else if (tag.contains("Air")) data.co2 = MAX_CO2 - Math.max(0, Math.min(MAX_CO2, tag.getInt("Air")));
             return data;
         }
-        @Override public CompoundTag save(CompoundTag tag) {
+        @Override public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
             tag.putInt("CO2", co2);
             return tag;
         }

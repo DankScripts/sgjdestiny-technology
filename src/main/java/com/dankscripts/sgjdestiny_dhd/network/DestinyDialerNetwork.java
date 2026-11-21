@@ -12,17 +12,16 @@ import com.dankscripts.sgjdestiny_dhd.compat.HandheldGateLookup;
 import com.dankscripts.sgjdestiny_dhd.item.KinoRemoteItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.PacketDistributor;
-import net.minecraftforge.network.simple.SimpleChannel;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.povstalec.sgjourney.common.block_entities.dhd.UniverseDHDEntity;
 import net.povstalec.sgjourney.common.block_entities.stargate.UniverseStargateEntity;
 import net.povstalec.sgjourney.common.sgjourney.Address;
@@ -35,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,38 +45,30 @@ import qouteall.imm_ptl.core.chunk_loading.DimensionalChunkPos;
 
 public final class DestinyDialerNetwork {
     private static final Logger LOGGER = LoggerFactory.getLogger("SGJ Destiny DHD/Dial");
-    private static final String VERSION = "11";
     private static final TicketType<BlockPos> HANDHELD_DIAL_TICKET =
             TicketType.create("destiny_handheld_dial", Comparator.comparingLong(BlockPos::asLong), 1200);
-    private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
-            new ResourceLocation(DestinyDHD.MOD_ID, "seed_ship_dialer"),
-            () -> VERSION, VERSION::equals, VERSION::equals);
     private static final Map<UUID, ChunkLoader> KINO_LOADERS = new ConcurrentHashMap<>();
 
     private DestinyDialerNetwork() {}
 
-    public static void register() {
-        CHANNEL.messageBuilder(OpenDatabase.class, 0, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(OpenDatabase::encode).decoder(OpenDatabase::new)
-                .consumerMainThread(OpenDatabase::handle).add();
-        CHANNEL.messageBuilder(DialAddress.class, 1, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(DialAddress::encode).decoder(DialAddress::new)
-                .consumerMainThread(DialAddress::handle).add();
-        CHANNEL.messageBuilder(Disconnect.class, 2, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(Disconnect::encode).decoder(Disconnect::new)
-                .consumerMainThread(Disconnect::handle).add();
-        CHANNEL.messageBuilder(KinoCommand.class, 3, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(KinoCommand::encode).decoder(KinoCommand::new)
-                .consumerMainThread(KinoCommand::handle).add();
-        CHANNEL.messageBuilder(KinoStatus.class, 4, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(KinoStatus::encode).decoder(KinoStatus::new)
-                .consumerMainThread(KinoStatus::handle).add();
-        CHANNEL.messageBuilder(KinoVideoFrame.class, 5, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(KinoVideoFrame::encode).decoder(KinoVideoFrame::new)
-                .consumerMainThread(KinoVideoFrame::handle).add();
-        CHANNEL.messageBuilder(KinoLook.class, 6, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(KinoLook::encode).decoder(KinoLook::new)
-                .consumerMainThread(KinoLook::handle).add();
+    public static void register() {}
+
+    public static void registerPayloads(RegisterPayloadHandlersEvent event) {
+        var registrar = event.registrar("1.21.1-dialer1");
+        registrar.playToClient(OpenDatabase.TYPE, OpenDatabase.CODEC,
+                (packet, context) -> context.enqueueWork(packet::handleClient));
+        registrar.playToServer(DialAddress.TYPE, DialAddress.CODEC,
+                (packet, context) -> context.enqueueWork(() -> packet.handleServer(context.player())));
+        registrar.playToServer(Disconnect.TYPE, Disconnect.CODEC,
+                (packet, context) -> context.enqueueWork(() -> packet.handleServer(context.player())));
+        registrar.playToServer(KinoCommand.TYPE, KinoCommand.CODEC,
+                (packet, context) -> context.enqueueWork(() -> packet.handleServer(context.player())));
+        registrar.playToClient(KinoStatus.TYPE, KinoStatus.CODEC,
+                (packet, context) -> context.enqueueWork(packet::handleClient));
+        registrar.playToClient(KinoVideoFrame.TYPE, KinoVideoFrame.CODEC,
+                (packet, context) -> context.enqueueWork(packet::handleClient));
+        registrar.playToServer(KinoLook.TYPE, KinoLook.CODEC,
+                (packet, context) -> context.enqueueWork(() -> packet.handleServer(context.player())));
     }
 
     public static void openSeedShipDatabase(ServerPlayer player, UniverseDHDEntity dhd,
@@ -88,7 +78,7 @@ public final class DestinyDialerNetwork {
         int state = gate != null && gate.isConnected() ? 2
                 : gateEntity != null && (gateEntity.isDialingOut() || gateEntity.getChevronsEngaged() > 0
                 || !gateEntity.getEncodedSymbols().isEmpty()) ? 1 : 0;
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
+        PacketDistributor.sendToPlayer(player,
                 new OpenDatabase(dhd.getBlockPos(), false, false, entries, state, false, false));
     }
 
@@ -97,59 +87,58 @@ public final class DestinyDialerNetwork {
         int state = gate.isConnected() ? 2
                 : gate.isDialingOut() || gate.dialFromBuffer() || gate.isRotating()
                 || gate.getChevronsEngaged() > 0 ? 1 : 0;
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
+        PacketDistributor.sendToPlayer(player,
                 new OpenDatabase(gate.getBlockPos(), true, false, entries, state, false, false));
     }
 
     public static void openHandheldDatabase(ServerPlayer player, UniverseDHDEntity dhd,
-                                            List<SeedShipAddressDatabase.Entry> entries, boolean kinoInitially) {
+                                            List<SeedShipAddressDatabase.Entry> entries) {
         var gate = DestinyDHDApi.connectedStargateEntity(dhd);
         int state = gate != null && gate.isConnected() ? 2
                 : gate != null && (gate.isDialingOut() || gate.getChevronsEngaged() > 0
                 || !gate.getEncodedSymbols().isEmpty()) ? 1 : 0;
-        sendHandheld(player, dhd.getBlockPos(), false, entries, state, kinoInitially);
+        PacketDistributor.sendToPlayer(player,
+                new OpenDatabase(dhd.getBlockPos(), false, true, entries, state, false,
+                        KinoRemoteItem.hasDeployedKino(player)));
     }
 
     public static void openHandheldDatabase(ServerPlayer player, UniverseStargateEntity gate,
-                                            List<SeedShipAddressDatabase.Entry> entries, boolean kinoInitially) {
+                                            List<SeedShipAddressDatabase.Entry> entries) {
         int state = gate.isConnected() ? 2
                 : gate.isDialingOut() || gate.dialFromBuffer() || gate.isRotating()
                 || gate.getChevronsEngaged() > 0 ? 1 : 0;
-        sendHandheld(player, gate.getBlockPos(), true, entries, state, kinoInitially);
+        PacketDistributor.sendToPlayer(player,
+                new OpenDatabase(gate.getBlockPos(), true, true, entries, state, false,
+                        KinoRemoteItem.hasDeployedKino(player)));
     }
 
-    public static void openKinoControl(ServerPlayer player, boolean kinoInitially) {
-        sendHandheld(player, player.blockPosition(), false, List.of(), 0, kinoInitially);
-    }
-
-    private static void sendHandheld(ServerPlayer player, BlockPos target, boolean directGate,
-                                     List<SeedShipAddressDatabase.Entry> entries, int state, boolean kinoInitially) {
-        if (kinoInitially) validateKinoLink(player);
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
-                new OpenDatabase(target, directGate, true, entries, state, kinoInitially,
+    public static void openKinoControl(ServerPlayer player) {
+        validateKinoLink(player);
+        PacketDistributor.sendToPlayer(player,
+                new OpenDatabase(player.blockPosition(), false, true, List.of(), 0, true,
                         KinoRemoteItem.hasDeployedKino(player)));
     }
 
     public static void dial(BlockPos target, boolean directGate, boolean handheld, Address address) {
-        CHANNEL.sendToServer(new DialAddress(target, directGate, handheld, address.toArray()));
+        PacketDistributor.sendToServer(new DialAddress(target, directGate, handheld, address.toArray()));
     }
 
     public static void disconnect(BlockPos target, boolean directGate, boolean handheld) {
-        CHANNEL.sendToServer(new Disconnect(target, directGate, handheld));
+        PacketDistributor.sendToServer(new Disconnect(target, directGate, handheld));
     }
 
-    public static void kinoCommand(int command) { CHANNEL.sendToServer(new KinoCommand(command)); }
+    public static void kinoCommand(int command) { PacketDistributor.sendToServer(new KinoCommand(command)); }
     public static void kinoLook(float yawDelta, float pitchDelta, boolean reset) {
-        CHANNEL.sendToServer(new KinoLook(yawDelta, pitchDelta, reset));
+        PacketDistributor.sendToServer(new KinoLook(yawDelta, pitchDelta, reset));
     }
 
     public static void suspendKinoLink(ServerPlayer player) {
         removeKinoLoader(player);
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new KinoStatus(false));
+        PacketDistributor.sendToPlayer(player, new KinoStatus(false));
     }
 
     public static void restoreKinoLink(ServerPlayer player) {
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new KinoStatus(true));
+        PacketDistributor.sendToPlayer(player, new KinoStatus(true));
     }
 
     public static void refreshKinoVideoAfterTransit(ServerPlayer player, ArmorStand kino) {
@@ -169,7 +158,10 @@ public final class DestinyDialerNetwork {
 
     public record ClientEntry(Component name, int[] symbols, boolean earth) {}
 
-    public static final class OpenDatabase {
+    public static final class OpenDatabase implements CustomPacketPayload {
+        static final Type<OpenDatabase> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(DestinyDHD.MOD_ID, "dialer_open"));
+        static final StreamCodec<RegistryFriendlyByteBuf, OpenDatabase> CODEC = StreamCodec.of(
+                (buf, packet) -> packet.encode(buf), OpenDatabase::new);
         private final BlockPos console;
         private final boolean directGate;
         private final boolean handheld;
@@ -194,7 +186,7 @@ public final class DestinyDialerNetwork {
             handheld = buffer.readBoolean();
             int count = buffer.readVarInt();
             List<ClientEntry> read = new ArrayList<>(count);
-            for (int i = 0; i < count; i++) read.add(new ClientEntry(buffer.readComponent(),
+            for (int i = 0; i < count; i++) read.add(new ClientEntry(ComponentSerialization.STREAM_CODEC.decode((RegistryFriendlyByteBuf) buffer),
                     buffer.readVarIntArray(), buffer.readBoolean()));
             entries = List.copyOf(read);
             gateState = buffer.readByte();
@@ -207,7 +199,7 @@ public final class DestinyDialerNetwork {
             buffer.writeBoolean(handheld);
             buffer.writeVarInt(entries.size());
             for (ClientEntry entry : entries) {
-                buffer.writeComponent(entry.name());
+                ComponentSerialization.STREAM_CODEC.encode((RegistryFriendlyByteBuf) buffer, entry.name());
                 buffer.writeVarIntArray(entry.symbols());
                 buffer.writeBoolean(entry.earth());
             }
@@ -215,15 +207,17 @@ public final class DestinyDialerNetwork {
             buffer.writeBoolean(kinoInitially);
             buffer.writeBoolean(kinoDeployed);
         }
-        static void handle(OpenDatabase message, Supplier<NetworkEvent.Context> context) {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> DestinyDialerClientPackets.openDatabase(
-                    message.console, message.directGate, message.handheld, message.entries,
-                    message.gateState, message.kinoInitially, message.kinoDeployed));
-            context.get().setPacketHandled(true);
+        void handleClient() {
+            DestinyDialerClientPackets.openDatabase(console, directGate, handheld, entries,
+                    gateState, kinoInitially, kinoDeployed);
         }
+        @Override public Type<OpenDatabase> type() { return TYPE; }
     }
 
-    public static final class DialAddress {
+    public static final class DialAddress implements CustomPacketPayload {
+        static final Type<DialAddress> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(DestinyDHD.MOD_ID, "dialer_dial"));
+        static final StreamCodec<RegistryFriendlyByteBuf, DialAddress> CODEC = StreamCodec.of(
+                (buf, packet) -> packet.encode(buf), DialAddress::new);
         private final BlockPos console;
         private final boolean directGate;
         private final boolean handheld;
@@ -239,20 +233,20 @@ public final class DestinyDialerNetwork {
             buffer.writeBlockPos(console); buffer.writeBoolean(directGate);
             buffer.writeBoolean(handheld); buffer.writeVarIntArray(symbols);
         }
-        static void handle(DialAddress message, Supplier<NetworkEvent.Context> context) {
-            ServerPlayer player = context.get().getSender();
-            if (player != null && authorizedControlDistance(player, message.console, message.handheld, message.directGate)) {
+        void handleServer(net.minecraft.world.entity.player.Player rawPlayer) {
+            if (rawPlayer instanceof ServerPlayer player
+                    && authorizedControlDistance(player, console, handheld, directGate)) {
                 try {
-                    Address.Immutable address = new Address.Immutable(message.symbols);
-                    UniverseStargateEntity gate = message.directGate
-                            ? resolveDirectGate(player, message.console, message.handheld) : null;
+                    Address.Immutable address = new Address.Immutable(symbols);
+                    UniverseStargateEntity gate = directGate
+                            ? resolveDirectGate(player, console, handheld) : null;
                     if (gate != null
                             && SeedShipAddressDatabase.isAuthorizedSelection(player.server, gate, address)
-                            && queueDirectGateDial(player, gate, message.symbols, message.handheld)) {
-                    } else if (!message.directGate
-                            && player.level().getBlockEntity(message.console) instanceof UniverseDHDEntity dhd
+                            && queueDirectGateDial(player, gate, symbols, handheld)) {
+                    } else if (!directGate
+                            && player.level().getBlockEntity(console) instanceof UniverseDHDEntity dhd
                             && SeedShipAddressDatabase.isAuthorizedSelection(player.server, dhd, address)
-                            && DestinyDialDelay.queueProgrammedDial(dhd, message.symbols, message.handheld)) {
+                            && DestinyDialDelay.queueProgrammedDial(dhd, symbols, handheld)) {
                     } else {
                         player.displayClientMessage(Component.translatable("message.sgjdestiny_dhd.dialer_busy"), true);
                     }
@@ -260,11 +254,11 @@ public final class DestinyDialerNetwork {
                     player.displayClientMessage(Component.translatable("message.sgjdestiny_dhd.invalid_destination"), true);
                 }
             }
-            context.get().setPacketHandled(true);
         }
+        @Override public Type<DialAddress> type() { return TYPE; }
 
         private static boolean queueDirectGateDial(ServerPlayer player, UniverseStargateEntity gate, int[] symbols,
-                                                   boolean handheld) {
+                                                    boolean handheld) {
             if (gate.isConnected() || gate.isDialingOut() || gate.isDialing()
                     || gate.isRotating() || gate.getChevronsEngaged() > 0) return false;
             Address.Immutable dialAddress = Address.Immutable.extendWithPointOfOrigin(new Address.Immutable(symbols));
@@ -296,7 +290,6 @@ public final class DestinyDialerNetwork {
                 return false;
             }
             if (handheld && feedback != null) {
-                // Keep the buffered symbol sequence ticking until SGJourney takes over chunk loading.
                 BlockPos pos = gate.getBlockPos();
                 player.serverLevel().getChunkSource().addRegionTicket(HANDHELD_DIAL_TICKET, new ChunkPos(pos), 2, pos);
             }
@@ -304,7 +297,10 @@ public final class DestinyDialerNetwork {
         }
     }
 
-    public static final class Disconnect {
+    public static final class Disconnect implements CustomPacketPayload {
+        static final Type<Disconnect> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(DestinyDHD.MOD_ID, "dialer_disconnect"));
+        static final StreamCodec<RegistryFriendlyByteBuf, Disconnect> CODEC = StreamCodec.of(
+                (buf, packet) -> packet.encode(buf), Disconnect::new);
         private final BlockPos console;
         private final boolean directGate;
         private final boolean handheld;
@@ -317,24 +313,24 @@ public final class DestinyDialerNetwork {
         void encode(FriendlyByteBuf buffer) {
             buffer.writeBlockPos(console); buffer.writeBoolean(directGate); buffer.writeBoolean(handheld);
         }
-        static void handle(Disconnect message, Supplier<NetworkEvent.Context> context) {
-            ServerPlayer player = context.get().getSender();
-            if (player != null && authorizedControlDistance(player, message.console, message.handheld, message.directGate)) {
-                UniverseStargateEntity gate = message.directGate
-                        ? resolveDirectGate(player, message.console, message.handheld) : null;
+        void handleServer(net.minecraft.world.entity.player.Player rawPlayer) {
+            if (rawPlayer instanceof ServerPlayer player
+                    && authorizedControlDistance(player, console, handheld, directGate)) {
+                UniverseStargateEntity gate = directGate
+                        ? resolveDirectGate(player, console, handheld) : null;
                 if (gate != null) {
                     gate.engageStargate();
-                } else if (message.directGate && message.handheld) {
+                } else if (directGate && handheld) {
                     player.displayClientMessage(Component.translatable("message.sgjdestiny_dhd.remote_no_gate"), true);
-                } else if (!message.directGate
-                    && player.level().getBlockEntity(message.console) instanceof UniverseDHDEntity dhd
+                } else if (!directGate
+                    && player.level().getBlockEntity(console) instanceof UniverseDHDEntity dhd
                     && DestinyDHDApi.connectedStargate(dhd) != null) {
                     DestinyDialDelay.cancel(dhd);
                     dhd.engageStargate();
                 }
             }
-            context.get().setPacketHandled(true);
         }
+        @Override public Type<Disconnect> type() { return TYPE; }
     }
 
     private static UniverseStargateEntity resolveDirectGate(ServerPlayer player, BlockPos target, boolean handheld) {
@@ -342,14 +338,15 @@ public final class DestinyDialerNetwork {
         return player.level().getBlockEntity(target) instanceof UniverseStargateEntity gate ? gate : null;
     }
 
-    private static boolean authorizedControlDistance(ServerPlayer player, BlockPos target, boolean handheld, boolean directGate) {
+    private static boolean authorizedControlDistance(ServerPlayer player, BlockPos target, boolean handheld,
+                                                      boolean directGate) {
         if (handheld) {
             boolean holdingRemote = player.getMainHandItem().is(
                     com.dankscripts.sgjdestiny_dhd.registry.ModItems.KINO_REMOTE.get())
                     || player.getOffhandItem().is(
                     com.dankscripts.sgjdestiny_dhd.registry.ModItems.KINO_REMOTE.get());
             if (!holdingRemote) return false;
-            if (directGate) return true; // resolveDirectGate verifies the exact registered position before loading it.
+            if (directGate) return true;
             // Authenticate a remote request against the gate network before
             // looking up the target block entity, which may load its chunk.
             return StargateNetwork.get(player.server).getStargatesInDimension(
@@ -361,35 +358,36 @@ public final class DestinyDialerNetwork {
         return player.distanceToSqr(target.getX() + .5, target.getY() + .5, target.getZ() + .5) <= 4096.0;
     }
 
-    public static final class KinoCommand {
+    public static final class KinoCommand implements CustomPacketPayload {
+        static final Type<KinoCommand> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(DestinyDHD.MOD_ID, "kino_command"));
+        static final StreamCodec<RegistryFriendlyByteBuf, KinoCommand> CODEC = StreamCodec.of(
+                (buf, packet) -> packet.encode(buf), KinoCommand::new);
         private final int command;
         KinoCommand(int command) { this.command = command; }
         KinoCommand(FriendlyByteBuf buffer) { command = buffer.readVarInt(); }
         void encode(FriendlyByteBuf buffer) { buffer.writeVarInt(command); }
-        static void handle(KinoCommand message, Supplier<NetworkEvent.Context> context) {
-            ServerPlayer player = context.get().getSender();
-            if (player != null && message.command >= 0 && message.command <= 12) {
-                if (message.command == 10) {
+        void handleServer(net.minecraft.world.entity.player.Player rawPlayer) {
+            if (rawPlayer instanceof ServerPlayer player && command >= 0 && command <= 12) {
+                if (command == 10) {
                     ArmorStand kino = validateKinoLink(player);
                     if (kino != null) {
                         sendKinoVideoFrame(player, kino);
                     }
-                } else if (message.command == 11) {
+                } else if (command == 11) {
                     removeKinoLoader(player);
                 } else {
                     validateKinoLink(player);
-                    KinoRemoteItem.handleKinoCommand(player, message.command);
-                    CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
-                            new KinoStatus(KinoRemoteItem.hasDeployedKino(player)));
+                    KinoRemoteItem.handleKinoCommand(player, command);
+                    PacketDistributor.sendToPlayer(player, new KinoStatus(KinoRemoteItem.hasDeployedKino(player)));
                 }
             }
-            context.get().setPacketHandled(true);
         }
+        @Override public Type<KinoCommand> type() { return TYPE; }
     }
 
     private static void sendKinoVideoFrame(ServerPlayer player, ArmorStand kino) {
         updateKinoLoader(player, kino);
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new KinoVideoFrame(
+        PacketDistributor.sendToPlayer(player, new KinoVideoFrame(
                 kino.level().dimension().location().toString(), kino.getX(), kino.getY() + 1.45,
                 kino.getZ(), KinoRemoteItem.getCameraYaw(kino), KinoRemoteItem.getCameraPitch(kino)));
     }
@@ -397,7 +395,7 @@ public final class DestinyDialerNetwork {
     private static void updateKinoLoader(ServerPlayer player, ArmorStand kino) {
         DimensionalChunkPos center = new DimensionalChunkPos(kino.level().dimension(), new ChunkPos(kino.blockPosition()));
         ChunkLoader old = KINO_LOADERS.get(player.getUUID());
-        if (old != null && old.center.equals(center)) return;
+        if (old != null && old.getCenter().equals(center)) return;
         if (old != null) PortalAPI.removeChunkLoaderForPlayer(player, old);
         ChunkLoader loader = new ChunkLoader(center, 6);
         PortalAPI.addChunkLoaderForPlayer(player, loader);
@@ -409,19 +407,22 @@ public final class DestinyDialerNetwork {
         if (old != null) PortalAPI.removeChunkLoaderForPlayer(player, old);
     }
 
-    public static final class KinoStatus {
+    public static final class KinoStatus implements CustomPacketPayload {
+        static final Type<KinoStatus> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(DestinyDHD.MOD_ID, "kino_status"));
+        static final StreamCodec<RegistryFriendlyByteBuf, KinoStatus> CODEC = StreamCodec.of(
+                (buf, packet) -> packet.encode(buf), KinoStatus::new);
         private final boolean deployed;
         KinoStatus(boolean deployed) { this.deployed = deployed; }
         KinoStatus(FriendlyByteBuf buffer) { deployed = buffer.readBoolean(); }
         void encode(FriendlyByteBuf buffer) { buffer.writeBoolean(deployed); }
-        static void handle(KinoStatus message, Supplier<NetworkEvent.Context> context) {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
-                    () -> () -> DestinyDialerClientPackets.updateKinoStatus(message.deployed));
-            context.get().setPacketHandled(true);
-        }
+        void handleClient() { DestinyDialerClientPackets.updateKinoStatus(deployed); }
+        @Override public Type<KinoStatus> type() { return TYPE; }
     }
 
-    public static final class KinoVideoFrame {
+    public static final class KinoVideoFrame implements CustomPacketPayload {
+        static final Type<KinoVideoFrame> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(DestinyDHD.MOD_ID, "kino_video"));
+        static final StreamCodec<RegistryFriendlyByteBuf, KinoVideoFrame> CODEC = StreamCodec.of(
+                (buf, packet) -> packet.encode(buf), KinoVideoFrame::new);
         private final String dimension;
         private final double x, y, z;
         private final float yaw, pitch;
@@ -436,14 +437,14 @@ public final class DestinyDialerNetwork {
             buffer.writeUtf(dimension, 128); buffer.writeDouble(x); buffer.writeDouble(y); buffer.writeDouble(z);
             buffer.writeFloat(yaw); buffer.writeFloat(pitch);
         }
-        static void handle(KinoVideoFrame message, Supplier<NetworkEvent.Context> context) {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> DestinyDialerClientPackets.updateKinoVideo(
-                    message.dimension, message.x, message.y, message.z, message.yaw, message.pitch));
-            context.get().setPacketHandled(true);
-        }
+        void handleClient() { DestinyDialerClientPackets.updateKinoVideo(dimension, x, y, z, yaw, pitch); }
+        @Override public Type<KinoVideoFrame> type() { return TYPE; }
     }
 
-    public static final class KinoLook {
+    public static final class KinoLook implements CustomPacketPayload {
+        static final Type<KinoLook> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(DestinyDHD.MOD_ID, "kino_look"));
+        static final StreamCodec<RegistryFriendlyByteBuf, KinoLook> CODEC = StreamCodec.of(
+                (buf, packet) -> packet.encode(buf), KinoLook::new);
         private final float yawDelta, pitchDelta;
         private final boolean reset;
         KinoLook(float yawDelta, float pitchDelta, boolean reset) {
@@ -455,14 +456,13 @@ public final class DestinyDialerNetwork {
         void encode(FriendlyByteBuf buffer) {
             buffer.writeFloat(yawDelta); buffer.writeFloat(pitchDelta); buffer.writeBoolean(reset);
         }
-        static void handle(KinoLook message, Supplier<NetworkEvent.Context> context) {
-            ServerPlayer player = context.get().getSender();
-            if (player != null && Float.isFinite(message.yawDelta) && Float.isFinite(message.pitchDelta)) {
+        void handleServer(net.minecraft.world.entity.player.Player rawPlayer) {
+            if (rawPlayer instanceof ServerPlayer player && Float.isFinite(yawDelta) && Float.isFinite(pitchDelta)) {
                 if (validateKinoLink(player) != null) {
-                    KinoRemoteItem.lookKino(player, message.yawDelta, message.pitchDelta, message.reset);
+                    KinoRemoteItem.lookKino(player, yawDelta, pitchDelta, reset);
                 }
             }
-            context.get().setPacketHandled(true);
         }
+        @Override public Type<KinoLook> type() { return TYPE; }
     }
 }

@@ -14,7 +14,9 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.FrontAndTop;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -32,13 +34,17 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.server.ServerAboutToStartEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.minecraft.core.registries.Registries;
 import net.povstalec.sgjourney.common.blocks.ChevronBlock;
 import net.povstalec.sgjourney.common.block_entities.stargate.AbstractStargateEntity;
 import net.povstalec.sgjourney.common.data.StargateNetwork;
@@ -56,14 +62,14 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 /** Installs the captured ship only after a world administrator opts in. */
-@Mod.EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
 public final class DestinyShipInstallEvents {
     private static final Logger LOGGER = LoggerFactory.getLogger("SGJ Destiny Ship");
     private static final ResourceKey<Level> DESTINY = ResourceKey.create(Registries.DIMENSION,
-            new ResourceLocation("sgjourney", "destiny"));
-    private static final ResourceLocation MANIFEST = new ResourceLocation(DestinyDHD.MOD_ID,
+            ResourceLocation.fromNamespaceAndPath("sgjourney", "destiny"));
+    private static final ResourceLocation MANIFEST = ResourceLocation.fromNamespaceAndPath(DestinyDHD.MOD_ID,
             "structures/destiny_ship/manifest.json");
-    private static final ResourceLocation SPAWNER_POSITIONS = new ResourceLocation(DestinyDHD.MOD_ID,
+    private static final ResourceLocation SPAWNER_POSITIONS = ResourceLocation.fromNamespaceAndPath(DestinyDHD.MOD_ID,
             "structures/destiny_ship/spawner_positions.json");
     private static final BlockPos GATE_CONTROLLER = new BlockPos(-8, 74, -299);
     private static final BlockPos GATE_CHEVRON = new BlockPos(-8, 75, -300);
@@ -82,6 +88,7 @@ public final class DestinyShipInstallEvents {
     private static final int LEGACY_CORRIDOR_MIN_Z = -326;
     private static final int STRUCTURE_MIN_Y = 47;
     // The packaged ship no longer makes Simply Light a runtime requirement.
+    // Legacy light entries are handled by the structure installer instead.
     private static final List<String> SHIP_BLOCK_MODS = List.of();
     private static final List<ShipAirlock> SHIP_AIRLOCKS = List.of(
             new ShipAirlock(-8, 85, -253, Direction.NORTH),
@@ -241,7 +248,7 @@ public final class DestinyShipInstallEvents {
             source.sendSuccess(() -> Component.literal("Destiny's curved stairs are already installed."), false);
             return 1;
         }
-        ResourceLocation firstId = ForgeRegistries.BLOCKS.getKey(
+        ResourceLocation firstId = BuiltInRegistries.BLOCK.getKey(
                 level.getBlockState(shipPos(level, new BlockPos(-15, 75, -314))).getBlock());
         boolean macaw = "mcwbridges:iron_bridge_stair".equals(String.valueOf(firstId));
         boolean earlierCurved = level.getBlockState(shipPos(level, new BlockPos(-15, 75, -314)))
@@ -261,7 +268,7 @@ public final class DestinyShipInstallEvents {
                         .setValue(DestinyCurvedStairBlock.RIGHT, side == 1)
                         .setValue(DestinyCurvedStairBlock.STEP, step)
                         .setValue(DestinyCurvedStairBlock.TURN, shipQuarterTurns(level));
-                ResourceLocation oldId = ForgeRegistries.BLOCKS.getKey(oldState.getBlock());
+                ResourceLocation oldId = BuiltInRegistries.BLOCK.getKey(oldState.getBlock());
                 if (!(macaw ? "mcwbridges:iron_bridge_stair".equals(String.valueOf(oldId))
                         : oldState.equals(expectedCurved)) || !level.getBlockState(newPos).isAir()) {
                     source.sendFailure(Component.literal("Stair footprint has been altered; no blocks were changed."));
@@ -307,7 +314,7 @@ public final class DestinyShipInstallEvents {
                 for (int column = 0; column < 3; column++) {
                     BlockPos pos = anchor.relative(facing.getClockWise(), column).above(row);
                     BlockState state = level.getBlockState(pos);
-                    ResourceLocation id = ForgeRegistries.BLOCKS.getKey(state.getBlock());
+                    ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
                     if (id != null && id.toString().equals("ad_astra:airlock")) old++;
                     else if (state.is(com.dankscripts.sgjdestiny_dhd.registry.ModBlocks.DESTINY_SHIP_AIRLOCK.get())) current++;
                 }
@@ -389,8 +396,8 @@ public final class DestinyShipInstallEvents {
     }
 
     @SubscribeEvent
-    public static void installOnServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || !DestinyServerConfig.INSTALL_CUSTOM_DESTINY_SHIP.get()) return;
+    public static void installOnServerTick(ServerTickEvent.Post event) {
+        if (!DestinyServerConfig.INSTALL_CUSTOM_DESTINY_SHIP.get()) return;
         MinecraftServer server = event.getServer();
         ShipInstallData saved = ShipInstallData.get(server);
         if (FAILED.contains(server)) return;
@@ -410,7 +417,7 @@ public final class DestinyShipInstallEvents {
                 if (destiny != null) {
                     STAIRS_CHECKED.add(server);
                     BlockPos firstStair = shipPos(destiny, new BlockPos(-15, 75, -314));
-                    ResourceLocation id = ForgeRegistries.BLOCKS.getKey(destiny.getBlockState(firstStair).getBlock());
+                    ResourceLocation id = BuiltInRegistries.BLOCK.getKey(destiny.getBlockState(firstStair).getBlock());
                     if ("mcwbridges:iron_bridge_stair".equals(String.valueOf(id))
                             || destiny.getBlockState(firstStair).is(ModBlocks.DESTINY_CURVED_STAIR.get())) {
                         retrofitStairs(server.createCommandSourceStack());
@@ -444,7 +451,7 @@ public final class DestinyShipInstallEvents {
                         new BlockPos(tile.chunkX << 4, STRUCTURE_MIN_Y, tile.chunkZ << 4));
                 level.getChunk(origin.getX() >> 4, origin.getZ() >> 4);
                 Optional<StructureTemplate> template = level.getStructureManager().get(
-                        new ResourceLocation(DestinyDHD.MOD_ID,
+                        ResourceLocation.fromNamespaceAndPath(DestinyDHD.MOD_ID,
                                 "destiny_ship/" + tile.resource.substring(0, tile.resource.length() - 4)));
                 if (template.isEmpty()) throw new IllegalStateException("Missing ship tile " + tile.resource);
                 // First-time installation still clears SGJourney's generated
@@ -587,7 +594,7 @@ public final class DestinyShipInstallEvents {
             }
             // Fail before touching the world if a JAR is missing any of its ship tiles.
             for (Tile tile : tiles) {
-                ResourceLocation id = new ResourceLocation(DestinyDHD.MOD_ID,
+                ResourceLocation id = ResourceLocation.fromNamespaceAndPath(DestinyDHD.MOD_ID,
                         "destiny_ship/" + tile.resource.substring(0, tile.resource.length() - 4));
                 if (level.getStructureManager().get(id).isEmpty()) {
                     throw new IllegalStateException("Ship tile is missing: " + tile.resource);
@@ -650,11 +657,11 @@ public final class DestinyShipInstallEvents {
                 continue;
             }
             BlockPos actual = transformed(gate.pos, anchor, rotation);
-            ResourceLocation found = ForgeRegistries.BLOCKS.getKey(level.getBlockState(actual).getBlock());
+            ResourceLocation found = BuiltInRegistries.BLOCK.getKey(level.getBlockState(actual).getBlock());
             if (found == null || !found.toString().equals(gate.name)) return;
         }
         if (!expectedChevron) return;
-        Block chevronBlock = ForgeRegistries.BLOCKS.getValue(new ResourceLocation("sgjourney", "universe_stargate_chevron"));
+        Block chevronBlock = BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath("sgjourney", "universe_stargate_chevron"));
         if (!(chevronBlock instanceof ChevronBlock)) return;
         BlockState state = chevronBlock.defaultBlockState().setValue(ChevronBlock.ORIENTATION, FrontAndTop.UP_SOUTH);
         if (level.setBlock(chevron, state, Block.UPDATE_CLIENTS)) {
@@ -682,7 +689,7 @@ public final class DestinyShipInstallEvents {
         for (GateBlock gate : gateBlocks) {
             BlockPos actual = transformed(gate.pos, anchor, rotation);
             level.getChunk(actual.getX() >> 4, actual.getZ() >> 4);
-            ResourceLocation found = ForgeRegistries.BLOCKS.getKey(level.getBlockState(actual).getBlock());
+            ResourceLocation found = BuiltInRegistries.BLOCK.getKey(level.getBlockState(actual).getBlock());
             if (found == null || !found.toString().equals(gate.name)) return false;
         }
         return level.getBlockEntity(anchor) instanceof
@@ -771,7 +778,7 @@ public final class DestinyShipInstallEvents {
             if (state.isAir()) return;
             BlockEntity entity = level.getBlockEntity(pos);
             protectedBlocks.add(new PreservedBlock(pos.immutable(), state,
-                    entity == null ? null : entity.saveWithFullMetadata()));
+                    entity == null ? null : entity.saveWithFullMetadata(level.registryAccess())));
         }
 
         private boolean clearComplete() {
@@ -821,7 +828,7 @@ public final class DestinyShipInstallEvents {
                 if (block.entityTag() != null) {
                     BlockEntity entity = level.getBlockEntity(pos);
                     if (entity == null) throw new IllegalStateException("Protected block entity was lost at " + pos);
-                    entity.load(block.entityTag().copy());
+                    entity.loadWithComponents(block.entityTag().copy(), level.registryAccess());
                     entity.setChanged();
                 }
             }
@@ -838,11 +845,11 @@ public final class DestinyShipInstallEvents {
         private int gateRotation;
 
         private static ShipInstallData get(MinecraftServer server) {
-            return server.overworld().getDataStorage().computeIfAbsent(ShipInstallData::load,
-                    ShipInstallData::new, FILE_NAME);
+            return server.overworld().getDataStorage().computeIfAbsent(
+                    new SavedData.Factory<>(ShipInstallData::new, ShipInstallData::load), FILE_NAME);
         }
 
-        private static ShipInstallData load(CompoundTag tag) {
+        private static ShipInstallData load(CompoundTag tag, HolderLookup.Provider registries) {
             ShipInstallData data = new ShipInstallData();
             data.installed = tag.getBoolean("Installed");
             data.resetRequested = tag.getBoolean("ResetRequested");
@@ -893,7 +900,7 @@ public final class DestinyShipInstallEvents {
         }
 
         @Override
-        public CompoundTag save(CompoundTag tag) {
+        public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
             tag.putBoolean("Installed", installed);
             tag.putBoolean("ResetRequested", resetRequested);
             tag.putBoolean("SpawnersCleaned", spawnersCleaned);

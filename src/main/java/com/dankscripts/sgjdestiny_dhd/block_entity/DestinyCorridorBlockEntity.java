@@ -34,7 +34,6 @@ public final class DestinyCorridorBlockEntity extends BlockEntity {
         }
     }
 
-    @Override
     public AABB getRenderBoundingBox() {
         // Enclose the actual 5 x 4 x 14 mesh so camera culling can skip
         // corridors behind the player without clipping their far ends.

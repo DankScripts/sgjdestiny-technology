@@ -16,7 +16,6 @@ final class GateTerrainSurvey {
 
     static Result jungleClearing(int x, int z, int seaLevel, int maxY, int structureHeight,
                                  IntBinaryOperator ground) {
-        // Survey a 48-block-wide clearing at eight-block intervals, then check for drops beyond it.
         Result clearing = measure(-3, 3, -3, 3, seaLevel + 1, maxY, structureHeight,
                 (dx, dz) -> ground.applyAsInt(x + dx * 8, z + dz * 8));
         if (clearing == null || clearing.variation() > 8) return null;

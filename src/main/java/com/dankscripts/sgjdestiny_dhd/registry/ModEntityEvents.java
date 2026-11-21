@@ -2,11 +2,12 @@ package com.dankscripts.sgjdestiny_dhd.registry;
 
 import com.dankscripts.sgjdestiny_dhd.DestinyDHD;
 import com.dankscripts.sgjdestiny_dhd.entity.SquigglerEntity;
-import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 
-@Mod.EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 public final class ModEntityEvents {
     private ModEntityEvents() {}
 

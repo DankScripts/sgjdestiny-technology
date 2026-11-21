@@ -1,5 +1,7 @@
 package com.dankscripts.sgjdestiny_dhd.block;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
@@ -14,6 +16,8 @@ import net.minecraft.world.level.material.MapColor;
 
 /** A full floor block with a recessed, flush-mounted pressure grille. */
 public final class DestinyFloorVentBlock extends HorizontalDirectionalBlock {
+    private static final MapCodec<DestinyFloorVentBlock> CODEC = simpleCodec(ignored -> new DestinyFloorVentBlock());
+    @Override protected MapCodec<DestinyFloorVentBlock> codec() { return CODEC; }
     public DestinyFloorVentBlock() {
         super(BlockBehaviour.Properties.of()
                 .mapColor(MapColor.COLOR_GRAY)

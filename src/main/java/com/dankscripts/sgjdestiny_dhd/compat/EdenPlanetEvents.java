@@ -9,18 +9,22 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 
 /** Builds the immense artificial obelisk seen on Eden in SGU's Faith. */
-@Mod.EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
 public final class EdenPlanetEvents {
     private static final ResourceKey<Level> EDEN = ResourceKey.create(
             net.minecraft.core.registries.Registries.DIMENSION,
-            new ResourceLocation("sgjourney", "eden"));
+            ResourceLocation.fromNamespaceAndPath("sgjourney", "eden"));
     private static final int OBELISK_X = 96;
     private static final int OBELISK_Z = 96;
     private static final int OBELISK_HEIGHT = 108;
@@ -61,8 +65,8 @@ public final class EdenPlanetEvents {
     }
 
     @SubscribeEvent
-    public static void updateNightBeam(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || event.getServer().getTickCount() % 20 != 0) return;
+    public static void updateNightBeam(ServerTickEvent.Post event) {
+        if (event.getServer().getTickCount() % 20 != 0) return;
         ServerLevel level = event.getServer().getLevel(EDEN);
         if (level == null) return;
         BlockPos base = findExistingBase(level);

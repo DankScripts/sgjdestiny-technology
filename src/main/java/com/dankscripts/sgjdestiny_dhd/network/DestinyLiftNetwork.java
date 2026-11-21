@@ -5,71 +5,79 @@ import com.dankscripts.sgjdestiny_dhd.client.DestinyLiftScreen;
 import com.dankscripts.sgjdestiny_dhd.elevator.DestinyLiftEvents;
 import com.dankscripts.sgjdestiny_dhd.elevator.DestinyLiftStops;
 import com.dankscripts.sgjdestiny_dhd.entity.DestinyLiftEntity;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.*;
-import net.minecraftforge.network.simple.SimpleChannel;
-import java.util.function.Supplier;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 public final class DestinyLiftNetwork {
-    private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
-            new ResourceLocation(DestinyDHD.MOD_ID, "elevator"), () -> "2", "2"::equals, "2"::equals);
     private DestinyLiftNetwork() {}
-    public static void register() {
-        CHANNEL.messageBuilder(Open.class, 0, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(Open::encode).decoder(Open::new).consumerMainThread(Open::handle).add();
-        CHANNEL.messageBuilder(Select.class, 1, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(Select::encode).decoder(Select::new).consumerMainThread(Select::handle).add();
-        CHANNEL.messageBuilder(Control.class, 2, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(Control::encode).decoder(Control::new).consumerMainThread(Control::handle).add();
+    public static void register() {}
+
+    public static void registerPayloads(RegisterPayloadHandlersEvent event) {
+        var registrar = event.registrar("1.21.1-elevator1");
+        registrar.playToClient(Open.TYPE, Open.CODEC,
+                (packet, context) -> context.enqueueWork(() -> Client.open(packet)));
+        registrar.playToServer(Select.TYPE, Select.CODEC,
+                (packet, context) -> context.enqueueWork(() -> handle(packet, context.player())));
+        registrar.playToServer(Control.TYPE, Control.CODEC,
+                (packet, context) -> context.enqueueWork(() -> handle(packet, context.player())));
     }
+
     public static void open(ServerPlayer player, DestinyLiftEntity cab) {
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new Open(cab.getId(),
+        PacketDistributor.sendToPlayer(player, new Open(cab.getId(),
                 cab.emergency() ? -1 : cab.travelling() ? -2 : cab.dock(), DestinyLiftStops.names()));
     }
-    public static void select(int entity, int floor) { CHANNEL.sendToServer(new Select(entity, floor)); }
-    public static void control(int entity, boolean emergency) { CHANNEL.sendToServer(new Control(entity, emergency)); }
+    public static void select(int entity, int floor) { PacketDistributor.sendToServer(new Select(entity, floor)); }
+    public static void control(int entity, boolean emergency) { PacketDistributor.sendToServer(new Control(entity, emergency)); }
 
-    private record Control(int entity, boolean emergency) {
-        Control(FriendlyByteBuf buf) { this(buf.readVarInt(), buf.readBoolean()); }
-        void encode(FriendlyByteBuf buf) { buf.writeVarInt(entity); buf.writeBoolean(emergency); }
-        static void handle(Control msg, Supplier<NetworkEvent.Context> ctx) {
-            ServerPlayer player = ctx.get().getSender();
-            if (player != null && !player.isSpectator() && DestinyLiftEvents.isDestiny(player.level())
-                    && player.serverLevel().getEntity(msg.entity) instanceof DestinyLiftEntity cab
-                    && cab == DestinyLiftEvents.find(player.serverLevel()) && cab.insideCab(player)) {
-                if (msg.emergency) cab.emergencyStop(player);
-                open(player, cab);
-            }
-            ctx.get().setPacketHandled(true);
+    private static void handle(Control packet, net.minecraft.world.entity.player.Player rawPlayer) {
+        if (rawPlayer instanceof ServerPlayer player && !player.isSpectator()
+                && DestinyLiftEvents.isDestiny(player.level())
+                && player.serverLevel().getEntity(packet.entity()) instanceof DestinyLiftEntity cab
+                && cab == DestinyLiftEvents.find(player.serverLevel()) && cab.insideCab(player)) {
+            if (packet.emergency()) cab.emergencyStop(player);
+            open(player, cab);
         }
     }
-
-    private record Open(int entity, int current, String[] names) {
-        Open(FriendlyByteBuf buf) { this(buf.readVarInt(), buf.readVarInt(), readNames(buf)); }
-        private static String[] readNames(FriendlyByteBuf buf) {
-            String[] names = new String[8]; for (int i = 0; i < 8; i++) names[i] = buf.readUtf(48); return names;
-        }
-        void encode(FriendlyByteBuf buf) {
-            buf.writeVarInt(entity); buf.writeVarInt(current); for (String name : names) buf.writeUtf(name, 48);
-        }
-        static void handle(Open msg, Supplier<NetworkEvent.Context> ctx) {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> DestinyLiftScreen.open(msg.entity, msg.current, msg.names));
-            ctx.get().setPacketHandled(true);
-        }
+    private static void handle(Select packet, net.minecraft.world.entity.player.Player rawPlayer) {
+        if (rawPlayer instanceof ServerPlayer player && DestinyLiftEvents.isDestiny(player.level())
+                && player.serverLevel().getEntity(packet.entity()) instanceof DestinyLiftEntity cab
+                && cab == DestinyLiftEvents.find(player.serverLevel())) cab.select(packet.floor(), player);
     }
-    private record Select(int entity, int floor) {
-        Select(FriendlyByteBuf buf) { this(buf.readVarInt(), buf.readVarInt()); }
-        void encode(FriendlyByteBuf buf) { buf.writeVarInt(entity); buf.writeVarInt(floor); }
-        static void handle(Select msg, Supplier<NetworkEvent.Context> ctx) {
-            ServerPlayer player = ctx.get().getSender();
-            if (player != null && DestinyLiftEvents.isDestiny(player.level())
-                    && player.serverLevel().getEntity(msg.entity) instanceof DestinyLiftEntity cab
-                    && cab == DestinyLiftEvents.find(player.serverLevel())) cab.select(msg.floor, player);
-            ctx.get().setPacketHandled(true);
-        }
+
+    private static final class Client {
+        static void open(Open packet) { DestinyLiftScreen.open(packet.entity(), packet.current(), packet.names()); }
+    }
+
+    public record Control(int entity, boolean emergency) implements CustomPacketPayload {
+        static final Type<Control> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(DestinyDHD.MOD_ID, "lift_control"));
+        static final StreamCodec<RegistryFriendlyByteBuf, Control> CODEC = StreamCodec.of(
+                (buf, packet) -> { buf.writeVarInt(packet.entity()); buf.writeBoolean(packet.emergency()); },
+                buf -> new Control(buf.readVarInt(), buf.readBoolean()));
+        @Override public Type<Control> type() { return TYPE; }
+    }
+    public record Open(int entity, int current, String[] names) implements CustomPacketPayload {
+        static final Type<Open> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(DestinyDHD.MOD_ID, "lift_open"));
+        static final StreamCodec<RegistryFriendlyByteBuf, Open> CODEC = StreamCodec.of(
+                (buf, packet) -> {
+                    buf.writeVarInt(packet.entity()); buf.writeVarInt(packet.current());
+                    for (String name : packet.names()) buf.writeUtf(name, 48);
+                }, buf -> {
+                    int entity = buf.readVarInt(); int current = buf.readVarInt(); String[] names = new String[8];
+                    for (int i = 0; i < names.length; i++) names[i] = buf.readUtf(48);
+                    return new Open(entity, current, names);
+                });
+        @Override public Type<Open> type() { return TYPE; }
+    }
+    public record Select(int entity, int floor) implements CustomPacketPayload {
+        static final Type<Select> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(DestinyDHD.MOD_ID, "lift_select"));
+        static final StreamCodec<RegistryFriendlyByteBuf, Select> CODEC = StreamCodec.of(
+                (buf, packet) -> { buf.writeVarInt(packet.entity()); buf.writeVarInt(packet.floor()); },
+                buf -> new Select(buf.readVarInt(), buf.readVarInt()));
+        @Override public Type<Select> type() { return TYPE; }
     }
 }

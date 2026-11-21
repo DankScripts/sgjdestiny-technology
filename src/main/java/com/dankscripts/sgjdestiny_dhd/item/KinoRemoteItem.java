@@ -1,7 +1,6 @@
 package com.dankscripts.sgjdestiny_dhd.item;
 
 import com.dankscripts.sgjdestiny_dhd.DestinyDHD;
-import com.dankscripts.sgjdestiny_dhd.compat.DestinyDHDApi;
 import com.dankscripts.sgjdestiny_dhd.compat.HandheldGateLookup;
 import com.dankscripts.sgjdestiny_dhd.dialer.SeedShipAddressDatabase;
 import com.dankscripts.sgjdestiny_dhd.network.DestinyDialerNetwork;
@@ -35,10 +34,11 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.ClipContext;
 import net.povstalec.sgjourney.common.block_entities.dhd.UniverseDHDEntity;
 import net.povstalec.sgjourney.common.block_entities.stargate.UniverseStargateEntity;
-import net.minecraftforge.common.world.ForgeChunkManager;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.component.CustomData;
 
-import java.util.Comparator;
 import java.util.List;
+import java.util.Comparator;
 import java.util.UUID;
 
 /** Paired Destiny field controller: Universe dialing database and Kino controls. */
@@ -66,41 +66,42 @@ public final class KinoRemoteItem extends Item {
         ItemStack stack = player.getItemInHand(hand);
         if (level.isClientSide()) return InteractionResultHolder.success(stack);
         ServerPlayer serverPlayer = (ServerPlayer) player;
-        CompoundTag tag = stack.getOrCreateTag();
+        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         if (player.isShiftKeyDown()) {
             boolean kino = !tag.getBoolean(MODE);
             tag.putBoolean(MODE, kino);
+            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
             serverPlayer.displayClientMessage(Component.translatable(kino
                     ? "message.sgjdestiny_dhd.remote_kino_mode" : "message.sgjdestiny_dhd.remote_gate_mode"), true);
             return InteractionResultHolder.consume(stack);
         }
-        openHandheld(serverPlayer, tag.getBoolean(MODE));
+        if (tag.getBoolean(MODE)) DestinyDialerNetwork.openKinoControl(serverPlayer);
+        else openGateDatabase(serverPlayer);
         player.getCooldowns().addCooldown(this, 8);
         return InteractionResultHolder.consume(stack);
     }
 
-    private static void openHandheld(ServerPlayer player, boolean kinoInitially) {
+    private static void openGateDatabase(ServerPlayer player) {
         UniverseDHDEntity dhd = BlockPos.betweenClosedStream(player.blockPosition().offset(-16, -8, -16),
                         player.blockPosition().offset(16, 8, 16))
                 .map(player.level()::getBlockEntity).filter(UniverseDHDEntity.class::isInstance)
                 .map(UniverseDHDEntity.class::cast)
-                .filter(candidate -> DestinyDHDApi.connectedStargate(candidate) != null)
                 .min(Comparator.comparingDouble(be -> be.getBlockPos().distSqr(player.blockPosition())))
                 .orElse(null);
         if (dhd != null) {
             DestinyDialerNetwork.openHandheldDatabase(player, dhd,
-                    SeedShipAddressDatabase.entriesFor(player.server, dhd), kinoInitially);
+                    SeedShipAddressDatabase.entriesFor(player.server, dhd));
             return;
         }
         UniverseStargateEntity gate = HandheldGateLookup.nearest(player.serverLevel(), player.position());
         if (gate == null) {
-            if (!kinoInitially)
-                player.displayClientMessage(Component.translatable("message.sgjdestiny_dhd.remote_no_gate"), true);
-            DestinyDialerNetwork.openKinoControl(player, kinoInitially);
+            // The gate database needs a nearby controller, but deploying and
+            // flying a Kino must remain available everywhere.
+            DestinyDialerNetwork.openKinoControl(player);
             return;
         }
         DestinyDialerNetwork.openHandheldDatabase(player, gate,
-                SeedShipAddressDatabase.entriesFor(player.server, gate), kinoInitially);
+                SeedShipAddressDatabase.entriesFor(player.server, gate));
     }
 
     private static void operateKino(ServerPlayer player) {
@@ -420,8 +421,7 @@ public final class KinoRemoteItem extends Item {
                 && data.getInt(FORCED_CHUNK_X) == current.x
                 && data.getInt(FORCED_CHUNK_Z) == current.z) return;
 
-        ForgeChunkManager.forceChunk(level, DestinyDHD.MOD_ID, kino.getUUID(),
-                current.x, current.z, true, true);
+        level.setChunkForced(current.x, current.z, true);
         releaseKinoChunk(kino);
         data.putString(FORCED_DIMENSION, dimension);
         data.putInt(FORCED_CHUNK_X, current.x);
@@ -434,9 +434,9 @@ public final class KinoRemoteItem extends Item {
         if (dimension.isEmpty()) return;
         if (kino.level() instanceof ServerLevel level) {
             ServerLevel previous = level.getServer().getLevel(ResourceKey.create(Registries.DIMENSION,
-                    new ResourceLocation(dimension)));
-            if (previous != null) ForgeChunkManager.forceChunk(previous, DestinyDHD.MOD_ID, kino.getUUID(),
-                    data.getInt(FORCED_CHUNK_X), data.getInt(FORCED_CHUNK_Z), false, true);
+                    ResourceLocation.parse(dimension)));
+            if (previous != null) previous.setChunkForced(
+                    data.getInt(FORCED_CHUNK_X), data.getInt(FORCED_CHUNK_Z), false);
         }
         data.remove(FORCED_DIMENSION);
         data.remove(FORCED_CHUNK_X);
@@ -490,8 +490,8 @@ public final class KinoRemoteItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable(stack.getOrCreateTag().getBoolean(MODE)
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable(stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getBoolean(MODE)
                 ? "tooltip.sgjdestiny_dhd.remote_mode_kino" : "tooltip.sgjdestiny_dhd.remote_mode_gate").withStyle(ChatFormatting.AQUA));
         tooltip.add(Component.translatable("tooltip.sgjdestiny_dhd.remote_controls").withStyle(ChatFormatting.GRAY));
     }

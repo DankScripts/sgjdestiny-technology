@@ -8,16 +8,17 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 
 /** Creates the half-buried non-Ancient wreck seen on the barren world in Justice. */
-@Mod.EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
 public final class JusticePlanetEvents {
     private static final ResourceKey<Level> PLANET = ResourceKey.create(
             net.minecraft.core.registries.Registries.DIMENSION,
-            new ResourceLocation("sgjourney", "justice_planet"));
+            ResourceLocation.fromNamespaceAndPath("sgjourney", "justice_planet"));
 
     private JusticePlanetEvents() {}
 

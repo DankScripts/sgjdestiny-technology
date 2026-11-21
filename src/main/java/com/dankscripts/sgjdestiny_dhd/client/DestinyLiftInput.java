@@ -6,12 +6,13 @@ import com.dankscripts.sgjdestiny_dhd.network.DestinyLiftNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 
-@Mod.EventBusSubscriber(modid = DestinyDHD.MOD_ID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = DestinyDHD.MOD_ID, value = Dist.CLIENT)
 public final class DestinyLiftInput {
     private DestinyLiftInput() {}
     @SubscribeEvent public static void interact(InputEvent.InteractionKeyMappingTriggered event) {

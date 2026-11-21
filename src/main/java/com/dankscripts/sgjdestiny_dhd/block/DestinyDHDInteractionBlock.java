@@ -35,8 +35,9 @@ public final class DestinyDHDInteractionBlock extends Block {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
-                                 InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
+                                               BlockHitResult hit) {
+        InteractionHand hand = InteractionHand.MAIN_HAND;
         for (int down = 1; down <= 2; down++) {
             BlockPos controllerPos = pos.below(down);
             BlockState controllerState = level.getBlockState(controllerPos);
@@ -53,7 +54,7 @@ public final class DestinyDHDInteractionBlock extends Block {
                     return result == InteractionResult.PASS
                             ? InteractionResult.sidedSuccess(level.isClientSide()) : result;
                 }
-                return controllerState.use(level, player, hand,
+                return controllerState.useWithoutItem(level, player,
                         new BlockHitResult(hit.getLocation(), hit.getDirection(), controllerPos, hit.isInside()));
             }
         }

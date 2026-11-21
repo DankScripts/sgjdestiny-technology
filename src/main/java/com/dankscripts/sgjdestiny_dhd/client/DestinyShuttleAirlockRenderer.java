@@ -21,7 +21,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.data.ModelData;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -29,6 +29,9 @@ import java.util.List;
 
 /** Original hatch leaves slide apart into the rear airlock's side pockets. */
 public final class DestinyShuttleAirlockRenderer implements BlockEntityRenderer<DestinyShuttleAirlockBlockEntity> {
+    @Override public net.minecraft.world.phys.AABB getRenderBoundingBox(DestinyShuttleAirlockBlockEntity entity) {
+        return entity.getRenderBoundingBox();
+    }
     private final BlockRenderDispatcher blockRenderer;
     private final EnumMap<Direction, CachedShuttle> meshes = new EnumMap<>(Direction.class);
 
@@ -160,15 +163,14 @@ public final class DestinyShuttleAirlockRenderer implements BlockEntityRenderer<
             RenderType outputLayer = layer == RenderType.translucent()
                     ? Sheets.translucentCullBlockSheet()
                     : Sheets.solidBlockSheet();
-            BufferBuilder builder = DestinyMeshBuffers.staging();
-            builder.begin(outputLayer.mode(), outputLayer.format());
+            BufferBuilder builder = DestinyMeshBuffers.staging(outputLayer);
             for (Direction side : Direction.values()) {
                 renderQuads(identity, builder, state, model, random, side, layer, light, overlay, part);
             }
             renderQuads(identity, builder, state, model, random, null, layer, light, overlay, part);
             VertexBuffer vertexBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
             vertexBuffer.bind();
-            vertexBuffer.upload(builder.end());
+            vertexBuffer.upload(builder.buildOrThrow());
             VertexBuffer.unbind();
             layers.add(new CachedLayer(outputLayer, vertexBuffer, twoSided));
         }
@@ -181,7 +183,7 @@ public final class DestinyShuttleAirlockRenderer implements BlockEntityRenderer<
         random.setSeed(42L);
         for (BakedQuad quad : model.getQuads(state, side, random, ModelData.EMPTY, layer)) {
             if (part.accepts(quad)) {
-                out.putBulkData(pose.last(), quad, 1.0F, 1.0F, 1.0F, light, overlay);
+                out.putBulkData(pose.last(), quad, 1.0F, 1.0F, 1.0F, 1.0F, light, overlay);
             }
         }
     }

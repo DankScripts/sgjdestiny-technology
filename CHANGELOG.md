@@ -1,18 +1,69 @@
 # Changelog
 
-## 1.0.0-beta.1 - Forge 1.20.1
+## 1.0.0-beta.1-watchdog-test.1
 
-- Migrate the Destiny console and handheld dialing to Stargate Journey
-  0.6.55-alpha. Preserve the order of queued inputs and engage after the final
-  symbol locks.
-- Locate registered Universe gates for handheld dialing and retain Kino
-  connection holds.
-- Anchor Jungle Planet gate pedestals to solid terrain. Keep the existing
-  Water Planet landing circle.
+- Request Eden shuttle landing chunks with temporary tickets and wait across
+  server ticks instead of synchronously loading the footprint. A timed-out
+  search reports the problem and preserves its current candidate for retry.
+
+## 0.0.3-alpha-hotfix1-neoforge-dev6
+
+- Fix the DHD dial-delay mixin callbacks for SGJourney 0.6.55's
+  return-valued dialing methods.
+
+## 0.0.3-alpha-hotfix1-neoforge-dev5
+
+- Consume SGJourney 0.6.55's native Universe DHD adapter through
+  `DHDControlledStargate` for dialer state, route seeding, bearing effects, and
+  Kino connection handling.
+- Retain the Universe DHD block-type registration needed by the custom console.
+
+## 0.0.3-alpha-hotfix1
+
+- Locate SGJourney's existing Destiny Stargate before installing or resetting the bundled ship. Align the ship to that gate's position and rotation, preserving its blocks and address. This supports both the original ATM9 Stargates layout and the 90-degree-rotated ATM9 No Frills layout.
+- Apply the same alignment to the ship reset volume, protected blocks, elevator, landing doors, curved stairs, airlocks, and ship-bound environmental effects.
+- Keep the hotfix1 dependency corrections, handheld layout adjustment, and Destiny snow protection.
+- Rotate the invisible corridor collision pieces with the ship and repair their facing in already-installed corridors, clearing the stray side collisions in ATM9 No Frills.
+
+## Unreleased
+
+- Match the Forge Destiny handheld route: select an idle handheld destination
+  once to start dialing, normalize the point of origin, and map logical
+  Universe symbols to valid physical ring inputs without changing saved routes.
+- Locate the nearest registered Universe gate in the current dimension regardless
+  of distance, and hold its chunk loaded while a remote dial sequence completes.
+- Auto-close handheld-started wormholes after a traveler has crossed and the
+  native idle timeout elapses, while retaining Kino hold-open behavior.
+- Audit physical gate records against their exact controller position and
+  address owner. Remove only confirmed stale records; hold on unresolved owners,
+  conflicting live gates, or mismatched saved primary addresses.
+- Relocate unambiguous buried gates while retaining their nine-chevron identity
+  and existing seven-chevron region mappings. Survey Jungle's broad clearing
+  before placement and preserve the existing Water Planet landing circle.
+- Grade only around a primary Water Planet gate inside the landing clearing,
+  at most one chunk per tick. Avoid loading neighboring chunks for frozen waterfalls.
+- Survey fully generated chunk surfaces when placing a missing planet gate;
+  reject void-height sites and use the highest sampled terrain for support.
+- Place new Water Planet gates at the center of the original landing circle
+  after loading the completed terrain. Keep the existing clearing, mountain
+  transition, and mountain terrain generation unchanged.
+- Let SGJourney engage a programmed Destiny dial after the final buffered
+  symbol locks, rather than requesting engagement while the gate is rotating.
+- Preserve rapid symbol and engage inputs during the Destiny console's
+  pre-dial delay, in the order received.
+- Forward SGJourney DHD auto-close queries to the block entity so Kino
+  connections can retain their hold-open behavior.
+- Stop a programmed DHD dial when SGJourney rejects a symbol.
+- Keep the Kino handheld's movement controls and video view inside the visible screen at smaller GUI sizes. Button hit areas now follow the displayed layout.
+- Keep Destiny's ship free of snowfall even when another mod overrides snow-placement checks. Clear exposed snow layers already accumulated on the ship as its chunks load.
 
 ## 0.0.3-alpha
 
 Changes since 0.0.2-alpha-hotfix2:
+
+### Original Destiny build credit
+
+- The bundled Destiny ship is based on the original **Stargate Universe - The Destiny MC 1.12.2** map created by **Rchanroux**. The ship has since been ported, expanded, rebuilt, and integrated with this mod, but the original structure and creative foundation belong to Rchanroux. Please visit and support the original project: https://www.planetminecraft.com/project/stargate-universe-the-destiny-mc-1-12-2/
 
 ### Destiny ship and construction
 

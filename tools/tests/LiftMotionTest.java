@@ -19,11 +19,15 @@ public final class LiftMotionTest {
             }
             check(Math.abs(LiftMotion.height(from, to, 1, ticks) - from) < .011, "Abrupt start");
             check(Math.abs(to - LiftMotion.height(from, to, ticks - 1, ticks)) < .011, "Abrupt stop");
+            // Reconstructing the same persisted trip at any tick must yield the same position.
             for (int elapsed = 0; elapsed < ticks; elapsed++) {
                 double live = LiftMotion.height(from, to, elapsed + .5, ticks);
                 double resumed = LiftMotion.height(from, to, (1000L + elapsed) - 1000L + .5, ticks);
                 check(live == resumed, "Reload changed trajectory");
             }
+            // A caller may begin tracking halfway through travel, with a dimension clock
+            // unrelated to the server's. A progress snapshot must reconstruct that trip
+            // without counting from when the caller first saw the cab.
             long serverStart = 9_000_000_000L;
             for (int at : new int[] {-10, -5, 0, ticks / 2, ticks - 1, ticks, ticks + 100}) {
                 int snapshot = LiftMotion.elapsed(serverStart + at, serverStart, ticks);

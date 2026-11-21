@@ -30,8 +30,8 @@ import qouteall.imm_ptl.core.render.context_management.WorldRenderInfo;
 
 /** Destiny's seed-ship database, drawn directly into the console monitor artwork. */
 public final class SeedShipDialerScreen extends Screen {
-    private static final ResourceLocation FRAME = new ResourceLocation(DestinyDHD.MOD_ID, "textures/gui/seed_ship_dialer.png");
-    private static final ResourceLocation HANDHELD_FRAME = new ResourceLocation(DestinyDHD.MOD_ID, "textures/gui/kino_remote_dialer.png");
+    private static final ResourceLocation FRAME = ResourceLocation.fromNamespaceAndPath(DestinyDHD.MOD_ID, "textures/gui/seed_ship_dialer.png");
+    private static final ResourceLocation HANDHELD_FRAME = ResourceLocation.fromNamespaceAndPath(DestinyDHD.MOD_ID, "textures/gui/kino_remote_dialer.png");
     private static final int TEXTURE_WIDTH = 1536, TEXTURE_HEIGHT = 1024, PAGE_SIZE = 7;
     private final BlockPos console;
     private final boolean directGate;
@@ -70,7 +70,7 @@ public final class SeedShipDialerScreen extends Screen {
     }
 
     @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics);
+        renderBackground(graphics, mouseX, mouseY, partialTick);
         Layout l = layout();
         if (handheld) {
             graphics.blit(HANDHELD_FRAME, l.left, l.top, l.width, l.height, 0, 0,
@@ -94,7 +94,7 @@ public final class SeedShipDialerScreen extends Screen {
             graphics.fill(panelLeft, panelTop, panelRight, panelBottom, 0x88203831);
             if (videoMode && videoCameraPos != null) {
                 int vx = panelLeft + 5, vy = panelTop + 5;
-                var worldKey = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(videoDimension));
+                var worldKey = ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(videoDimension));
                 var remoteWorld = ClientWorldLoader.getOptionalWorld(worldKey);
                 if (remoteWorld != null) {
                     int frameWidth = minecraft.getWindow().getWidth(), frameHeight = minecraft.getWindow().getHeight();
@@ -110,8 +110,8 @@ public final class SeedShipDialerScreen extends Screen {
                             .setDoRenderHand(false).setEnableViewBobbing(false).setDoRenderSky(true).setHasFog(true).build();
                     double scale = minecraft.getWindow().getGuiScale();
                     MyRenderHelper.drawFramebuffer(videoTarget, false, false,
-                            (float)(vx * scale), (panelRight - 5) * scale,
-                            (float)((height - panelBottom + 5) * scale), (height - vy) * scale);
+                            (float)(vx * scale), (float)((panelRight - 5) * scale),
+                            (float)((height - panelBottom + 5) * scale), (float)((height - vy) * scale));
                     videoTarget.setClearColor(0, 0, 0, 1);
                     videoTarget.clear(Minecraft.ON_OSX);
                     GuiPortalRendering.submitNextFrameRendering(info, videoTarget);
@@ -477,10 +477,10 @@ public final class SeedShipDialerScreen extends Screen {
     private ResourceLocation universeSymbolTexture(int symbol) {
         String path = "textures/symbol/universal/universal_" + symbol;
         if (symbol >= 36 && symbol <= 38) {
-            ResourceLocation renamed = new ResourceLocation("sgjourney", path + "_c.png");
+            ResourceLocation renamed = ResourceLocation.fromNamespaceAndPath("sgjourney", path + "_c.png");
             if (minecraft.getResourceManager().getResource(renamed).isPresent()) return renamed;
         }
-        return new ResourceLocation("sgjourney", path + ".png");
+        return ResourceLocation.fromNamespaceAndPath("sgjourney", path + ".png");
     }
 
     private record Layout(int left, int top, int width, int height, int screenLeft, int screenTop, int screenWidth,

@@ -14,31 +14,44 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.minecraft.commands.Commands;
-import net.minecraftforge.event.server.ServerStoppedEvent;
-import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** A fixed-route shuttle trip: the ship remains at both berths while everyone aboard travels together. */
-@Mod.EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
 public final class ShuttleTravelEvents {
     public static final ResourceKey<Level> DESTINY = ResourceKey.create(Registries.DIMENSION,
-            new ResourceLocation("sgjourney", "destiny"));
+            ResourceLocation.fromNamespaceAndPath("sgjourney", "destiny"));
     public static final ResourceKey<Level> EDEN = ResourceKey.create(Registries.DIMENSION,
-            new ResourceLocation("sgjourney", "eden"));
+            ResourceLocation.fromNamespaceAndPath("sgjourney", "eden"));
     private static final List<Trip> ACTIVE = new ArrayList<>();
     private static final List<LandingSearch> SEARCHING = new ArrayList<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger("SGJ Destiny DHD/Shuttle");
+    private static final TicketType<ChunkPos> LANDING_TICKET =
+            TicketType.create("sgjdestiny_shuttle_landing", Comparator.comparingLong(ChunkPos::toLong));
+    private static final int CHUNK_WAIT_TICKS = 1200;
     private static final int FLIGHT_TICKS = 120;
     private static final int OBELISK_X = 96, OBELISK_Z = 96;
     private static final int[] SEARCH_RADII = {2600, 3000, 3500, 4000, 4500, 4900};
@@ -171,7 +184,7 @@ public final class ShuttleTravelEvents {
     }
 
     /** Search distant terrain; never cut trees, flatten ground, or replace structures. */
-    private static BlockPos findNaturalLanding(ServerLevel level, Direction facing, int candidate) {
+    private static BlockPos landingCenter(Direction facing, int candidate) {
         Direction right = facing.getClockWise();
         int radius = SEARCH_RADII[candidate / (SEARCH_SPOKES * PATCH_SIZE)];
         int spoke = (candidate / PATCH_SIZE) % SEARCH_SPOKES;
@@ -183,23 +196,31 @@ public final class ShuttleTravelEvents {
         int cz = OBELISK_Z + (int) Math.round(Math.sin(angle) * (radius + radial) + Math.cos(angle) * lateral);
         double distance = Math.hypot(cx - OBELISK_X, cz - OBELISK_Z);
         if (distance < 2500 || distance > 4950) return null;
+        return new BlockPos(cx, 0, cz);
+    }
 
-        // getHeight may read an incomplete remote chunk (with only its bedrock
-        // heightmap). Generate the whole footprint to FULL before evaluating it.
+    private static List<ChunkPos> landingChunks(BlockPos center, Direction facing) {
+        Direction right = facing.getClockWise();
         int minX = Integer.MAX_VALUE, minZ = Integer.MAX_VALUE;
         int maxX = Integer.MIN_VALUE, maxZ = Integer.MIN_VALUE;
         for (int x : new int[]{-12, 12}) {
             for (int forward : new int[]{0, 26}) {
-                int wx = cx + right.getStepX() * x + facing.getStepX() * forward;
-                int wz = cz + right.getStepZ() * x + facing.getStepZ() * forward;
+                int wx = center.getX() + right.getStepX() * x + facing.getStepX() * forward;
+                int wz = center.getZ() + right.getStepZ() * x + facing.getStepZ() * forward;
                 minX = Math.min(minX, wx); maxX = Math.max(maxX, wx);
                 minZ = Math.min(minZ, wz); maxZ = Math.max(maxZ, wz);
             }
         }
+        List<ChunkPos> chunks = new ArrayList<>();
         for (int chunkX = minX >> 4; chunkX <= maxX >> 4; chunkX++)
             for (int chunkZ = minZ >> 4; chunkZ <= maxZ >> 4; chunkZ++)
-                level.getChunk(chunkX, chunkZ);
+                chunks.add(new ChunkPos(chunkX, chunkZ));
+        return chunks;
+    }
 
+    private static BlockPos findNaturalLanding(ServerLevel level, Direction facing, BlockPos center) {
+        Direction right = facing.getClockWise();
+        int cx = center.getX(), cz = center.getZ();
         int minY = Integer.MAX_VALUE, maxY = Integer.MIN_VALUE;
         for (int x = -12; x <= 12; x += 4) {
             for (int forward = 0; forward <= 26; forward += 4) {
@@ -228,8 +249,8 @@ public final class ShuttleTravelEvents {
         return null;
     }
 
-    @SubscribeEvent public static void tick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+    @SubscribeEvent public static void tick(ServerTickEvent.Post event) {
+        
         for (int i = SEARCHING.size() - 1; i >= 0; i--) {
             LandingSearch search = SEARCHING.get(i);
             if (search.server != event.getServer()) continue;
@@ -237,16 +258,51 @@ public final class ShuttleTravelEvents {
             if (eden == null) continue;
             ShuttleTravelData route = ShuttleTravelData.get(search.server);
             if (route.eden() != null && isShuttle(eden, route.eden())) {
+                search.release(eden);
                 SEARCHING.remove(i);
                 launchPending(search);
                 continue;
             }
             if (search.candidate >= SEARCH_COUNT) {
+                search.release(eden);
                 SEARCHING.remove(i);
                 failPending(search);
                 continue;
             }
-            BlockPos landing = findNaturalLanding(eden, Direction.NORTH, search.candidate++);
+            if (search.chunks == null) {
+                search.center = landingCenter(Direction.NORTH, search.candidate);
+                if (search.center == null) {
+                    route.setEdenSearchCandidate(++search.candidate);
+                    continue;
+                }
+                search.chunks = landingChunks(search.center, Direction.NORTH);
+                for (ChunkPos chunk : search.chunks)
+                    eden.getChunkSource().addRegionTicket(LANDING_TICKET, chunk, 2, chunk);
+                search.waitTicks = 0;
+                continue;
+            }
+            if (search.chunks.stream().anyMatch(chunk ->
+                    eden.getChunkSource().getChunkNow(chunk.x, chunk.z) == null)) {
+                if (++search.waitTicks >= CHUNK_WAIT_TICKS) {
+                    LOGGER.error("Eden shuttle landing search timed out waiting for chunks at {}; candidate {} preserved",
+                            search.center, search.candidate);
+                    search.release(eden);
+                    SEARCHING.remove(i);
+                    for (PendingLaunch request : search.pending) {
+                        ServerPlayer pilot = search.server.getPlayerList().getPlayer(request.pilot);
+                        if (pilot != null) ShuttleTravelNetwork.status(pilot, false,
+                                "Eden landing chunks did not load; check the server log and try again.");
+                    }
+                }
+                continue;
+            }
+            BlockPos landing;
+            try {
+                landing = findNaturalLanding(eden, Direction.NORTH, search.center);
+            } finally {
+                search.release(eden);
+            }
+            search.candidate++;
             route.setEdenSearchCandidate(search.candidate);
             if (landing != null) {
                 SEARCHING.remove(i);
@@ -317,6 +373,10 @@ public final class ShuttleTravelEvents {
 
     @SubscribeEvent public static void stopped(ServerStoppedEvent event) {
         ACTIVE.removeIf(trip -> trip.server == event.getServer());
+        ServerLevel eden = event.getServer().getLevel(EDEN);
+        if (eden != null)
+            for (LandingSearch search : SEARCHING)
+                if (search.server == event.getServer()) search.release(eden);
         SEARCHING.removeIf(search -> search.server == event.getServer());
     }
 
@@ -353,10 +413,21 @@ public final class ShuttleTravelEvents {
         final MinecraftServer server;
         final List<PendingLaunch> pending = new ArrayList<>();
         int candidate;
+        int waitTicks;
+        BlockPos center;
+        List<ChunkPos> chunks;
 
         LandingSearch(MinecraftServer server, int candidate) {
             this.server = server;
             this.candidate = candidate;
+        }
+
+        void release(ServerLevel level) {
+            if (chunks == null) return;
+            for (ChunkPos chunk : chunks)
+                level.getChunkSource().removeRegionTicket(LANDING_TICKET, chunk, 2, chunk);
+            chunks = null;
+            center = null;
         }
     }
 

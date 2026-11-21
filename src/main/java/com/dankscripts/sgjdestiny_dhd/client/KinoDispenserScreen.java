@@ -6,15 +6,15 @@ import com.dankscripts.sgjdestiny_dhd.registry.ModItems;
 import com.dankscripts.sgjdestiny_dhd.registry.ModMenus;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.screens.MenuScreens;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 
 public final class KinoDispenserScreen extends AbstractContainerScreen<KinoDispenserMenu> {
     private static final int PANEL = 0xFF302C27;
@@ -89,28 +89,17 @@ public final class KinoDispenserScreen extends AbstractContainerScreen<KinoDispe
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics);
+        renderBackground(graphics, mouseX, mouseY, partialTick);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
     }
 
-    @Mod.EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    @EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static final class Registration {
         private Registration() {}
-        private static boolean registered;
-
         @SubscribeEvent
-        public static void registerScreens(FMLClientSetupEvent event) {
-            event.enqueueWork(() -> {
-                if (registered) return;
-                registered = true;
-                try {
-                    MenuScreens.register(ModMenus.KINO_DISPENSER.get(), KinoDispenserScreen::new);
-                } catch (IllegalStateException duplicate) {
-                    if (!duplicate.getMessage().startsWith("Duplicate registration for sgjdestiny_dhd:kino_dispenser"))
-                        throw duplicate;
-                }
-            });
+        public static void registerScreens(RegisterMenuScreensEvent event) {
+            event.register(ModMenus.KINO_DISPENSER.get(), KinoDispenserScreen::new);
         }
     }
 }

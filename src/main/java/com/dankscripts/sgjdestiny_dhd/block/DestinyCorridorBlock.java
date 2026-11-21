@@ -1,5 +1,7 @@
 package com.dankscripts.sgjdestiny_dhd.block;
 
+import com.mojang.serialization.MapCodec;
+
 import com.dankscripts.sgjdestiny_dhd.block_entity.DestinyCorridorBlockEntity;
 import com.dankscripts.sgjdestiny_dhd.registry.ModBlocks;
 import com.dankscripts.sgjdestiny_dhd.registry.ModBlockEntities;
@@ -34,6 +36,8 @@ import javax.annotation.Nullable;
 
 /** The visible four-bay corridor is rendered from its left front bulkhead. */
 public final class DestinyCorridorBlock extends BaseEntityBlock {
+    private static final MapCodec<DestinyCorridorBlock> CODEC = simpleCodec(ignored -> new DestinyCorridorBlock());
+    @Override protected MapCodec<DestinyCorridorBlock> codec() { return CODEC; }
     public static final DirectionProperty FACING = net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING;
     private static final int WIDTH = 5;
     private static final int HEIGHT = 4;
@@ -346,10 +350,10 @@ public final class DestinyCorridorBlock extends BaseEntityBlock {
     }
 
     @Override
-    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide() && !player.isCreative())
             popResource(level, pos, new ItemStack(ModItems.DESTINY_CORRIDOR.get()));
-        super.playerWillDestroy(level, pos, state, player);
+        return super.playerWillDestroy(level, pos, state, player);
     }
 
     @Override

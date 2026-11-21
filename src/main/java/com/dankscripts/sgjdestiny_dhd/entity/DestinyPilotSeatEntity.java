@@ -8,6 +8,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
@@ -44,7 +45,7 @@ public final class DestinyPilotSeatEntity extends Entity {
     }
 
     @Override
-    protected void defineSynchedData() {}
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {}
 
     @Override
     protected void readAdditionalSaveData(CompoundTag tag) {}
@@ -63,8 +64,8 @@ public final class DestinyPilotSeatEntity extends Entity {
     }
 
     @Override
-    public double getPassengersRidingOffset() {
-        return 0.0;
+    public Vec3 getPassengerRidingPosition(Entity passenger) {
+        return position();
     }
 
     @Override

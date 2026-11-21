@@ -1,178 +1,107 @@
 plugins {
-    id 'java'
-    id 'net.minecraftforge.gradle' version '6.0.54'
+    id 'java-library'
+    id 'idea'
+    id 'net.neoforged.moddev' version '2.0.106'
 }
 
 version = mod_version
 group = mod_group_id
+base { archivesName = "sgjdestiny-tech-${minecraft_version}" }
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-base {
-    archivesName = "sgjdestiny-tech-${minecraft_version}"
-}
-
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
-
-minecraft {
-    mappings channel: mapping_channel, version: mapping_version
-    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
-    copyIdeResources = true
-
-    runs {
-        configureEach {
-            workingDirectory project.file('run')
-            property 'forge.logging.console.level', 'info'
-            mods {
-                "${mod_id}" { source sourceSets.main }
-            }
-        }
-        client {}
-        server { args '--nogui' }
+repositories {
+    mavenCentral()
+    maven {
+        name = 'CurseMaven'
+        url = 'https://cursemaven.com'
+        content { includeGroup 'curse.maven' }
     }
 }
 
-repositories {
-    maven { url = 'https://www.cursemaven.com' }
+configurations {
+    externalMods
+}
+
+neoForge {
+    version = neo_version
+    parchment {
+        minecraftVersion = parchment_minecraft_version
+        mappingsVersion = parchment_mappings_version
+    }
+    runs {
+        client { client() }
+        server { server(); programArgument '--nogui' }
+    }
+    mods { "${mod_id}" { sourceSet(sourceSets.main) } }
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-    def configuredImmersivePortalsJar = System.getenv('IMMERSIVE_PORTALS_JAR')
-    compileOnly files(configuredImmersivePortalsJar != null && !configuredImmersivePortalsJar.isBlank()
-            ? configuredImmersivePortalsJar
-            : 'libs/immersive-portals-3.0.7-all.jar')
-
     def configuredSgJourneyJar = System.getenv('SGJOURNEY_JAR')
-    compileOnly files(configuredSgJourneyJar != null && !configuredSgJourneyJar.isBlank()
+    def sgJourneyJar = configuredSgJourneyJar != null && !configuredSgJourneyJar.isBlank()
             ? configuredSgJourneyJar
-            : 'libs/Stargate.Journey-1.20.1-0.6.55-alpha.jar')
+            : 'libs/Stargate.Journey-1.21.1-0.6.55-alpha.jar'
+    implementation files(sgJourneyJar)
+    // iPortalTeam's NeoForge 1.21.1 build. Its runtime mod id is
+    // immersive_portals_core (not immersive_portals).
+    implementation 'curse.maven:immersive-portals-for-forge-355440:6667779'
+    externalMods files(sgJourneyJar)
+    externalMods 'curse.maven:immersive-portals-for-forge-355440:6667779'
 }
 
-tasks.named('processResources', ProcessResources).configure {
-    def props = [
-        minecraft_version: minecraft_version,
-        minecraft_version_range: minecraft_version_range,
-        forge_version_range: forge_version_range,
-        loader_version_range: loader_version_range,
-        mod_id: mod_id,
-        mod_name: mod_name,
-        mod_license: mod_license,
-        mod_version: mod_version,
-        mod_authors: mod_authors,
-        mod_description: mod_description
-    ]
-    inputs.properties props
-    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) { expand props }
-}
-
-tasks.register('verifyShuttleMaterials') {
-    def model = file('src/main/resources/assets/sgjdestiny_dhd/models/block/destiny_shuttle_dev.obj')
-    def materials = file('src/main/resources/assets/sgjdestiny_dhd/models/block/destiny_shuttle_dev.mtl')
-    inputs.files(model, materials)
-    doLast {
-        def used = [] as Set
-        def defined = [] as Set
-        model.eachLine { line ->
-            if (line.startsWith('usemtl ')) used.add(line.substring(7).trim())
-        }
-        materials.eachLine { line ->
-            if (line.startsWith('newmtl ')) defined.add(line.substring(7).trim())
-            if (line.startsWith('map_Kd ')) {
-                def textureId = line.substring(7).trim().split(':', 2)
-                if (textureId.length != 2) throw new GradleException("Invalid shuttle texture: ${line}")
-                def texture = file("src/main/resources/assets/${textureId[0]}/textures/${textureId[1]}.png")
-                if (!texture.isFile()) throw new GradleException("Missing shuttle texture: ${texture}")
-            }
-        }
-        def missing = used - defined
-        if (!missing.empty) throw new GradleException("Undefined shuttle materials: ${missing.sort()}")
-    }
-}
-
-tasks.named('processResources').configure { dependsOn 'verifyShuttleMaterials' }
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 
 tasks.named('jar', Jar).configure {
-    archiveFileName = "sgjdestiny-tech-${minecraft_version}-${mod_version}.jar"
     manifest {
         attributes([
-            'Specification-Title': mod_id,
-            'Specification-Vendor': mod_authors,
-            'Specification-Version': '1',
-            'Implementation-Title': project.name,
-            'Implementation-Version': mod_version,
-            'Implementation-Vendor': mod_authors,
-            'MixinConfigs': 'sgjdestiny_dhd.mixins.json'
+                'Implementation-Title': project.name,
+                'Implementation-Version': project.version
         ])
     }
-    finalizedBy 'reobfJar'
 }
 
 tasks.register('sourceArchive', Zip) {
     archiveFileName = "sgjdestiny-tech-${minecraft_version}-${mod_version}-source.zip"
-    destinationDirectory = layout.buildDirectory.dir('distributions')
-    from(layout.projectDirectory) {
-        include 'src/**'
-        include 'blockbench/**'
-        include 'tools/**'
-        include 'corridor-work/stargate-universe-destiny-corridor-original.stl'
-        include 'gradle/**'
-        include 'gradlew'
-        include 'gradlew.bat'
-        include 'build.gradle'
-        include 'settings.gradle'
-        include 'gradle.properties'
-        include 'README.md'
-        include 'CHANGELOG.md'
-        include 'LICENSE.txt'
-        include '.gitignore'
-        include '.gitattributes'
-        exclude 'tools/build-transformer/**'
+    destinationDirectory = layout.projectDirectory.dir('dist')
+    from(projectDir) {
+        include 'src/**', 'blockbench/**', 'tools/**', 'gradle/**', 'gradlew', 'gradlew.bat',
+                'build.gradle', 'settings.gradle', 'gradle.properties', 'README.md', 'CHANGELOG.md',
+                'BUILDING.md', 'LICENSE.txt', 'BASELINE.md'
         exclude 'blockbench/shuttle/private_reference/**'
         exclude 'blockbench/shuttle/*preview*/**'
         exclude 'blockbench/shuttle/paint_stencil_markup/**'
     }
 }
 
-tasks.register('release') {
-    dependsOn 'build', 'sourceArchive'
+tasks.register('releaseJar', Copy) {
+    dependsOn 'build'
+    from(tasks.named('jar'))
+    into(layout.projectDirectory.dir('dist'))
 }
 
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
+tasks.register('copyCompileDependencies', Copy) {
+    from(configurations.externalMods)
+    into(layout.buildDirectory.dir('deps'))
 }
-
-tasks.register('compileElevatorMotionTest', JavaCompile) {
-    source = files('tools/tests/LiftMotionTest.java', 'src/main/java/com/dankscripts/sgjdestiny_dhd/elevator/LiftMotion.java')
-    classpath = files()
-    destinationDirectory = layout.buildDirectory.dir('elevator-tests')
-}
-tasks.register('verifyElevatorMotion', JavaExec) {
-    dependsOn 'compileElevatorMotionTest'
-    classpath = files(layout.buildDirectory.dir('elevator-tests'))
-    mainClass = 'com.dankscripts.sgjdestiny_dhd.elevator.LiftMotionTest'
-}
-tasks.named('check').configure { dependsOn 'verifyElevatorMotion' }
 
 tasks.register('compileDialInputBufferTest', JavaCompile) {
     source = files('tools/tests/DialInputBufferTest.java',
-            'src/main/java/com/dankscripts/sgjdestiny_dhd/compat/HandheldDialSymbols.java',
-            'src/main/java/com/dankscripts/sgjdestiny_dhd/compat/HandheldAutoclosePolicy.java',
             'src/main/java/com/dankscripts/sgjdestiny_dhd/compat/DialInputBuffer.java',
-            'src/main/java/com/dankscripts/sgjdestiny_dhd/compat/ProgrammedDialSequence.java')
-    classpath = sourceSets.main.compileClasspath
+            'src/main/java/com/dankscripts/sgjdestiny_dhd/compat/ProgrammedDialSequence.java',
+            'src/main/java/com/dankscripts/sgjdestiny_dhd/compat/HandheldAutoclosePolicy.java')
+    classpath = files()
     destinationDirectory = layout.buildDirectory.dir('dial-input-tests')
 }
 tasks.register('verifyDialInputBuffer', JavaExec) {
     dependsOn 'compileDialInputBufferTest'
-    classpath = files(layout.buildDirectory.dir('dial-input-tests')) + sourceSets.main.compileClasspath
+    classpath = files(layout.buildDirectory.dir('dial-input-tests'))
     mainClass = 'com.dankscripts.sgjdestiny_dhd.compat.DialInputBufferTest'
 }
 tasks.named('check').configure { dependsOn 'verifyDialInputBuffer' }
 
 tasks.register('compileGateTerrainSurveyTest', JavaCompile) {
     source = files('tools/tests/GateTerrainSurveyTest.java',
-            'src/main/java/com/dankscripts/sgjdestiny_dhd/compat/GateRecordAudit.java',
-            'src/main/java/com/dankscripts/sgjdestiny_dhd/compat/GateTerrainSurvey.java')
+            'src/main/java/com/dankscripts/sgjdestiny_dhd/compat/GateTerrainSurvey.java',
+            'src/main/java/com/dankscripts/sgjdestiny_dhd/compat/GateRecordAudit.java')
     classpath = files()
     destinationDirectory = layout.buildDirectory.dir('gate-terrain-tests')
 }
@@ -182,3 +111,16 @@ tasks.register('verifyGateTerrainSurvey', JavaExec) {
     mainClass = 'com.dankscripts.sgjdestiny_dhd.compat.GateTerrainSurveyTest'
 }
 tasks.named('check').configure { dependsOn 'verifyGateTerrainSurvey' }
+
+tasks.register('compileHandheldDialSymbolsTest', JavaCompile) {
+    source = files('tools/tests/HandheldDialSymbolsTest.java',
+            'src/main/java/com/dankscripts/sgjdestiny_dhd/compat/HandheldDialSymbols.java')
+    classpath = sourceSets.main.compileClasspath
+    destinationDirectory = layout.buildDirectory.dir('handheld-symbol-tests')
+}
+tasks.register('verifyHandheldDialSymbols', JavaExec) {
+    dependsOn 'compileHandheldDialSymbolsTest'
+    classpath = files(layout.buildDirectory.dir('handheld-symbol-tests')) + sourceSets.main.runtimeClasspath
+    mainClass = 'com.dankscripts.sgjdestiny_dhd.compat.HandheldDialSymbolsTest'
+}
+tasks.named('check').configure { dependsOn 'verifyHandheldDialSymbols' }

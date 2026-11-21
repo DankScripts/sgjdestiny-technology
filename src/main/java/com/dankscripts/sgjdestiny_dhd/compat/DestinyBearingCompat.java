@@ -13,7 +13,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraftforge.fml.ModList;
+import net.neoforged.fml.ModList;
 import net.povstalec.sgjourney.common.block_entities.dhd.CrystalDHDEntity;
 import net.povstalec.sgjourney.common.block_entities.dhd.AbstractDHDEntity;
 import net.povstalec.sgjourney.common.block_entities.dhd.UniverseDHDEntity;
@@ -35,9 +35,9 @@ import org.slf4j.LoggerFactory;
 /** Optional SGJ Deco bridge driven directly by the proven Universe DHD ticker. */
 public final class DestinyBearingCompat {
     private static final Logger LOGGER = LoggerFactory.getLogger("SGJ Destiny DHD/Bearing");
-    private static final ResourceLocation DECO_BEARING = new ResourceLocation("sgj_deco", "destiny_bearing");
+    private static final ResourceLocation DECO_BEARING = ResourceLocation.fromNamespaceAndPath("sgj_deco", "destiny_bearing");
     private static final ResourceLocation UNIVERSE_CHEVRON =
-            new ResourceLocation("sgjourney", "universe_stargate_chevron");
+            ResourceLocation.fromNamespaceAndPath("sgjourney", "universe_stargate_chevron");
     // SGJ Deco's Destiny Bearing belongs on the upper gate assembly. Keep the
     // discovery box tight so a dial never walks a 33x33x33 cube or loads chunks.
     private static final int BEARING_HORIZONTAL_RADIUS = 5;

@@ -1,5 +1,7 @@
 package com.dankscripts.sgjdestiny_dhd.block;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -11,6 +13,8 @@ import net.minecraft.world.phys.shapes.*;
 
 /** Full-height triangular prism. Shapes are cached; there is no block entity or ticker. */
 public final class DiagonalWallFillerBlock extends HorizontalDirectionalBlock {
+    private static final MapCodec<DiagonalWallFillerBlock> CODEC = simpleCodec(ignored -> new DiagonalWallFillerBlock());
+    @Override protected MapCodec<DiagonalWallFillerBlock> codec() { return CODEC; }
     private static final Direction[] DIRECTIONS = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
     private static final VoxelShape[] SHAPES = buildShapes();
 

@@ -1,24 +1,32 @@
 package com.dankscripts.sgjdestiny_dhd.item;
 
-import net.minecraft.sounds.SoundEvent;
+import com.dankscripts.sgjdestiny_dhd.DestinyDHD;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.crafting.Ingredient;
 
-public final class DestinyArmorMaterial implements ArmorMaterial {
-    public static final DestinyArmorMaterial INSTANCE = new DestinyArmorMaterial();
-    private static final int[] HEALTH = {13, 15, 16, 11};
-    private static final int[] DEFENSE = {3, 6, 8, 3};
+/** Native 1.21 armor-material record used by the Destiny environmental suit. */
+public final class DestinyArmorMaterial {
+    public static final Holder<ArmorMaterial> INSTANCE = Holder.direct(create());
 
     private DestinyArmorMaterial() {}
 
-    @Override public int getDurabilityForType(ArmorItem.Type type) { return HEALTH[type.getSlot().getIndex()] * 32; }
-    @Override public int getDefenseForType(ArmorItem.Type type) { return DEFENSE[type.getSlot().getIndex()]; }
-    @Override public int getEnchantmentValue() { return 10; }
-    @Override public SoundEvent getEquipSound() { return SoundEvents.ARMOR_EQUIP_NETHERITE; }
-    @Override public Ingredient getRepairIngredient() { return Ingredient.EMPTY; }
-    @Override public String getName() { return "sgjdestiny_dhd:destiny_environmental"; }
-    @Override public float getToughness() { return 2.0F; }
-    @Override public float getKnockbackResistance() { return 0.1F; }
+    private static ArmorMaterial create() {
+        Map<ArmorItem.Type, Integer> defense = new EnumMap<>(ArmorItem.Type.class);
+        defense.put(ArmorItem.Type.BOOTS, 3);
+        defense.put(ArmorItem.Type.LEGGINGS, 6);
+        defense.put(ArmorItem.Type.CHESTPLATE, 8);
+        defense.put(ArmorItem.Type.HELMET, 3);
+        defense.put(ArmorItem.Type.BODY, 8);
+        return new ArmorMaterial(defense, 10, SoundEvents.ARMOR_EQUIP_NETHERITE,
+                () -> Ingredient.EMPTY,
+                List.of(new ArmorMaterial.Layer(ResourceLocation.fromNamespaceAndPath(
+                        DestinyDHD.MOD_ID, "destiny_environmental"))), 2.0F, 0.1F);
+    }
 }

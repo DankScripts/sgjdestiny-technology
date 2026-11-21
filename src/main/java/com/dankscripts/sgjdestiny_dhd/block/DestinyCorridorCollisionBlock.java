@@ -111,12 +111,13 @@ public final class DestinyCorridorCollisionBlock extends Block {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
-                                 InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
+                                               BlockHitResult hit) {
+        InteractionHand hand = InteractionHand.MAIN_HAND;
         BlockPos adjacentController = overhangingController(state, level, pos);
         if (adjacentController != null) {
             BlockState controller = level.getBlockState(adjacentController);
-            return controller.use(level, player, hand,
+            return controller.useWithoutItem(level, player,
                     new BlockHitResult(hit.getLocation(), hit.getDirection(), adjacentController, hit.isInside()));
         }
         if (!isControlMount(state) || !player.getItemInHand(hand).is(ModItems.DESTINY_DOOR_CONTROLLER.get()))
@@ -155,7 +156,7 @@ public final class DestinyCorridorCollisionBlock extends Block {
     }
 
     @Override
-    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide() && state.getValue(PART) == ENTRANCE_HANDLE) {
             Direction forward = state.getValue(FACING);
             BlockPos anchor = pos.relative(forward.getClockWise(), 2);
@@ -165,7 +166,7 @@ public final class DestinyCorridorCollisionBlock extends Block {
                 level.destroyBlock(anchor, false, player);
             }
         }
-        super.playerWillDestroy(level, pos, state, player);
+        return super.playerWillDestroy(level, pos, state, player);
     }
 
     @Override

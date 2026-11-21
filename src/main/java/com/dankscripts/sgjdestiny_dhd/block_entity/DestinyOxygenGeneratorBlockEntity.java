@@ -5,6 +5,7 @@ import com.dankscripts.sgjdestiny_dhd.compat.DestinyAtmosphere;
 import com.dankscripts.sgjdestiny_dhd.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -13,7 +14,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
 
 /** Water/calcite service inventory and CO2 scrubbing mix in one recessed tank bay. */
 public final class DestinyOxygenGeneratorBlockEntity extends BlockEntity {
@@ -172,18 +173,18 @@ public final class DestinyOxygenGeneratorBlockEntity extends BlockEntity {
         super.setRemoved();
     }
 
-    @Override protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
         tag.putInt("Water", water);
         tag.putInt("Calcite", calcite);
         tag.putInt("ScrubberMix", scrubberMix);
         tag.putBoolean("PoweredOn", poweredOn);
         tag.putBoolean("DryFault", dryFault);
-        tag.put("Inventory", inventory.serializeNBT());
+        tag.put("Inventory", inventory.serializeNBT(registries));
     }
 
-    @Override public void load(CompoundTag tag) {
-        super.load(tag);
+    @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
         water = Math.max(0, Math.min(MAX_WATER, tag.getInt("Water")));
         calcite = Math.max(0, Math.min(MAX_CALCITE, tag.getInt("Calcite")));
         // Preserve prepared material in existing worlds that used the old oxygen key.
@@ -191,6 +192,6 @@ public final class DestinyOxygenGeneratorBlockEntity extends BlockEntity {
         scrubberMix = Math.max(0, Math.min(MAX_SCRUBBER_MIX, storedMix));
         poweredOn = !tag.contains("PoweredOn") || tag.getBoolean("PoweredOn");
         dryFault = tag.getBoolean("DryFault");
-        if (tag.contains("Inventory")) inventory.deserializeNBT(tag.getCompound("Inventory"));
+        if (tag.contains("Inventory")) inventory.deserializeNBT(registries, tag.getCompound("Inventory"));
     }
 }

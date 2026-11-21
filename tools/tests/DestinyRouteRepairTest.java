@@ -48,4 +48,5 @@ public final class DestinyRouteRepairTest {
         check(empty.getAddressRegion(local)==region, "Repaired reverse index resolves");
         System.out.println("PASS: reproduced Earth-dial null-key crash; keyed migration, route lookup, address preservation, repeat repair and serialization.");
     }
+
 }

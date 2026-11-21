@@ -1,5 +1,7 @@
 package com.dankscripts.sgjdestiny_dhd.block;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
@@ -14,6 +16,8 @@ import net.minecraft.world.level.material.MapColor;
 
 /** A construction lamp that keeps the SGJourney lens lit without redstone. */
 public final class AlwaysLitNaquadahCopperLampBlock extends HorizontalDirectionalBlock {
+    private static final MapCodec<AlwaysLitNaquadahCopperLampBlock> CODEC = simpleCodec(ignored -> new AlwaysLitNaquadahCopperLampBlock());
+    @Override protected MapCodec<AlwaysLitNaquadahCopperLampBlock> codec() { return CODEC; }
     public AlwaysLitNaquadahCopperLampBlock() {
         super(BlockBehaviour.Properties.of()
                 .mapColor(MapColor.COLOR_BROWN)

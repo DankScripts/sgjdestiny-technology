@@ -40,7 +40,7 @@ import net.povstalec.sgjourney.common.menu.dhd.DHDCrystalMenu;
 import net.povstalec.sgjourney.common.menu.dhd.UniverseDHDMenu;
 import net.povstalec.sgjourney.common.menu.graver.DHDEngravingMenu;
 import net.povstalec.sgjourney.common.init.TagInit;
-import net.minecraftforge.network.NetworkHooks;
+import com.dankscripts.sgjdestiny_dhd.network.MenuNetworkHooks;
 
 /**
  * Destiny's physical console backed by SGJourney's complete Universe DHD logic.
@@ -83,8 +83,9 @@ public final class DestinyDHDConsoleBlock extends UniverseDHDBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos,
-                                 Player player, InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
+                                               Player player, BlockHitResult hit) {
+        InteractionHand hand = InteractionHand.MAIN_HAND;
         // SGJourney 0.6.49+ lets these items handle DHD clicks themselves.
         // Opening our dialer first would swallow graver and symbol-paper use.
         if (player.getItemInHand(InteractionHand.MAIN_HAND).is(TagInit.Items.STOPS_DHD_INTERACTION)
@@ -97,7 +98,7 @@ public final class DestinyDHDConsoleBlock extends UniverseDHDBlock {
                 && player instanceof ServerPlayer serverPlayer) {
             if (player.isShiftKeyDown()) {
                 if (dhd.hasPermissions(player, true)) {
-                    NetworkHooks.openScreen(serverPlayer, new DestinyCrystalProvider(dhd), pos);
+                    MenuNetworkHooks.openScreen(serverPlayer, new DestinyCrystalProvider(dhd), pos);
                 }
                 return InteractionResult.CONSUME;
             }
@@ -114,7 +115,7 @@ public final class DestinyDHDConsoleBlock extends UniverseDHDBlock {
                 || !(level.getBlockEntity(pos) instanceof UniverseDHDEntity dhd)) {
             return;
         }
-        NetworkHooks.openScreen(serverPlayer, new MenuProvider() {
+        MenuNetworkHooks.openScreen(serverPlayer, new MenuProvider() {
             @Override
             public Component getDisplayName() {
                 return Component.empty();

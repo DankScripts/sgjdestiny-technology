@@ -1,5 +1,7 @@
 package com.dankscripts.sgjdestiny_dhd.block;
 
+import com.mojang.serialization.MapCodec;
+
 import com.dankscripts.sgjdestiny_dhd.block_entity.DestinyOxygenGeneratorBlockEntity;
 import com.dankscripts.sgjdestiny_dhd.menu.DestinyAirScrubberMenu;
 import com.dankscripts.sgjdestiny_dhd.registry.ModBlockEntities;
@@ -31,12 +33,14 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.network.NetworkHooks;
+import com.dankscripts.sgjdestiny_dhd.network.MenuNetworkHooks;
 
 import javax.annotation.Nullable;
 
 /** A one-wide, two-high wall recess containing one air-scrubbing tank. */
 public final class DestinyOxygenGeneratorBlock extends BaseEntityBlock {
+    private static final MapCodec<DestinyOxygenGeneratorBlock> CODEC = simpleCodec(ignored -> new DestinyOxygenGeneratorBlock());
+    @Override protected MapCodec<DestinyOxygenGeneratorBlock> codec() { return CODEC; }
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     // Keep the old six values loadable so existing three-high scrubbers convert safely.
     // New scrubbers use only parts 0 and 2 in the left-hand column.
@@ -127,12 +131,12 @@ public final class DestinyOxygenGeneratorBlock extends BaseEntityBlock {
         super.onRemove(state, level, pos, replacement, moving);
     }
 
-    @Override public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    @Override public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide() && state.getValue(PART) != 0) {
             BlockPos root = root(pos, state);
             if (level.getBlockState(root).is(this)) level.destroyBlock(root, !player.isCreative());
         }
-        super.playerWillDestroy(level, pos, state, player);
+        return super.playerWillDestroy(level, pos, state, player);
     }
 
     @Nullable @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
@@ -150,14 +154,15 @@ public final class DestinyOxygenGeneratorBlock extends BaseEntityBlock {
         return state.getValue(PART) == 0 ? RenderShape.MODEL : RenderShape.INVISIBLE;
     }
 
-    @Override public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
-                                           InteractionHand hand, BlockHitResult hit) {
+    @Override protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
+                                                         BlockHitResult hit) {
+        InteractionHand hand = InteractionHand.MAIN_HAND;
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         BlockPos root = root(pos, state);
         if (!(level.getBlockEntity(root) instanceof DestinyOxygenGeneratorBlockEntity bay))
             return InteractionResult.FAIL;
         if (player instanceof ServerPlayer serverPlayer) {
-            NetworkHooks.openScreen(serverPlayer, new MenuProvider() {
+        MenuNetworkHooks.openScreen(serverPlayer, new MenuProvider() {
                 @Override public Component getDisplayName() { return Component.literal("Air Scrubber"); }
                 @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player menuPlayer) {
                     return new DestinyAirScrubberMenu(id, inventory, root, bay, bay.menuData());

@@ -41,7 +41,7 @@ public final class ShuttleTravelScreen extends Screen {
     @Override public void tick() { ticks++; }
 
     @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics);
+        renderBackground(graphics, mouseX, mouseY, partialTick);
         int cx = width / 2, cy = height / 2;
         graphics.fill(cx - 126, cy - 86, cx + 126, cy + 80, 0xCC061B1D);
         graphics.fill(cx - 126, cy - 86, cx + 126, cy - 84, 0xFF5ABFB0);

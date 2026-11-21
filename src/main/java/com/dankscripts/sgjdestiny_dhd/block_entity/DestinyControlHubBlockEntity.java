@@ -4,6 +4,7 @@ import com.dankscripts.sgjdestiny_dhd.compat.DestinyAtmosphere;
 import com.dankscripts.sgjdestiny_dhd.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -54,14 +55,14 @@ public final class DestinyControlHubBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
         tag.putIntArray("SimulatedShipStatus", simulatedStatus);
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
         int[] values = tag.getIntArray("SimulatedShipStatus");
         if (values.length == 3)
             for (int i = 0; i < 3; i++) simulatedStatus[i] = Math.max(0, Math.min(100, values[i]));

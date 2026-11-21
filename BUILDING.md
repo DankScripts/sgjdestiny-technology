@@ -1,15 +1,14 @@
 # Building
 
-This project targets Java 17, Minecraft 1.20.1, Forge 47.4.0, and Stargate
-Journey 0.6.55-alpha for development and gameplay validation.
+This project targets Java 21, Minecraft 1.21.1, NeoForge 21.1.252, and Stargate
+Journey 0.6.55-alpha for development builds. The addon requires Stargate
+Journey 0.6.55-alpha or newer at runtime.
 
 ## Requirements
 
-- A Java 17 JDK
+- A Java 21 JDK
 - Internet access for Gradle and Forge dependencies
-- The Stargate Journey 1.20.1 0.6.55-alpha JAR
-- The Immersive Portals 3.0.7 Forge JAR (`IMMERSIVE_PORTALS_JAR` or
-  `libs/immersive-portals-3.0.7-all.jar`)
+- A Stargate Journey 1.21.1 JAR for 0.6.55-alpha
 
 ## Stargate Journey dependency
 
@@ -18,7 +17,7 @@ JAR using either of these methods:
 
 1. Set the `SGJOURNEY_JAR` environment variable to the absolute path of the JAR.
 2. Create a local `libs/` directory and place the JAR there as
-   `Stargate.Journey-1.20.1-0.6.55-alpha.jar`.
+   `Stargate.Journey-1.21.1-0.6.55-alpha.jar`.
 
 The local `libs/` directory is ignored by Git.
 

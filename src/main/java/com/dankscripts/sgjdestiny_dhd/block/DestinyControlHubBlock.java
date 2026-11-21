@@ -1,5 +1,7 @@
 package com.dankscripts.sgjdestiny_dhd.block;
 
+import com.mojang.serialization.MapCodec;
+
 import com.dankscripts.sgjdestiny_dhd.block_entity.DestinyControlHubBlockEntity;
 import com.dankscripts.sgjdestiny_dhd.menu.DestinyControlHubMenu;
 import com.dankscripts.sgjdestiny_dhd.registry.ModBlocks;
@@ -31,10 +33,12 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.network.NetworkHooks;
+import com.dankscripts.sgjdestiny_dhd.network.MenuNetworkHooks;
 
 /** Five-block control-room apple core and its attached, working Destiny console. */
 public final class DestinyControlHubBlock extends BaseEntityBlock {
+    private static final MapCodec<DestinyControlHubBlock> CODEC = simpleCodec(ignored -> new DestinyControlHubBlock());
+    @Override protected MapCodec<DestinyControlHubBlock> codec() { return CODEC; }
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     private static final VoxelShape COLUMN = Block.box(0, 0, 0, 16, 80, 16);
 
@@ -126,16 +130,16 @@ public final class DestinyControlHubBlock extends BaseEntityBlock {
         BlockEntity existing = level.getBlockEntity(pos);
         if (!(existing instanceof DestinyControlHubBlockEntity)) {
             // Hubs placed before the ship-status conversion may still carry SGJourney's DHD entity.
-            CompoundTag oldReadings = existing == null ? null : existing.saveWithFullMetadata();
+            CompoundTag oldReadings = existing == null ? null : existing.saveWithFullMetadata(level.registryAccess());
             level.removeBlockEntity(pos);
             DestinyControlHubBlockEntity replacement = new DestinyControlHubBlockEntity(pos, level.getBlockState(pos));
-            if (oldReadings != null) replacement.load(oldReadings);
+            if (oldReadings != null) replacement.loadWithComponents(oldReadings, level.registryAccess());
             level.setBlockEntity(replacement);
             replacement.setChanged();
         }
         if (!(level.getBlockEntity(pos) instanceof DestinyControlHubBlockEntity hub))
             return InteractionResult.CONSUME;
-        NetworkHooks.openScreen(serverPlayer, new net.minecraft.world.MenuProvider() {
+        MenuNetworkHooks.openScreen(serverPlayer, new net.minecraft.world.MenuProvider() {
             @Override public Component getDisplayName() { return Component.literal("Destiny Control Interface"); }
             @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player menuPlayer) {
                 return new DestinyControlHubMenu(id, inventory, pos, hub, hub.statusData());
@@ -145,8 +149,9 @@ public final class DestinyControlHubBlock extends BaseEntityBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
-                                 InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
+                                               BlockHitResult hit) {
+        InteractionHand hand = InteractionHand.MAIN_HAND;
         return activate(level, pos, player);
     }
 

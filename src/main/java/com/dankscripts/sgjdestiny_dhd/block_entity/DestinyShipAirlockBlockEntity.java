@@ -5,6 +5,7 @@ import com.dankscripts.sgjdestiny_dhd.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -50,18 +51,17 @@ public final class DestinyShipAirlockBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
         tag.putLong("AutoCloseAt", autoCloseAt);
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
         autoCloseAt = tag.getLong("AutoCloseAt");
     }
 
-    @Override
     public AABB getRenderBoundingBox() {
         // Include the 3-block frame and both leaves at full travel, without
         // keeping a large cube around every airlock in the camera frustum.

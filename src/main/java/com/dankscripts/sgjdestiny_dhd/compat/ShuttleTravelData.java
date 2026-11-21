@@ -2,6 +2,7 @@ package com.dankscripts.sgjdestiny_dhd.compat;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
 
@@ -14,10 +15,10 @@ public final class ShuttleTravelData extends SavedData {
 
     public static ShuttleTravelData get(MinecraftServer server) {
         return server.overworld().getDataStorage().computeIfAbsent(
-                ShuttleTravelData::load, ShuttleTravelData::new, FILE_NAME);
+                new SavedData.Factory<>(ShuttleTravelData::new, ShuttleTravelData::load), FILE_NAME);
     }
 
-    private static ShuttleTravelData load(CompoundTag tag) {
+    private static ShuttleTravelData load(CompoundTag tag, HolderLookup.Provider registries) {
         ShuttleTravelData data = new ShuttleTravelData();
         if (tag.contains("Destiny")) data.destiny = BlockPos.of(tag.getLong("Destiny"));
         if (tag.contains("Eden")) data.eden = BlockPos.of(tag.getLong("Eden"));
@@ -42,7 +43,7 @@ public final class ShuttleTravelData extends SavedData {
         if (edenSearchCandidate != candidate) { edenSearchCandidate = candidate; setDirty(); }
     }
 
-    @Override public CompoundTag save(CompoundTag tag) {
+    @Override public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
         if (destiny != null) tag.putLong("Destiny", destiny.asLong());
         if (eden != null) tag.putLong("Eden", eden.asLong());
         tag.putInt("EdenSearchCandidate", edenSearchCandidate);

@@ -12,12 +12,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
@@ -25,14 +25,15 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProc
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.povstalec.sgjourney.common.block_entities.stargate.AbstractStargateEntity;
 import net.povstalec.sgjourney.common.blocks.stargate.AbstractStargateBaseBlock;
-import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.povstalec.sgjourney.common.sgjourney.AddressRegion;
 import net.povstalec.sgjourney.common.sgjourney.Galaxy;
 import net.povstalec.sgjourney.common.sgjourney.SpaceLocation;
-import net.povstalec.sgjourney.api.stargate.BlockEntityStargate;
 import net.povstalec.sgjourney.api.stargate.Stargate;
+import net.povstalec.sgjourney.api.stargate.BlockEntityStargate;
 import net.povstalec.sgjourney.common.data.Universe;
 import net.povstalec.sgjourney.common.data.StargateNetwork;
 import net.povstalec.sgjourney.common.init.StargateInit;
@@ -42,11 +43,11 @@ import net.povstalec.sgjourney.common.data.BlockEntityList;
 import net.povstalec.sgjourney.common.sgjourney.Address;
 
 /** Ensures SGJourney's built-in Destiny space location is joined to our seed-ship route. */
-@Mod.EventBusSubscriber(modid = "sgjdestiny_dhd", bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = "sgjdestiny_dhd", bus = EventBusSubscriber.Bus.GAME)
 public final class DestinyRouteEvents {
     private static final Logger LOGGER = LoggerFactory.getLogger("SGJ Destiny DHD/Route");
     private static final ResourceKey<Galaxy> MEDIORA = ResourceKey.create(Galaxy.REGISTRY_KEY,
-            new ResourceLocation("sgjdestiny_dhd", "mediora"));
+            ResourceLocation.fromNamespaceAndPath("sgjdestiny_dhd", "mediora"));
     private static final Destination[] DESTINATIONS = {
             new Destination("calcite_planet", 0, 0),
             new Destination("water_planet", 0, 0),
@@ -103,9 +104,9 @@ public final class DestinyRouteEvents {
 
     private static void link(MinecraftServer server, String dimensionName, String regionName) {
         ResourceKey<Level> dimension = ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,
-                new ResourceLocation("sgjourney", dimensionName));
+                ResourceLocation.fromNamespaceAndPath("sgjourney", dimensionName));
         ResourceKey<AddressRegion> regionKey = ResourceKey.create(AddressRegion.REGISTRY_KEY,
-                new ResourceLocation("sgjourney", regionName));
+                ResourceLocation.fromNamespaceAndPath("sgjourney", regionName));
         AddressRegion region = server.registryAccess().registryOrThrow(AddressRegion.REGISTRY_KEY).get(regionKey);
         if (region == null) return;
         // Seven-chevron addresses belong to the saved region, not the physical gate.
@@ -139,7 +140,7 @@ public final class DestinyRouteEvents {
     private static void repairDestinationGateRecords(MinecraftServer server, Destination destination) {
         String dimensionName = destination.name();
         ResourceKey<Level> dimension = ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,
-                new ResourceLocation("sgjourney", dimensionName));
+                ResourceLocation.fromNamespaceAndPath("sgjourney", dimensionName));
         ServerLevel level = server.getLevel(dimension);
         if (level == null) return;
 
@@ -247,7 +248,6 @@ public final class DestinyRouteEvents {
         }
         controller.setPrimary();
         if (network.getPrimaryStargateFromDimension(dimension) != registered) {
-            // SGJourney's setter otherwise skips refreshing the cached gate when the saved key already matches.
             if (address.equals(network.getPrimaryAddressFromDimension(dimension)))
                 network.setPrimaryAddressForDimension(dimension, null);
             network.setPrimaryAddressForDimension(dimension, address);
@@ -290,10 +290,11 @@ public final class DestinyRouteEvents {
                 || previous.isConnected() || previous.isDialing() || previous.isRotating()
                 || records.getStargate(preserved) != previous.getStargate()
                 || previous.getStargate() == null)) {
-            LOGGER.warn("Skipping gate relocation at {}: it is busy or does not own its saved address", previous.getBlockPos());
+            LOGGER.warn("Skipping gate relocation at {}: it is busy or does not own its saved address",
+                    previous.getBlockPos());
             return false;
         }
-        ResourceLocation templateId = new ResourceLocation("sgjourney",
+        ResourceLocation templateId = ResourceLocation.fromNamespaceAndPath("sgjourney",
                 "stargate/universe/pedestal/end/universe_stargate_pedestal_end_1");
         StructureTemplate template = level.getStructureManager().get(templateId).orElse(null);
         if (template == null) {
@@ -304,7 +305,7 @@ public final class DestinyRouteEvents {
         PlacementSite site = jungle ? junglePlacement(level, destination, template, previous, buried)
                 : destination.name().equals("water_planet") ? waterPlanetPlacement(level, destination, template, previous)
                 : findFlattestPlacement(level, destination, template);
-        if (site == null && jungle) return false; // The Jungle survey logs why it did not place a gate.
+        if (site == null && jungle) return false;
         if (site == null || site.variation() > 16) {
             LOGGER.error("Could not find a supported surface for the {} gate", destination.name());
             return false;
@@ -312,8 +313,15 @@ public final class DestinyRouteEvents {
         int placementY = site.baseY();
         BlockPos origin = new BlockPos(site.centerX() - template.getSize().getX() / 2, placementY,
                 site.centerZ() - template.getSize().getZ() / 2);
+        int minChunkX = origin.getX() >> 4;
+        int maxChunkX = (origin.getX() + template.getSize().getX() - 1) >> 4;
+        int minChunkZ = origin.getZ() >> 4;
+        int maxChunkZ = (origin.getZ() + template.getSize().getZ() - 1) >> 4;
+        for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++)
+            for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++)
+                level.setChunkForced(chunkX, chunkZ, true);
         StructurePlaceSettings settings = new StructurePlaceSettings();
-        ResourceLocation processorsId = new ResourceLocation("sgjourney", destination.name() + "_gate");
+        ResourceLocation processorsId = ResourceLocation.fromNamespaceAndPath("sgjourney", destination.name() + "_gate");
         StructureProcessorList processors = level.registryAccess().registryOrThrow(
                 net.minecraft.core.registries.Registries.PROCESSOR_LIST).get(processorsId);
         if (processors != null) processors.list().forEach(settings::addProcessor);
@@ -325,7 +333,8 @@ public final class DestinyRouteEvents {
         BlockPos controllerPos = controllers.get(0).pos();
         BlockPos obstruction = findFootprintObstruction(level, template, origin);
         if (obstruction != null) {
-            LOGGER.warn("Skipping {} gate placement: the surface footprint is occupied at {}", destination.name(), obstruction);
+            LOGGER.warn("Skipping {} gate placement: the surface footprint is occupied at {}",
+                    destination.name(), obstruction);
             return false;
         }
         buildFoundation(level, origin, template);
@@ -347,7 +356,6 @@ public final class DestinyRouteEvents {
         replacement.setPrimary();
         if (previous != null) {
             BlockPos oldPos = previous.getBlockPos();
-            // Native removal clears the old network identity and dismantles the old ring.
             previous.markItemAsDropped();
             if (!level.setBlockAndUpdate(oldPos, Blocks.AIR.defaultBlockState())
                     || records.getStargate(preserved) != null)
@@ -364,11 +372,6 @@ public final class DestinyRouteEvents {
             replacement.generate();
             restorePrimaryIndexes(level.getServer(), level.dimension(), replacement);
         }
-        int maxChunkX = (origin.getX() + template.getSize().getX() - 1) >> 4;
-        int maxChunkZ = (origin.getZ() + template.getSize().getZ() - 1) >> 4;
-        for (int chunkX = origin.getX() >> 4; chunkX <= maxChunkX; chunkX++)
-            for (int chunkZ = origin.getZ() >> 4; chunkZ <= maxChunkZ; chunkZ++)
-                level.setChunkForced(chunkX, chunkZ, true);
         LOGGER.info("Placed {} gate near {},{} at y={} with sampled terrain variation {}",
                 destination.name(), site.centerX(), site.centerZ(), placementY, site.variation());
         return placed;
@@ -403,7 +406,6 @@ public final class DestinyRouteEvents {
         int anchorZ = oldPos == null ? (destination.chunkZ() << 4) + 8 : oldPos.getZ();
         record Candidate(int x, int z, GateTerrainSurvey.Result clearing) {}
         List<Candidate> candidates = new ArrayList<>();
-        // Sample generator heights without loading chunks. Only validate the best few actual footprints.
         for (int dx = -6; dx <= 6; dx++) {
             for (int dz = -6; dz <= 6; dz++) {
                 if (oldPos != null && dx == 0 && dz == 0) continue;

@@ -1,5 +1,7 @@
 package com.dankscripts.sgjdestiny_dhd.block;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -17,6 +19,8 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 
 public final class LitDestinyBearingBlock extends HorizontalDirectionalBlock {
+    private static final MapCodec<LitDestinyBearingBlock> CODEC = simpleCodec(ignored -> new LitDestinyBearingBlock());
+    @Override protected MapCodec<LitDestinyBearingBlock> codec() { return CODEC; }
     public static final BooleanProperty FLASHING = BooleanProperty.create("flashing");
 
     public LitDestinyBearingBlock() {
@@ -53,7 +57,7 @@ public final class LitDestinyBearingBlock extends HorizontalDirectionalBlock {
     }
 
     @Override
-    public boolean isPathfindable(BlockState state, BlockGetter level, BlockPos pos, PathComputationType type) {
+    protected boolean isPathfindable(BlockState state, PathComputationType type) {
         return true;
     }
 }

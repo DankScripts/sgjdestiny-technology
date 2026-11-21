@@ -21,7 +21,7 @@ public final class DestinyLiftRepairKitItem extends Item {
         }
         return InteractionResult.sidedSuccess(context.getLevel().isClientSide);
     }
-    @Override public void appendHoverText(ItemStack stack, Level level, List<Component> lines, TooltipFlag flag) {
+    @Override public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> lines, TooltipFlag flag) {
         lines.add(Component.translatable("tooltip.sgjdestiny_dhd.elevator_repair_kit"));
         lines.add(Component.translatable("tooltip.sgjdestiny_dhd.elevator_repair_kit_consumption"));
         lines.add(Component.translatable("tooltip.sgjdestiny_dhd.elevator_emergency_release"));

@@ -1,15 +1,15 @@
 package com.dankscripts.sgjdestiny_dhd.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public final class DestinyServerConfig {
-    public static final ForgeConfigSpec SPEC;
-    public static final ForgeConfigSpec.IntValue MAX_DEPLOYED_KINOS;
-    public static final ForgeConfigSpec.BooleanValue INSTALL_CUSTOM_DESTINY_SHIP;
-    public static final java.util.List<ForgeConfigSpec.ConfigValue<String>> LIFT_STOP_NAMES = new java.util.ArrayList<>();
+    public static final ModConfigSpec SPEC;
+    public static final ModConfigSpec.IntValue MAX_DEPLOYED_KINOS;
+    public static final ModConfigSpec.BooleanValue INSTALL_CUSTOM_DESTINY_SHIP;
+    public static final java.util.List<ModConfigSpec.ConfigValue<String>> LIFT_STOP_NAMES = new java.util.ArrayList<>();
 
     static {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
         builder.push("kino");
         MAX_DEPLOYED_KINOS = builder
                 .comment("Maximum number of deployed Kinos allowed across the entire server.")

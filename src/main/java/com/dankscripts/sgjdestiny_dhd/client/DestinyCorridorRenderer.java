@@ -24,7 +24,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.data.ModelData;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -33,6 +33,9 @@ import java.util.Map;
 
 /** Renders the oversized corridor without passing it through chunk-local coordinates. */
 public final class DestinyCorridorRenderer implements BlockEntityRenderer<DestinyCorridorBlockEntity> {
+    @Override public net.minecraft.world.phys.AABB getRenderBoundingBox(DestinyCorridorBlockEntity entity) {
+        return entity.getRenderBoundingBox();
+    }
     private final BlockRenderDispatcher blockRenderer;
     private final Map<BlockPos, CachedGeometry> cache = new LinkedHashMap<>();
     private Level cachedLevel;
@@ -148,15 +151,14 @@ public final class DestinyCorridorRenderer implements BlockEntityRenderer<Destin
         for (RenderType source : model.getRenderTypes(state, random, ModelData.EMPTY)) {
             RenderType output = source == RenderType.translucent()
                     ? Sheets.translucentCullBlockSheet() : Sheets.solidBlockSheet();
-            BufferBuilder builder = DestinyMeshBuffers.staging();
-            builder.begin(output.mode(), output.format());
+            BufferBuilder builder = DestinyMeshBuffers.staging(output);
             PoseStack identity = new PoseStack();
             for (Direction side : Direction.values())
                 emit(builder, identity, level, origin, facing, model, state, random, side, source, overlay);
             emit(builder, identity, level, origin, facing, model, state, random, null, source, overlay);
             VertexBuffer buffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
             buffer.bind();
-            buffer.upload(builder.end());
+            buffer.upload(builder.buildOrThrow());
             VertexBuffer.unbind();
             result.add(new CachedLayer(output, buffer));
         }
@@ -178,7 +180,7 @@ public final class DestinyCorridorRenderer implements BlockEntityRenderer<Destin
             }
             BlockPos sample = worldPos(origin, facing, x / 4, y / 4, z / 4);
             int localLight = LevelRenderer.getLightColor(level, sample);
-            builder.putBulkData(pose.last(), quad, 1.0F, 1.0F, 1.0F, localLight, overlay);
+            builder.putBulkData(pose.last(), quad, 1.0F, 1.0F, 1.0F, 1.0F, localLight, overlay);
         }
     }
 

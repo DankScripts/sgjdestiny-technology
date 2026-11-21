@@ -4,6 +4,7 @@ import com.dankscripts.sgjdestiny_dhd.registry.ModBlockEntities;
 import com.dankscripts.sgjdestiny_dhd.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -84,14 +85,14 @@ public final class KinoDispenserBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
         tag.putInt("StoredKinos", storedKinos);
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
         storedKinos = tag.contains("StoredKinos")
                 ? Math.max(0, Math.min(CAPACITY, tag.getInt("StoredKinos")))
                 : INITIAL_KINO_KITS;

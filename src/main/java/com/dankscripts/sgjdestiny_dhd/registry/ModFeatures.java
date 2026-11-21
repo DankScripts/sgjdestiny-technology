@@ -9,16 +9,16 @@ import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraft.core.registries.Registries;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 public final class ModFeatures {
     public static final DeferredRegister<Feature<?>> FEATURES =
-            DeferredRegister.create(ForgeRegistries.FEATURES, DestinyDHD.MOD_ID);
+            DeferredRegister.create(Registries.FEATURE, DestinyDHD.MOD_ID);
 
-    public static final RegistryObject<Feature<NoneFeatureConfiguration>> EDEN_BEDROCK_SEAL =
+    public static final DeferredHolder<Feature<?>, Feature<NoneFeatureConfiguration>> EDEN_BEDROCK_SEAL =
             FEATURES.register("eden_bedrock_seal", () -> new Feature<>(Codec.unit(NoneFeatureConfiguration.INSTANCE)) {
                 @Override
                 public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context) {
@@ -38,7 +38,7 @@ public final class ModFeatures {
                 }
             });
 
-    public static final RegistryObject<Feature<NoneFeatureConfiguration>> EDEN_SHALLOW_CAVE =
+    public static final DeferredHolder<Feature<?>, Feature<NoneFeatureConfiguration>> EDEN_SHALLOW_CAVE =
             FEATURES.register("eden_shallow_cave", () -> new Feature<>(Codec.unit(NoneFeatureConfiguration.INSTANCE)) {
                 @Override
                 public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context) {

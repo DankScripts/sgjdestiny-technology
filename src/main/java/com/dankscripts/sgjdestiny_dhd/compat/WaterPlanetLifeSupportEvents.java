@@ -8,16 +8,21 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /** Water Planet hazards and suit life support for oxygen-free Destiny exterior. */
-@Mod.EventBusSubscriber(modid = "sgjdestiny_dhd", bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = "sgjdestiny_dhd", bus = EventBusSubscriber.Bus.GAME)
 public final class WaterPlanetLifeSupportEvents {
-    private static final ResourceLocation WATER_PLANET = new ResourceLocation("sgjourney", "water_planet");
+    private static final ResourceLocation WATER_PLANET = ResourceLocation.fromNamespaceAndPath("sgjourney", "water_planet");
     private static final java.util.Map<java.util.UUID, Long> ENTRY_SAFETY_UNTIL = new java.util.HashMap<>();
     private static final java.util.Map<java.util.UUID, Integer> DESTINY_EXPOSURE = new java.util.HashMap<>();
     private WaterPlanetLifeSupportEvents() {}
@@ -54,8 +59,8 @@ public final class WaterPlanetLifeSupportEvents {
     }
 
     @SubscribeEvent
-    public static void protectExplorers(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || !(event.player instanceof ServerPlayer player)) return;
+    public static void protectExplorers(PlayerTickEvent.Post event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
         boolean destiny = DestinyAtmosphere.isDestiny(player.serverLevel());
         if (!destiny && !player.level().dimension().location().equals(WATER_PLANET)) {
             DESTINY_EXPOSURE.remove(player.getUUID());
@@ -147,7 +152,7 @@ public final class WaterPlanetLifeSupportEvents {
     }
 
     private static boolean adAstraItem(ItemStack stack, String path) {
-        ResourceLocation id = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(stack.getItem());
         return id != null && id.getNamespace().equals("ad_astra") && id.getPath().equals(path);
     }
 

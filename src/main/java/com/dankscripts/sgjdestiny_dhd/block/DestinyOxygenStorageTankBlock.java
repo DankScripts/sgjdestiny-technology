@@ -1,5 +1,7 @@
 package com.dankscripts.sgjdestiny_dhd.block;
 
+import com.mojang.serialization.MapCodec;
+
 import com.dankscripts.sgjdestiny_dhd.registry.ModItems;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -22,6 +24,8 @@ import net.minecraft.world.phys.BlockHitResult;
 
 /** An always-full suit-room tank rack; refills handheld Destiny suit tanks. */
 public final class DestinyOxygenStorageTankBlock extends HorizontalDirectionalBlock {
+    private static final MapCodec<DestinyOxygenStorageTankBlock> CODEC = simpleCodec(ignored -> new DestinyOxygenStorageTankBlock());
+    @Override protected MapCodec<DestinyOxygenStorageTankBlock> codec() { return CODEC; }
     public DestinyOxygenStorageTankBlock() {
         super(BlockBehaviour.Properties.of().strength(5.0F, 12.0F).sound(SoundType.METAL));
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
@@ -43,8 +47,9 @@ public final class DestinyOxygenStorageTankBlock extends HorizontalDirectionalBl
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 
-    @Override public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
-                                           InteractionHand hand, BlockHitResult hit) {
+    @Override protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
+                                                         BlockHitResult hit) {
+        InteractionHand hand = InteractionHand.MAIN_HAND;
         ItemStack held = player.getItemInHand(hand);
         if (!held.is(ModItems.DESTINY_OXYGEN_TANK.get())) return InteractionResult.PASS;
         if (!level.isClientSide()) {

@@ -1,6 +1,6 @@
 # Stargate Journey: Destiny Technology
 
-A standalone Forge 1.20.1 addon for Stargate Journey that recreates Destiny's
+A standalone NeoForge 1.21.1 addon for Stargate Journey that recreates Destiny's
 shipboard dialing console from *Stargate Universe*.
 
 The addon includes the Destiny dialing console, lore-based seven- and
@@ -11,17 +11,15 @@ remote, deployable Kinos, telemetry, cross-dimensional flight, and live video.
 
 The [searchable documentation site](https://dankscripts.github.io/sgjdestiny-technology/)
 contains installation, setup, controls, recipes, configuration, and
-troubleshooting instructions. Its source is in [`docs`](docs/index.md).
-
-Previous Forge source versions are available under the
-[`forge-1.20.1-v*` tags](https://github.com/DankScripts/sgjdestiny-technology/tags).
-Historical baseline notes and one-off patch tools remain in Git history.
+troubleshooting instructions. Its source is in the
+[public repository](https://github.com/DankScripts/sgjdestiny-technology/tree/main/docs).
 
 ## Requirements
 
-- Minecraft 1.20.1
-- Forge 47.4.0 or newer 47.x build
-- Stargate Journey 0.6.55-alpha for Minecraft 1.20.1
+- Minecraft 1.21.1
+- NeoForge 21.1.252
+- Java 21
+- Stargate Journey 0.6.55-alpha or newer
 - Immersive Portals 3.0.7
 - Cloth Config for Immersive Portals
 - Simply Light 1.4.6+, GTCEu 7.2.0+, Macaw's Bridges 3.1.0+, and
@@ -31,7 +29,7 @@ Use a diamond-tier Stargate Journey graver on the Destiny console or its screen
 to open the Universe DHD engraving menu. Normal clicks still open the custom
 Destiny dialer.
 
-Forge checks all listed dependencies before opening a world and displays its
+NeoForge checks all listed dependencies before opening a world and displays its
 normal missing-mods screen if any are absent. The packaged ship itself remains
 disabled until explicitly enabled for a world.
 
@@ -52,7 +50,7 @@ world.
 Leave the setting `true` after installation; a saved completion marker prevents
 the ship from being replaced again on later starts. Keep the ship-block mods
 installed on the server and every client. Missing dependencies are reported by
-Forge before a world begins loading.
+NeoForge before a world begins loading.
 Destiny's weather is always clear, independent of this setting.
 
 ## Development

@@ -10,17 +10,21 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.level.ChunkEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.common.Tags;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.level.ChunkEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.Tags;
 
 /** Weather and sparse cliff-bound ice formations for SGU's Water Planet. */
-@Mod.EventBusSubscriber(modid = "sgjdestiny_dhd", bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = "sgjdestiny_dhd", bus = EventBusSubscriber.Bus.GAME)
 public final class WaterPlanetClimateEvents {
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("SGJ Destiny DHD/Water Planet");
-    private static final ResourceLocation WATER_PLANET = new ResourceLocation("sgjourney", "water_planet");
+    private static final ResourceLocation WATER_PLANET = ResourceLocation.fromNamespaceAndPath("sgjourney", "water_planet");
     private static final java.util.Map<ServerLevel, java.util.Set<Long>> CHECKED_CHUNKS = new java.util.WeakHashMap<>();
     private static final java.util.Map<ServerLevel, java.util.ArrayDeque<ChunkPos>> PENDING_CHUNKS = new java.util.WeakHashMap<>();
     private static final java.util.Map<ServerLevel, Integer> LANDING_HEIGHTS = new java.util.WeakHashMap<>();
@@ -34,8 +38,8 @@ public final class WaterPlanetClimateEvents {
     private WaterPlanetClimateEvents() {}
 
     @SubscribeEvent
-    public static void keepSnowing(TickEvent.LevelTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || !(event.level instanceof ServerLevel level)) return;
+    public static void keepSnowing(LevelTickEvent.Post event) {
+        if (!(event.getLevel() instanceof ServerLevel level)) return;
         if (level.dimension().location().equals(WATER_PLANET) && level.getGameTime() % 20L == 0L) {
             level.setWeatherParameters(0, 24_000, true, false);
         }

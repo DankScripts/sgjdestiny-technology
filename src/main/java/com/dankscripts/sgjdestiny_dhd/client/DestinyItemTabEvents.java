@@ -3,17 +3,18 @@ package com.dankscripts.sgjdestiny_dhd.client;
 import com.dankscripts.sgjdestiny_dhd.DestinyDHD;
 import com.dankscripts.sgjdestiny_dhd.registry.ModItems;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 
-@Mod.EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
 public final class DestinyItemTabEvents {
     private DestinyItemTabEvents() {}
 
     @SubscribeEvent
     public static void addItems(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey().location().equals(new ResourceLocation("minecraft", "tools_and_utilities"))) {
+        if (event.getTabKey().location().equals(ResourceLocation.fromNamespaceAndPath("minecraft", "tools_and_utilities"))) {
             event.accept(ModItems.DESTINY_LIFT_REPAIR_KIT.get());
             event.accept(ModItems.EARTH_GATE_DESIGNATOR.get());
             event.accept(ModItems.DESTINY_ENVIRONMENTAL_HELMET.get());
@@ -22,7 +23,7 @@ public final class DestinyItemTabEvents {
             event.accept(ModItems.DESTINY_ENVIRONMENTAL_BOOTS.get());
             event.accept(ModItems.DESTINY_OXYGEN_TANK.get());
         }
-        if (event.getTabKey().location().equals(new ResourceLocation("minecraft", "ingredients")))
+        if (event.getTabKey().location().equals(ResourceLocation.fromNamespaceAndPath("minecraft", "ingredients")))
             event.accept(ModItems.SQUIGGLER_VENOM_SAC.get());
     }
 }

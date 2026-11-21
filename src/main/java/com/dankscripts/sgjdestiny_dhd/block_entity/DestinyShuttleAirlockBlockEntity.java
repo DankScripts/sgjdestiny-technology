@@ -42,7 +42,6 @@ public final class DestinyShuttleAirlockBlockEntity extends BlockEntity {
         return Mth.lerp(partialTick, previousOpen, open);
     }
 
-    @Override
     public AABB getRenderBoundingBox() {
         // The hull is broad but directional. Keep the full nose and wings in
         // view without treating a 68-block cube around the hatch as visible.

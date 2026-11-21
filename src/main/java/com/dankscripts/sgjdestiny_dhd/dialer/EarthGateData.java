@@ -1,6 +1,7 @@
 package com.dankscripts.sgjdestiny_dhd.dialer;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.povstalec.sgjourney.common.data.StargateNetwork;
@@ -17,11 +18,11 @@ public final class EarthGateData extends SavedData {
     private int[] symbols;
 
     public static EarthGateData get(MinecraftServer server) {
-        return server.overworld().getDataStorage().computeIfAbsent(EarthGateData::load,
-                EarthGateData::new, FILE_NAME);
+        return server.overworld().getDataStorage().computeIfAbsent(
+                new SavedData.Factory<>(EarthGateData::new, EarthGateData::load), FILE_NAME);
     }
 
-    public static EarthGateData load(CompoundTag tag) {
+    public static EarthGateData load(CompoundTag tag, HolderLookup.Provider registries) {
         EarthGateData data = new EarthGateData();
         int[] saved = tag.getIntArray(ADDRESS);
         data.symbols = saved.length == 0 ? null : saved;
@@ -55,7 +56,7 @@ public final class EarthGateData extends SavedData {
     }
 
     @Override
-    public CompoundTag save(CompoundTag tag) {
+    public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
         if (symbols != null) tag.putIntArray(ADDRESS, symbols);
         return tag;
     }

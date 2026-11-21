@@ -5,10 +5,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraftforge.event.PlayLevelSoundEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.PlayLevelSoundEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.povstalec.sgjourney.common.block_entities.dhd.AbstractDHDEntity;
 import net.povstalec.sgjourney.common.block_entities.dhd.UniverseDHDEntity;
 import net.povstalec.sgjourney.common.block_entities.stargate.UniverseStargateEntity;
@@ -24,7 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 /** Queues dial requests and announces known nine-chevron routes before rotation begins. */
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME)
 public final class DestinyDialDelay {
     private static final Logger LOGGER = LoggerFactory.getLogger("SGJ Destiny DHD/Dial");
     private static final int PRE_DIAL_TICKS = 3;
@@ -111,8 +115,8 @@ public final class DestinyDialDelay {
     }
 
     @SubscribeEvent
-    public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || (PENDING.isEmpty() && PROGRAMMED_DIALS.isEmpty())) return;
+    public static void onServerTick(ServerTickEvent.Post event) {
+        if ((PENDING.isEmpty() && PROGRAMMED_DIALS.isEmpty())) return;
 
         Iterator<Map.Entry<AbstractDHDEntity, DialInputBuffer>> iterator = PENDING.entrySet().iterator();
         while (iterator.hasNext()) {

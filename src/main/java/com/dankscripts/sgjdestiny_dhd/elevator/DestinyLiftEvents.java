@@ -13,6 +13,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
@@ -26,18 +27,19 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
 /** Retrofit only the recognized, parked legacy elevator; never scan/replace arbitrary ship blocks. */
-@Mod.EventBusSubscriber(modid = DestinyDHD.MOD_ID)
+@EventBusSubscriber(modid = DestinyDHD.MOD_ID)
 public final class DestinyLiftEvents {
     public static final BlockPos ANCHOR = new BlockPos(-4, 65, -387);
     private DestinyLiftEvents() {}
@@ -323,7 +325,7 @@ public final class DestinyLiftEvents {
         }
     }
 
-    @SubscribeEvent public static void dismount(net.minecraftforge.event.entity.EntityMountEvent event) {
+    @SubscribeEvent public static void dismount(net.neoforged.neoforge.event.entity.EntityMountEvent event) {
         if (!event.isDismounting() || event.getEntityMounting().level().isClientSide) return;
         if (event.getEntityBeingMounted() instanceof DestinyLiftEntity cab
                 && cab.travelling() && !cab.releasingPassengers()) {
@@ -360,16 +362,17 @@ public final class DestinyLiftEvents {
         private int rescueFloor = -1;
         private ListTag original = new ListTag();
         static Data get(ServerLevel level) {
-            return level.getDataStorage().computeIfAbsent(Data::load, Data::new, "sgjdestiny_elevator");
+            return level.getDataStorage().computeIfAbsent(
+                    new SavedData.Factory<>(Data::new, Data::load), "sgjdestiny_elevator");
         }
-        static Data load(CompoundTag tag) {
+        static Data load(CompoundTag tag, HolderLookup.Provider registries) {
             Data data = new Data();
             if (tag.hasUUID("Cab")) data.cab = tag.getUUID("Cab");
             data.rescueFloor = tag.contains("RescueFloor") ? tag.getInt("RescueFloor") : -1;
             data.original = tag.getList("OriginalBlocks", 10);
             return data;
         }
-        @Override public CompoundTag save(CompoundTag tag) {
+        @Override public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
             if (cab != null) tag.putUUID("Cab", cab);
             tag.putInt("RescueFloor", rescueFloor);
             tag.put("OriginalBlocks", original);

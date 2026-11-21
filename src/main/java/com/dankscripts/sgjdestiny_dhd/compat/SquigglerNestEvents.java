@@ -10,22 +10,26 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.Set;
 
-@Mod.EventBusSubscriber(modid="sgjdestiny_dhd", bus=Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid="sgjdestiny_dhd", bus=EventBusSubscriber.Bus.GAME)
 public final class SquigglerNestEvents {
- private static final ResourceLocation JUNGLE=new ResourceLocation("sgjourney","jungle_planet");
+ private static final ResourceLocation JUNGLE=ResourceLocation.fromNamespaceAndPath("sgjourney","jungle_planet");
  private static final Map<BlockPos,Long> NEXT_SPAWN=new HashMap<>();
  private static final Set<Long> POPULATED=new HashSet<>();
  private SquigglerNestEvents(){}
- @SubscribeEvent public static void tick(TickEvent.LevelTickEvent e){
-  if(e.phase!=TickEvent.Phase.END || !(e.level instanceof ServerLevel level) || !level.dimension().location().equals(JUNGLE)
+ @SubscribeEvent public static void tick(LevelTickEvent.Post e){
+  if(!(e.getLevel() instanceof ServerLevel level) || !level.dimension().location().equals(JUNGLE)
     || level.getGameTime()%80!=0)return;
   for(var player:level.players())populate(level,player.getBlockX()>>4,player.getBlockZ()>>4);
   if(!level.isNight() || level.getDifficulty()==Difficulty.PEACEFUL)return;
@@ -40,7 +44,7 @@ public final class SquigglerNestEvents {
     for(int i=0,n=2+level.random.nextInt(3);i<n;i++){
      var mob=ModEntities.SQUIGGLER.get().create(level); if(mob==null)continue;
      mob.moveTo(nest.getX()+.5,nest.getY()+1.05,nest.getZ()+.5,level.random.nextFloat()*360,0);
-     mob.finalizeSpawn(level,level.getCurrentDifficultyAt(nest),MobSpawnType.SPAWNER,null,null); level.addFreshEntity(mob);
+     mob.finalizeSpawn(level,level.getCurrentDifficultyAt(nest),MobSpawnType.SPAWNER,null); level.addFreshEntity(mob);
     } break;
    }
   }

@@ -1,5 +1,7 @@
 package com.dankscripts.sgjdestiny_dhd.block;
 
+import com.mojang.serialization.MapCodec;
+
 import com.dankscripts.sgjdestiny_dhd.block_entity.DestinyWaterHoldingTankBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -22,14 +24,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.minecraft.world.level.material.Fluids;
 
 import javax.annotation.Nullable;
 
 /** One placeable 3x3x3 tank, anchored at the center of its bottom layer. */
 public final class DestinyWaterHoldingTankBlock extends BaseEntityBlock {
+    private static final MapCodec<DestinyWaterHoldingTankBlock> CODEC = simpleCodec(ignored -> new DestinyWaterHoldingTankBlock());
+    @Override protected MapCodec<DestinyWaterHoldingTankBlock> codec() { return CODEC; }
     public static final IntegerProperty PART = IntegerProperty.create("part", 0, 26);
     private static final int ROOT = 4;
     private static final ThreadLocal<Boolean> REMOVING = ThreadLocal.withInitial(() -> false);
@@ -96,14 +100,14 @@ public final class DestinyWaterHoldingTankBlock extends BaseEntityBlock {
         super.onRemove(state, level, pos, replacement, moving);
     }
 
-    @Override public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    @Override public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide() && state.getValue(PART) != ROOT) {
             BlockPos root = root(pos, state);
             BlockState anchor = level.getBlockState(root);
             if (anchor.is(this) && anchor.getValue(PART) == ROOT)
                 level.destroyBlock(root, !player.isCreative());
         }
-        super.playerWillDestroy(level, pos, state, player);
+        return super.playerWillDestroy(level, pos, state, player);
     }
 
     @Nullable @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
@@ -112,8 +116,9 @@ public final class DestinyWaterHoldingTankBlock extends BaseEntityBlock {
 
     @Override public RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
 
-    @Override public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
-                                           InteractionHand hand, BlockHitResult hit) {
+    @Override protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
+                                                         BlockHitResult hit) {
+        InteractionHand hand = InteractionHand.MAIN_HAND;
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         if (!(level.getBlockEntity(root(pos, state)) instanceof DestinyWaterHoldingTankBlockEntity tank))
             return InteractionResult.FAIL;

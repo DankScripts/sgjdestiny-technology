@@ -47,7 +47,7 @@ public final class SeedShipAddressDatabase {
         // chunks do not make records vanish from the console.
         Universe universe = Universe.get(server);
         ResourceKey<Galaxy> mediora = ResourceKey.create(Galaxy.REGISTRY_KEY,
-                new ResourceLocation("sgjdestiny_dhd", "mediora"));
+                ResourceLocation.fromNamespaceAndPath("sgjdestiny_dhd", "mediora"));
         // Destiny also has an ordinary galactic address. Keep it in the
         // handheld's seeded route table so expedition teams can return to the
         // ship with seven chevrons even while its gate dimension is unloaded.
@@ -86,7 +86,7 @@ public final class SeedShipAddressDatabase {
                                        ResourceKey<Galaxy> galaxy, String name, AddressRegion sourceRegion,
                                        Map<Address.Immutable, Entry> entries) {
         ResourceKey<AddressRegion> key = ResourceKey.create(AddressRegion.REGISTRY_KEY,
-                new ResourceLocation("sgjourney", name));
+                ResourceLocation.fromNamespaceAndPath("sgjourney", name));
         AddressRegion region = universe.getAddressRegionFromKey(key);
         Address.Immutable address = null;
         // Prefer the address SGJourney's live network will actually resolve.

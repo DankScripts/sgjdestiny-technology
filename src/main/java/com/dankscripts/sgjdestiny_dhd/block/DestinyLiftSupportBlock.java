@@ -8,7 +8,7 @@ import net.minecraft.world.level.block.state.BlockState;
 /** Stationary collision/light for boarding; the cab entity owns the visible floor. */
 public final class DestinyLiftSupportBlock extends Block {
     public DestinyLiftSupportBlock() {
-        super(Properties.copy(Blocks.SEA_LANTERN).noOcclusion().noLootTable());
+        super(Properties.ofFullCopy(Blocks.SEA_LANTERN).noOcclusion().noLootTable());
     }
 
     @Override public RenderShape getRenderShape(BlockState state) { return RenderShape.INVISIBLE; }

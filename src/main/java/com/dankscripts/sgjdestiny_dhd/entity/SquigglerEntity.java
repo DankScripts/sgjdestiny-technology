@@ -13,7 +13,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.navigation.WallClimberNavigation;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 
 /** Small pack-hunting predator native to the jungle planet. */
 public final class SquigglerEntity extends Silverfish {
@@ -21,7 +21,7 @@ public final class SquigglerEntity extends Silverfish {
     public SquigglerEntity(EntityType<? extends SquigglerEntity> type, Level level) {
         super(type, level);
         this.xpReward = 4;
-        this.setPathfindingMalus(BlockPathTypes.LEAVES, 0.0F);
+        this.setPathfindingMalus(PathType.LEAVES, 0.0F);
     }
 
     @Override protected PathNavigation createNavigation(Level level) { return new WallClimberNavigation(this, level); }

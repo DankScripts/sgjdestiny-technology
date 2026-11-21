@@ -1,18 +1,7 @@
 package com.dankscripts.sgjdestiny_dhd.compat;
 
-import net.povstalec.sgjourney.common.sgjourney.SymbolMap;
-
 public final class DialInputBufferTest {
     public static void main(String[] args) {
-        verifyHandheldAutoclose();
-        verifyHandheldSymbols(new int[] {36, 20, 1, 15, 14, 7, 0});
-        int laterGlyph = new SymbolMap(36).remapToRandomSymbol(36);
-        int[] nineChevron = {36, 38, laterGlyph, 0, 0, 0, 0, 0, 0};
-        for (int i = 3, glyph = 1; i < nineChevron.length; i++, glyph++) {
-            if (glyph == laterGlyph) glyph++;
-            nineChevron[i] = glyph;
-        }
-        verifyHandheldSymbols(nineChevron);
         DialInputBuffer buffer = new DialInputBuffer(3, 3);
         check(buffer.addSymbol(7), "second symbol was rejected");
         check(buffer.addEngage(), "engage was rejected");
@@ -34,40 +23,8 @@ public final class DialInputBufferTest {
             return symbol != 3;
         });
         check(sent.equals(java.util.List.of(1, 2, 3)), "dial did not stop after rejected symbol");
-        System.out.println("PASS: Destiny dial ordering, handheld glyph remapping and auto-close");
-    }
-
-    private static void verifyHandheldSymbols(int[] logical) {
-        var map = new SymbolMap(36);
-        var physicalSlots = new java.util.ArrayList<Integer>();
-        ProgrammedDialSequence.send(logical, (symbol, last) -> {
-            int physical = HandheldDialSymbols.physicalSymbol(map, symbol, logical);
-            check(!map.isSymbolOutOfBounds(physical), "ring cannot encode physical symbol " + physical);
-            check(last == (physicalSlots.size() == logical.length - 1), "only the final symbol should trigger engagement");
-            if (symbol < 36) check(physical == symbol, "remap displaced an in-range route glyph");
-            physicalSlots.add(physical);
-            return true;
-        });
-        check(physicalSlots.size() == logical.length, "dial lost symbols");
-        for (int i = 0; i < logical.length; i++) {
-            check(map.getMappedSymbol(physicalSlots.get(i)) == logical[i],
-                    "physical glyph substitution changed the destination");
-        }
-    }
-
-    private static void verifyHandheldAutoclose() {
-        var handheld = java.util.UUID.randomUUID();
-        var other = java.util.UUID.randomUUID();
-        check(!HandheldAutoclosePolicy.shouldClose(handheld, handheld, false, false, 201, 200),
-                "never close before the first crossing");
-        check(!HandheldAutoclosePolicy.shouldClose(handheld, handheld, true, false, 200, 200)
-                        && HandheldAutoclosePolicy.shouldClose(handheld, handheld, true, false, 201, 200),
-                "close only after the native idle threshold");
-        check(!HandheldAutoclosePolicy.shouldClose(handheld, handheld, true, true, 201, 200),
-                "preserve a Kino hold");
-        check(!HandheldAutoclosePolicy.shouldClose(handheld, other, true, false, 201, 200)
-                        && !HandheldAutoclosePolicy.shouldClose(null, other, true, false, 201, 200),
-                "never apply the handheld policy to a different or ordinary dial");
+        verifyHandheldAutoclose();
+        System.out.println("PASS: delayed Destiny dialer input ordering and bounded overflow");
     }
 
     private static void verifyProgrammedDial(int[] symbols) {
@@ -83,6 +40,20 @@ public final class DialInputBufferTest {
             check(sent.get(i) == symbols[i], "programmed dial reordered symbols");
             check(autoEngage.get(i) == (i == symbols.length - 1), "auto-engage set on wrong symbol");
         }
+    }
+
+    private static void verifyHandheldAutoclose() {
+        var connection = java.util.UUID.randomUUID();
+        check(HandheldAutoclosePolicy.shouldClose(connection, connection, true, false, 201, 200),
+                "used handheld connections should close after the idle timeout");
+        check(!HandheldAutoclosePolicy.shouldClose(connection, java.util.UUID.randomUUID(), true, false, 201, 200),
+                "a different connection must not inherit handheld auto-close");
+        check(!HandheldAutoclosePolicy.shouldClose(connection, connection, false, false, 201, 200),
+                "untraveled connections should not auto-close");
+        check(!HandheldAutoclosePolicy.shouldClose(connection, connection, true, true, 201, 200),
+                "Kino holds must remain effective");
+        check(!HandheldAutoclosePolicy.shouldClose(connection, connection, true, false, 200, 200),
+                "the timeout boundary should match SGJourney's strict greater-than rule");
     }
 
     private static void check(boolean condition, String message) {

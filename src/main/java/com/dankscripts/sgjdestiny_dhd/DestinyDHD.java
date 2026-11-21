@@ -10,19 +10,19 @@ import com.dankscripts.sgjdestiny_dhd.registry.ModEntities;
 import com.dankscripts.sgjdestiny_dhd.registry.ModFeatures;
 import com.dankscripts.sgjdestiny_dhd.config.DestinyServerConfig;
 import com.dankscripts.sgjdestiny_dhd.network.ShuttleTravelNetwork;
+import com.dankscripts.sgjdestiny_dhd.mixin.BlockEntityTypeAccessor;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.entity.SpawnPlacements;
-import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.povstalec.sgjourney.common.init.BlockEntityInit;
-import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -31,11 +31,10 @@ import java.util.Set;
 public final class DestinyDHD {
     public static final String MOD_ID = "sgjdestiny_dhd";
 
-    public DestinyDHD() {
+    public DestinyDHD(IEventBus modBus, ModContainer modContainer) {
         ShuttleTravelNetwork.register();
         com.dankscripts.sgjdestiny_dhd.network.DestinyLiftNetwork.register();
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, DestinyServerConfig.SPEC);
-        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+        modContainer.registerConfig(ModConfig.Type.SERVER, DestinyServerConfig.SPEC);
         ModBlocks.registerOptionalBlocks();
         ModBlocks.BLOCKS.register(modBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modBus);
@@ -47,26 +46,40 @@ public final class DestinyDHD {
         ModFeatures.register(modBus);
         modBus.addListener(this::commonSetup);
         modBus.addListener(this::addCreativeItems);
+        modBus.addListener(this::registerPayloads);
+        modBus.addListener(this::registerCapabilities);
+    }
+
+    private void registerPayloads(RegisterPayloadHandlersEvent event) {
+        ShuttleTravelNetwork.registerPayloads(event);
+        com.dankscripts.sgjdestiny_dhd.network.DestinyLiftNetwork.registerPayloads(event);
+        com.dankscripts.sgjdestiny_dhd.network.DestinyDialerNetwork.registerPayloads(event);
+    }
+
+    private void registerCapabilities(RegisterCapabilitiesEvent event) {
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK,
+                ModBlockEntities.DESTINY_WATER_HOLDING_TANK.get(),
+                (tank, side) -> tank.fluidHandler());
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             var universeDHDType = BlockEntityInit.UNIVERSE_DHD.get();
-            var validBlocks = new HashSet<Block>(universeDHDType.validBlocks);
+            BlockEntityTypeAccessor blockEntityType =
+                    (BlockEntityTypeAccessor) (Object) universeDHDType;
+            var validBlocks = new HashSet<Block>(blockEntityType.sgjdestiny$getValidBlocks());
             validBlocks.add(ModBlocks.DESTINY_DHD.get());
-            universeDHDType.validBlocks = Set.copyOf(validBlocks);
-            SpawnPlacements.register(ModEntities.SQUIGGLER.get(), SpawnPlacements.Type.ON_GROUND,
-                    Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Monster::checkMonsterSpawnRules);
+            blockEntityType.sgjdestiny$setValidBlocks(Set.copyOf(validBlocks));
         });
     }
 
     private void addCreativeItems(BuildCreativeModeTabContentsEvent event) {
         ResourceLocation tab = event.getTabKey().location();
-        if (tab.equals(new ResourceLocation("minecraft", "building_blocks"))) {
+        if (tab.equals(ResourceLocation.fromNamespaceAndPath("minecraft", "building_blocks"))) {
             event.accept(ModItems.WEATHERED_WALL_FILLER.get());
             event.accept(ModItems.OXIDIZED_WALL_FILLER.get());
         }
-        if (tab.equals(new ResourceLocation("minecraft", "functional_blocks"))) {
+        if (tab.equals(ResourceLocation.fromNamespaceAndPath("minecraft", "functional_blocks"))) {
             event.accept(ModItems.DESTINY_DHD.get());
             event.accept(ModItems.DESTINY_DHD_DECORATIVE.get());
             event.accept(ModItems.DESTINY_CONTROL_HUB.get());
@@ -96,7 +109,7 @@ public final class DestinyDHD {
             event.accept(ModItems.ALWAYS_LIT_CORNER_WEATHERED_NAQUADAH_COPPER_LAMP.get());
             event.accept(ModItems.ALWAYS_LIT_CORNER_OXIDIZED_NAQUADAH_COPPER_LAMP.get());
         }
-        if (tab.equals(new ResourceLocation("minecraft", "redstone_blocks"))) {
+        if (tab.equals(ResourceLocation.fromNamespaceAndPath("minecraft", "redstone_blocks"))) {
             event.accept(ModItems.CEILING_REDSTONE_WIRE.get());
             event.accept(ModItems.CORNER_WEATHERED_NAQUADAH_COPPER_LAMP.get());
             event.accept(ModItems.CORNER_OXIDIZED_NAQUADAH_COPPER_LAMP.get());

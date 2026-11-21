@@ -3,13 +3,14 @@ package com.dankscripts.sgjdestiny_dhd.client;
 import com.dankscripts.sgjdestiny_dhd.DestinyDHD;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderLivingEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.RenderLivingEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 import qouteall.imm_ptl.core.render.context_management.WorldRenderInfo;
 
-@Mod.EventBusSubscriber(modid = DestinyDHD.MOD_ID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = DestinyDHD.MOD_ID, value = Dist.CLIENT)
 public final class KinoVideoRenderEvents {
     private KinoVideoRenderEvents() {}
 

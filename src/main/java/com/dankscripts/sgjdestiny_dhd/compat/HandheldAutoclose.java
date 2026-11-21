@@ -32,8 +32,6 @@ public final class HandheldAutoclose {
     }
 
     public static void onConnect(UniverseStargateEntity gate, UUID id, StargateConnection.State state) {
-        // The last symbol can still be rotating when the handheld request returns.
-        // Bind the policy to the actual outgoing connection once SGJourney creates it.
         if (PENDING.remove(gate) && state == StargateConnection.State.OUTGOING_CONNECTION)
             gate.getPersistentData().putUUID(CONNECTION, id);
     }

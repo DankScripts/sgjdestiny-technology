@@ -68,7 +68,7 @@ public final class DestinyAirScrubberScreen extends AbstractContainerScreen<Dest
     @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         if (powerSwitch != null)
             powerSwitch.setMessage(Component.literal(menu.poweredOn() ? "TURN OFF" : "TURN ON"));
-        renderBackground(graphics);
+        renderBackground(graphics, mouseX, mouseY, partialTick);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
     }

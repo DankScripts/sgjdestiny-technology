@@ -14,6 +14,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.world.InteractionHand;
@@ -29,7 +30,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.network.NetworkHooks;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -65,21 +65,21 @@ public final class DestinyLiftEntity extends Entity {
         setNoGravity(true);
     }
 
-    @Override protected void defineSynchedData() {
-        entityData.define(FROM, 70.0F);
-        entityData.define(TO, 70);
-        entityData.define(START, 0L);
-        entityData.define(DURATION, 0);
-        entityData.define(DOCK, 70);
-        entityData.define(ELAPSED, -10);
-        entityData.define(STOPPED_TICKS, LiftMotion.DOCKING_TICKS);
-        entityData.define(EMERGENCY, false);
-        entityData.define(HELD_FEET, 70.0F);
-        entityData.define(OPEN_TICKS, 0);
-        entityData.define(CLOSE_FROM_OPEN, false);
-        entityData.define(BASE_X, -3);
-        entityData.define(BASE_Z, -386);
-        entityData.define(ROTATION, 0);
+    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        builder.define(FROM, 70.0F);
+        builder.define(TO, 70);
+        builder.define(START, 0L);
+        builder.define(DURATION, 0);
+        builder.define(DOCK, 70);
+        builder.define(ELAPSED, -10);
+        builder.define(STOPPED_TICKS, LiftMotion.DOCKING_TICKS);
+        builder.define(EMERGENCY, false);
+        builder.define(HELD_FEET, 70.0F);
+        builder.define(OPEN_TICKS, 0);
+        builder.define(CLOSE_FROM_OPEN, false);
+        builder.define(BASE_X, -3);
+        builder.define(BASE_Z, -386);
+        builder.define(ROTATION, 0);
     }
 
     public void initialize(int floor) {
@@ -441,7 +441,7 @@ public final class DestinyLiftEntity extends Entity {
         }
         return InteractionResult.sidedSuccess(level().isClientSide);
     }
-    @Override public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps, boolean teleport) {
+    @Override public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps) {
         // Use replicated progress for the entire cab; a second positional lerp would add lag.
     }
     @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
@@ -454,7 +454,9 @@ public final class DestinyLiftEntity extends Entity {
             xo = xOld = getX(); yo = yOld = getY(); zo = zOld = getZ();
         }
     }
-    @Override public Packet<ClientGamePacketListener> getAddEntityPacket() { return NetworkHooks.getEntitySpawningPacket(this); }
+    @Override public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity serverEntity) {
+        return super.getAddEntityPacket(serverEntity);
+    }
 
     @Override protected void addAdditionalSaveData(CompoundTag tag) {
         tag.putInt("Dock", dock()); tag.putFloat("From", entityData.get(FROM)); tag.putInt("To", entityData.get(TO));

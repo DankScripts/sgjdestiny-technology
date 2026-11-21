@@ -3,12 +3,13 @@ package com.dankscripts.sgjdestiny_dhd.client;
 import com.dankscripts.sgjdestiny_dhd.DestinyDHD;
 import com.dankscripts.sgjdestiny_dhd.registry.ModEntities;
 import com.dankscripts.sgjdestiny_dhd.registry.ModBlockEntities;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 
-@Mod.EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD,
-        value = net.minecraftforge.api.distmarker.Dist.CLIENT)
+@EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = EventBusSubscriber.Bus.MOD,
+        value = net.neoforged.api.distmarker.Dist.CLIENT)
 public final class ModEntityRenderers {
     private ModEntityRenderers() {}
 

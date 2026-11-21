@@ -4,14 +4,12 @@ import com.dankscripts.sgjdestiny_dhd.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.server.level.ServerLevel;
 import java.util.ArrayDeque;
@@ -21,8 +19,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /** Persistent water store for the 3x3x3 ship tank. Touching tanks share fluid access. */
 public final class DestinyWaterHoldingTankBlockEntity extends BlockEntity {
@@ -144,8 +140,6 @@ public final class DestinyWaterHoldingTankBlockEntity extends BlockEntity {
             return drained == 0 ? FluidStack.EMPTY : new FluidStack(Fluids.WATER, drained);
         }
     };
-    private LazyOptional<IFluidHandler> fluid = LazyOptional.of(() -> bankWater);
-
     public DestinyWaterHoldingTankBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.DESTINY_WATER_HOLDING_TANK.get(), pos, state);
     }
@@ -168,29 +162,13 @@ public final class DestinyWaterHoldingTankBlockEntity extends BlockEntity {
         super.setRemoved();
     }
 
-    @Override protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
-        tag.put("WaterTank", water.writeToNBT(new CompoundTag()));
+    @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.put("WaterTank", water.writeToNBT(registries, new CompoundTag()));
     }
 
-    @Override public void load(CompoundTag tag) {
-        super.load(tag);
-        water.readFromNBT(tag.getCompound("WaterTank"));
-    }
-
-    @Override public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability,
-                                                                 @Nullable Direction side) {
-        if (capability == ForgeCapabilities.FLUID_HANDLER) return fluid.cast();
-        return super.getCapability(capability, side);
-    }
-
-    @Override public void invalidateCaps() {
-        super.invalidateCaps();
-        fluid.invalidate();
-    }
-
-    @Override public void reviveCaps() {
-        super.reviveCaps();
-        fluid = LazyOptional.of(() -> bankWater);
+    @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        water.readFromNBT(registries, tag.getCompound("WaterTank"));
     }
 }

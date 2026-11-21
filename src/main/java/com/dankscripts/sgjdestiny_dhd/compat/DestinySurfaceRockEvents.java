@@ -3,6 +3,7 @@ package com.dankscripts.sgjdestiny_dhd.compat;
 import com.dankscripts.sgjdestiny_dhd.DestinyDHD;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -13,22 +14,26 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.level.ChunkEvent;
-import net.minecraftforge.event.server.ServerStoppedEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.level.ChunkEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.minecraft.core.registries.Registries;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /** GregTech's ore indicators have no ore to mark on the Destiny's ship deck. */
-@Mod.EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = DestinyDHD.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
 public final class DestinySurfaceRockEvents {
     private static final ResourceKey<Level> DESTINY = ResourceKey.create(Registries.DIMENSION,
-            new ResourceLocation("sgjourney", "destiny"));
+            ResourceLocation.fromNamespaceAndPath("sgjourney", "destiny"));
     // The captured ship's bounds. Never change surface rocks in other dimensions.
     private static final int MIN_X = -165, MAX_X = 149;
     private static final int MIN_Y = 47, MAX_Y = 117;
@@ -49,8 +54,8 @@ public final class DestinySurfaceRockEvents {
         PENDING.computeIfAbsent(level, ignored -> new ConcurrentLinkedQueue<>()).add(pos);
     }
 
-    @SubscribeEvent public static void tick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+    @SubscribeEvent public static void tick(ServerTickEvent.Post event) {
+        
         ServerLevel level = event.getServer().getLevel(DESTINY);
         if (level == null) return;
         Queue<ChunkPos> queue = PENDING.get(level);
@@ -88,7 +93,7 @@ public final class DestinySurfaceRockEvents {
     }
 
     private static boolean isSurfaceRock(BlockState state) {
-        ResourceLocation id = ForgeRegistries.BLOCKS.getKey(state.getBlock());
+        ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
         return id != null && id.getNamespace().equals("gtceu") && id.getPath().endsWith("_indicator")
                 && state.getBlock().getClass().getName()
                         .equals("com.gregtechceu.gtceu.common.block.SurfaceRockBlock");

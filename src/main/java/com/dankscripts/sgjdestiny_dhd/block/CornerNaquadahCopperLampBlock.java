@@ -1,5 +1,7 @@
 package com.dankscripts.sgjdestiny_dhd.block;
 
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -18,6 +20,8 @@ import net.minecraft.world.level.material.MapColor;
 
 /** A rotatable right-angle version of the SGJourney copper floor lamp. */
 public final class CornerNaquadahCopperLampBlock extends HorizontalDirectionalBlock {
+    private static final MapCodec<CornerNaquadahCopperLampBlock> CODEC = simpleCodec(ignored -> new CornerNaquadahCopperLampBlock(false));
+    @Override protected MapCodec<CornerNaquadahCopperLampBlock> codec() { return CODEC; }
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
     private final boolean alwaysLit;
 

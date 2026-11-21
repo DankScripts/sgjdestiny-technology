@@ -1,5 +1,7 @@
 package com.dankscripts.sgjdestiny_dhd.block;
 
+import com.mojang.serialization.MapCodec;
+
 import com.dankscripts.sgjdestiny_dhd.block_entity.KinoDispenserBlockEntity;
 import com.dankscripts.sgjdestiny_dhd.menu.KinoDispenserMenu;
 import com.dankscripts.sgjdestiny_dhd.registry.ModBlocks;
@@ -39,12 +41,14 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.network.NetworkHooks;
+import com.dankscripts.sgjdestiny_dhd.network.MenuNetworkHooks;
 
 import javax.annotation.Nullable;
 
 /** A tall, floor-mounted Ancient Kino storage and loading fixture. */
 public final class KinoDispenserBlock extends BaseEntityBlock {
+    private static final MapCodec<KinoDispenserBlock> CODEC = simpleCodec(ignored -> new KinoDispenserBlock());
+    @Override protected MapCodec<KinoDispenserBlock> codec() { return CODEC; }
     public static final net.minecraft.world.level.block.state.properties.DirectionProperty FACING =
             net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING;
     private static final VoxelShape ROUND_BASE = Shapes.or(
@@ -98,12 +102,13 @@ public final class KinoDispenserBlock extends BaseEntityBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
-                                 InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
+                                               BlockHitResult hit) {
+        InteractionHand hand = InteractionHand.MAIN_HAND;
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         if (player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof KinoDispenserBlockEntity dispenser) {
-            NetworkHooks.openScreen(serverPlayer, menuProvider(pos, dispenser), pos);
+        MenuNetworkHooks.openScreen(serverPlayer, menuProvider(pos, dispenser), pos);
         }
         return InteractionResult.CONSUME;
     }

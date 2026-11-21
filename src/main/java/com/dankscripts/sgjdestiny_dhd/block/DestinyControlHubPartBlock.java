@@ -55,19 +55,20 @@ public final class DestinyControlHubPartBlock extends Block {
     @Override public RenderShape getRenderShape(BlockState state) { return RenderShape.INVISIBLE; }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
-                                 InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
+                                               BlockHitResult hit) {
+        InteractionHand hand = InteractionHand.MAIN_HAND;
         return DestinyControlHubBlock.activate(level, anchor(pos, state), player);
     }
 
     @Override
-    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide()) {
             BlockPos root = anchor(pos, state);
             if (level.getBlockState(root).is(ModBlocks.DESTINY_CONTROL_HUB.get()))
                 level.destroyBlock(root, !player.isCreative());
         }
-        super.playerWillDestroy(level, pos, state, player);
+        return super.playerWillDestroy(level, pos, state, player);
     }
 
     @Override

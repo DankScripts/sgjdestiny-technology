@@ -10,7 +10,7 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 public final class DestinyLiftAnchorBlock extends Block {
     public static final IntegerProperty STOP = IntegerProperty.create("stop", 0, 7);
     public DestinyLiftAnchorBlock() {
-        super(Properties.copy(Blocks.OBSIDIAN));
+        super(Properties.ofFullCopy(Blocks.OBSIDIAN));
         registerDefaultState(stateDefinition.any().setValue(STOP, 0));
     }
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(STOP); }

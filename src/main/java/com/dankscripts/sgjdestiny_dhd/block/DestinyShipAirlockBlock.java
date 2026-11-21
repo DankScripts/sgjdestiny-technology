@@ -1,5 +1,7 @@
 package com.dankscripts.sgjdestiny_dhd.block;
 
+import com.mojang.serialization.MapCodec;
+
 import com.dankscripts.sgjdestiny_dhd.block_entity.DestinyShipAirlockBlockEntity;
 import com.dankscripts.sgjdestiny_dhd.registry.ModBlockEntities;
 import com.dankscripts.sgjdestiny_dhd.registry.ModItems;
@@ -41,6 +43,8 @@ import javax.annotation.Nullable;
 
 /** Three-by-three Destiny door made from the original shuttle hatch geometry. */
 public final class DestinyShipAirlockBlock extends BaseEntityBlock {
+    private static final MapCodec<DestinyShipAirlockBlock> CODEC = simpleCodec(ignored -> new DestinyShipAirlockBlock());
+    @Override protected MapCodec<DestinyShipAirlockBlock> codec() { return CODEC; }
     public static final DirectionProperty FACING = net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING;
     public static final IntegerProperty COLUMN = IntegerProperty.create("column", 0, 2);
     public static final IntegerProperty ROW = IntegerProperty.create("row", 0, 2);
@@ -106,8 +110,9 @@ public final class DestinyShipAirlockBlock extends BaseEntityBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
-                                 InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
+                                               BlockHitResult hit) {
+        InteractionHand hand = InteractionHand.MAIN_HAND;
         // The corridor deliberately has no automatically placed wall control.
         // Its one built-in leaf can be opened directly so the passage is usable.
         if (state.getValue(EMBEDDED) && level instanceof ServerLevel server)
@@ -278,10 +283,10 @@ public final class DestinyShipAirlockBlock extends BaseEntityBlock {
     }
 
     @Override
-    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide() && !player.isCreative())
             popResource(level, pos, new ItemStack(ModItems.DESTINY_SHIP_AIRLOCK.get()));
-        super.playerWillDestroy(level, pos, state, player);
+        return super.playerWillDestroy(level, pos, state, player);
     }
 
     @Override
