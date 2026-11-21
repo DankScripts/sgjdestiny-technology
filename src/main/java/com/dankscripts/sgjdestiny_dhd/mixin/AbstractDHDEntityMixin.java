@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import com.dankscripts.sgjdestiny_dhd.compat.KinoEvents;
 
+/** Hooks the SGJourney entity used when existing Destiny consoles are loaded. */
 @Mixin(value = AbstractDHDEntity.class, remap = false)
 public abstract class AbstractDHDEntityMixin {
     @Inject(method = "encodeSymbol", at = @At("HEAD"), cancellable = true, remap = false)

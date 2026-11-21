@@ -6,6 +6,7 @@ import net.povstalec.sgjourney.common.block_entities.dhd.AbstractDHDEntity;
 import net.povstalec.sgjourney.common.sgjourney.dhd.SGJourneyDHD;
 import org.spongepowered.asm.mixin.Mixin;
 
+/** Forward adapter autoclose decisions to the block entity, including Kino holds. */
 @Mixin(value = SGJourneyDHD.class, remap = false)
 public abstract class SGJourneyDHDMixin implements DHD {
     @Override

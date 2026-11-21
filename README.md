@@ -59,6 +59,14 @@ Destiny's weather is always clear, independent of this setting.
 
 Run `gradlew build` on Windows or `./gradlew build` on Linux.
 
+The Destiny console reuses SGJourney's Universe DHD block-entity type and its
+`DHDControlledStargate` adapter. Saved consoles reload through SGJourney's
+factory, so the dial-delay hooks target the SGJourney DHD entity rather than
+only the subclass used for newly placed consoles. The adapter autoclose hook
+forwards to the entity so a Kino can hold a connection open. Active mixins
+are listed in `src/main/resources/sgjdestiny_dhd.mixins.json`; they target
+SGJourney or Minecraft, not Destiny's own classes.
+
 The accepted model generator is `tools/destiny_console_generator_v4.py`. Run it
 with Blender 5.2, then run `tools/prepare_minecraft_obj.py` with Blender to
 regenerate the scaled, UV-mapped OBJ and Minecraft texture-backed MTL resources.
