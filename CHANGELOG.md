@@ -1,18 +1,83 @@
 # Changelog
 
-## 1.0.0-beta.1 - Forge 1.20.1
+## 0.0.3-alpha-hotfix4-sgj055-fix1
 
-- Migrate the Destiny console and handheld dialing to Stargate Journey
-  0.6.55-alpha. Preserve the order of queued inputs and engage after the final
-  symbol locks.
-- Locate registered Universe gates for handheld dialing and retain Kino
-  connection holds.
-- Anchor Jungle Planet gate pedestals to solid terrain. Keep the existing
-  Water Planet landing circle.
+- Fix the DHD dial-delay mixin callbacks for SGJourney 0.6.55's
+  return-valued dialing methods.
+
+## 0.0.3-alpha-hotfix4-sgj055
+
+- Consume the 0.6.55 `DHDControlledStargate` connection through SGJourney's
+  native Universe DHD adapter for the dialer, seed routes, bearing effects,
+  and Kino connection handling.
+- Keep the existing Universe DHD block-type registration required by the
+  custom Destiny console.
+
+## 0.0.3-alpha-hotfix1
+
+- Locate SGJourney's existing Destiny Stargate before installing or resetting the bundled ship. Align the ship to that gate's position and rotation, preserving its blocks and address. This supports both the original ATM9 Stargates layout and the 90-degree-rotated ATM9 No Frills layout.
+- Apply the same alignment to the ship reset volume, protected blocks, elevator, landing doors, curved stairs, airlocks, and ship-bound environmental effects.
+- Keep the hotfix1 dependency corrections, handheld layout adjustment, and Destiny snow protection.
+- Rotate the invisible corridor collision pieces with the ship and repair their facing in already-installed corridors, clearing the stray side collisions in ATM9 No Frills.
+
+## Unreleased
+
+- Restore SGJourney's Destiny structure preload and retry its native discovery
+  when an existing world's Destiny dimension has no registered gate.
+- Survey Jungle gate sites below vegetation and clear only leaves, logs and
+  other vegetation inside the pedestal footprint. Reject other obstructions
+  and preserve existing gate identities and duplicate-record safeguards.
+
+- Anchor newly generated Jungle Planet gate pedestals to solid terrain instead
+  of the world surface. Water Planet's landing-circle placement is unchanged.
+
+- Survey a wider landing area for Jungle Planet gates. At startup, relocate
+  an unambiguously identified gate if it is buried or its surroundings fail
+  the clearing check. Keep its saved addresses and leave the original in place
+  if a suitable replacement cannot be found. Other planets are unchanged.
+
+- Dial immediately on handheld destination selection. Add the point of origin
+  when needed and use SGJourney's symbol map for addresses containing glyphs
+  outside the ring's physical range, without changing saved addresses.
+
+- Load the handheld's gate destinations even when opening on the Kino tab.
+  Find the nearest registered Universe gate anywhere in the current dimension,
+  even outside loaded chunks. Keep a remote direct dial ticking with a temporary
+  chunk ticket and report when there is no usable gate link.
+
+- Give connections opened by the handheld dialer the Large Control Crystal's
+  post-travel idle timeout, even when dialing a bare Universe gate. Preserve
+  ordinary DHD behavior and Kino scouting holds.
+
+- Audit expedition gate records at their exact saved controller positions. Remove confirmed stale records without deleting another gate's address, and report conflicting live records instead of selecting the highest gate as primary.
+
+- Place Destiny planet pedestals on completed terrain. At startup, relocate
+  unambiguous deeply buried gates to the surface, retaining their nine-chevron
+  identities and their saved seven-chevron region mappings.
+- Grade only around a primary Water Planet gate inside the landing clearing,
+  at most one chunk per tick. Avoid loading neighboring chunks for frozen waterfalls.
+- Survey fully generated chunk surfaces when placing a missing planet gate;
+  reject void-height sites and use the highest sampled terrain for support.
+- Place new Water Planet gates at the center of the original landing circle
+  after loading the completed terrain. Keep the existing clearing, mountain
+  transition, and mountain terrain generation unchanged.
+- Let SGJourney engage a programmed Destiny dial after the final buffered
+  symbol locks, rather than requesting engagement while the gate is rotating.
+- Preserve rapid symbol and engage inputs during the Destiny console's
+  pre-dial delay, in the order received.
+- Forward SGJourney DHD auto-close queries to the block entity so Kino
+  connections can retain their hold-open behavior.
+- Stop a programmed DHD dial when SGJourney rejects a symbol.
+- Keep the Kino handheld's movement controls and video view inside the visible screen at smaller GUI sizes. Button hit areas now follow the displayed layout.
+- Keep Destiny's ship free of snowfall even when another mod overrides snow-placement checks. Clear exposed snow layers already accumulated on the ship as its chunks load.
 
 ## 0.0.3-alpha
 
 Changes since 0.0.2-alpha-hotfix2:
+
+### Original Destiny build credit
+
+- The bundled Destiny ship is based on the original **Stargate Universe - The Destiny MC 1.12.2** map created by **Rchanroux**. The ship has since been ported, expanded, rebuilt, and integrated with this mod, but the original structure and creative foundation belong to Rchanroux. Please visit and support the original project: https://www.planetminecraft.com/project/stargate-universe-the-destiny-mc-1-12-2/
 
 ### Destiny ship and construction
 

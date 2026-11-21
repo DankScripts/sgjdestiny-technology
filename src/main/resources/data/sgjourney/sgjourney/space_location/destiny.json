@@ -2,5 +2,5 @@
   "point_of_origin": "sgjourney:universal",
   "symbols": "sgjourney:universal",
   "address_region": "sgjourney:destiny_route",
-  "preload_stargate": true
+  "preload_stargate_structures": ["sgjourney:has_stargate"]
 }

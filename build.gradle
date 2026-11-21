@@ -123,6 +123,7 @@ tasks.register('sourceArchive', Zip) {
         include 'gradle.properties'
         include 'README.md'
         include 'CHANGELOG.md'
+        include 'BASELINE.md'
         include 'LICENSE.txt'
         include '.gitignore'
         include '.gitattributes'

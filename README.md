@@ -1,5 +1,12 @@
 # Stargate Journey: Destiny Technology
 
+## Gate recovery
+
+On startup, missing Jungle gates use surveyed ground and missing Destiny gates
+use SGJourney's native structure discovery. Existing gate identities are preserved.
+Jungle placement can remove vegetation within its pedestal footprint; other
+obstructions prevent placement.
+
 A standalone Forge 1.20.1 addon for Stargate Journey that recreates Destiny's
 shipboard dialing console from *Stargate Universe*.
 

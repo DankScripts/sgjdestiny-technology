@@ -30,6 +30,12 @@ public final class GateTerrainSurveyTest {
                 "a broad but isolated mountaintop is not a landing site");
         check(GateTerrainSurvey.jungleClearing(0, 0, 0, 320, 9, (x, z) -> 1) == null,
                 "a water-level shelf is not a dry clearing");
+        check(GateTerrainSurvey.surfaceBelowVegetation(90, 0, y -> y > 40) == 41,
+                "foliage and trunks above the ground must not raise the jungle pedestal");
+        check(GateTerrainSurvey.surfaceBelowVegetation(90, 0, y -> y != 60 && y > 40) == 61,
+                "a non-vegetation obstruction must stop the ground scan");
+        check(GateTerrainSurvey.surfaceBelowVegetation(90, 0, y -> true) == 0,
+                "a column without support must not become a placement site");
         verifyGateRecordAudit();
         System.out.println("PASS: terrain survey and stale gate record audit");
     }
