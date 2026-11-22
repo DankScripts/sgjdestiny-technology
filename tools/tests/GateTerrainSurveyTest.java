@@ -36,8 +36,28 @@ public final class GateTerrainSurveyTest {
                 "a non-vegetation obstruction must stop the ground scan");
         check(GateTerrainSurvey.surfaceBelowVegetation(90, 0, y -> true) == 0,
                 "a column without support must not become a placement site");
+        verifyWaterLanding();
         verifyGateRecordAudit();
         System.out.println("PASS: terrain survey and stale gate record audit");
+    }
+
+    private static void verifyWaterLanding() {
+        var steep = GateTerrainSurvey.waterLanding(0, 2, 0, 0, 0, 256, 9,
+                (x, z) -> new int[] {60, 100, 140}[x]);
+        check(steep != null && steep.baseY() == 140 && steep.variation() == 80,
+                "the graded Water landing must accept steep supported terrain");
+        var ceiling = GateTerrainSurvey.waterLanding(0, 2, 0, 0, 0, 256, 9,
+                (x, z) -> new int[] {70, 160, 256}[x]);
+        check(ceiling != null && ceiling.baseY() == 247 && ceiling.baseY() + 9 <= 256,
+                "Water terrain reaching the world ceiling must leave room for the whole pedestal");
+        check(GateTerrainSurvey.measure(0, 2, 0, 0, 0, 256, 9,
+                (x, z) -> new int[] {70, 160, 256}[x]) == null,
+                "ordinary planet surveys must still reject insufficient headroom");
+        check(GateTerrainSurvey.waterLanding(0, 1, 0, 0, 0, 256, 9,
+                (x, z) -> x == 0 ? 70 : 0) == null,
+                "Water grading must not accept a void column");
+        check(GateTerrainSurvey.waterLanding(0, 0, 0, 0, 0, 256, 256, (x, z) -> 70) == null,
+                "Water grading must leave room for supporting ground");
     }
 
     private static void verifyGateRecordAudit() {

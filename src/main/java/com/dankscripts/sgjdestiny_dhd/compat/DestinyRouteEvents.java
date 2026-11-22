@@ -315,11 +315,13 @@ public final class DestinyRouteEvents {
             return false;
         }
         boolean jungle = destination.name().equals("jungle_planet");
+        boolean water = destination.name().equals("water_planet");
         PlacementSite site = jungle ? junglePlacement(level, destination, template, previous, buried)
-                : destination.name().equals("water_planet") ? waterPlanetPlacement(level, destination, template, previous)
+                : water ? waterPlanetPlacement(level, destination, template, previous)
                 : findFlattestPlacement(level, destination, template);
         if (site == null && jungle) return false; // The Jungle survey logs why it did not place a gate.
-        if (site == null || site.variation() > 16) {
+        // Water's fixed landing circle is graded after registration, rather than selected for flat terrain.
+        if (site == null || (!water && site.variation() > 16)) {
             LOGGER.error("Could not find a supported surface for the {} gate", destination.name());
             return false;
         }
@@ -337,7 +339,7 @@ public final class DestinyRouteEvents {
             return false;
         }
         BlockPos controllerPos = controllers.get(0).pos();
-        BlockPos obstruction = findFootprintObstruction(level, template, origin, jungle);
+        BlockPos obstruction = findFootprintObstruction(level, template, origin, jungle, water);
         if (obstruction != null) {
             LOGGER.warn("Skipping {} gate placement: the surface footprint is occupied at {}", destination.name(), obstruction);
             return false;
@@ -353,8 +355,8 @@ public final class DestinyRouteEvents {
                     destination.name());
             return false;
         }
+        if (jungle || water) clearLandingFootprint(level, template, origin, water);
         if (jungle) {
-            clearJungleFootprint(level, template, origin);
             buildJungleFoundation(level, origin, template);
         } else {
             buildFoundation(level, origin, template);
@@ -451,7 +453,7 @@ public final class DestinyRouteEvents {
             PlacementSite site = scoreJunglePlacement(level, template, centerX, centerZ);
             if (site == null || site.variation() > 8 || site.baseY() > candidate.clearing().baseY() + 3) continue;
             var origin = new BlockPos(candidate.x() - offset.getX(), site.baseY(), candidate.z() - offset.getZ());
-            if (findFootprintObstruction(level, template, origin, true) == null) return site;
+            if (findFootprintObstruction(level, template, origin, true, false) == null) return site;
         }
         LOGGER.warn("No suitable Jungle gate clearing near {},{} ({} terrain candidates); {}",
                 anchorX, anchorZ, candidates.size(), previous == null ? "placement skipped" : "original gate retained");
@@ -459,12 +461,13 @@ public final class DestinyRouteEvents {
     }
 
     private static BlockPos findFootprintObstruction(ServerLevel level, StructureTemplate template, BlockPos origin,
-                                                     boolean jungle) {
+                                                     boolean jungle, boolean water) {
         var size = template.getSize();
         for (BlockPos pos : BlockPos.betweenClosed(origin, origin.offset(size.getX() - 1,
                 size.getY() - 1, size.getZ() - 1))) {
             BlockState state = level.getBlockState(pos);
-            if (!state.isAir() && !(jungle && isJungleVegetation(state))) return pos.immutable();
+            if (!state.isAir() && !(jungle && isJungleVegetation(state))
+                    && !(water && isWaterLandingTerrain(state))) return pos.immutable();
         }
         return null;
     }
@@ -477,6 +480,10 @@ public final class DestinyRouteEvents {
                 || state.is(Blocks.TALL_GRASS) || state.is(Blocks.FERN) || state.is(Blocks.LARGE_FERN)
                 || state.is(Blocks.BROWN_MUSHROOM) || state.is(Blocks.RED_MUSHROOM)
                 || state.is(Blocks.SUGAR_CANE) || state.is(Blocks.GLOW_LICHEN));
+    }
+
+    private static boolean isWaterLandingTerrain(BlockState state) {
+        return !state.hasBlockEntity() && WaterPlanetClimateEvents.isNaturalTerrain(state);
     }
 
     private static int jungleGroundHeight(ServerLevel level, int x, int z) {
@@ -503,13 +510,15 @@ public final class DestinyRouteEvents {
                 : new PlacementSite(centerX, centerZ, result.baseY(), result.variation(), result.score());
     }
 
-    private static void clearJungleFootprint(ServerLevel level, StructureTemplate template, BlockPos origin) {
+    private static void clearLandingFootprint(ServerLevel level, StructureTemplate template, BlockPos origin,
+                                             boolean water) {
         var size = template.getSize();
         for (BlockPos pos : BlockPos.betweenClosed(origin, origin.offset(size.getX() - 1,
                 size.getY() - 1, size.getZ() - 1))) {
             BlockState state = level.getBlockState(pos);
-            if (!state.isAir() && (!isJungleVegetation(state) || !level.setBlock(pos, Blocks.AIR.defaultBlockState(), 18)))
-                throw new IllegalStateException("Could not clear Jungle gate vegetation at " + pos);
+            if (!state.isAir() && (!(water ? isWaterLandingTerrain(state) : isJungleVegetation(state))
+                    || !level.setBlock(pos, Blocks.AIR.defaultBlockState(), 18)))
+                throw new IllegalStateException("Could not clear gate landing footprint at " + pos);
         }
     }
 
@@ -544,7 +553,15 @@ public final class DestinyRouteEvents {
             LOGGER.warn("Not placing a new Water Planet gate: an existing controller was found near a landing site");
             return null;
         }
-        return scorePlacement(level, template, centerX, centerZ);
+        int halfX = template.getSize().getX() / 2 + 1;
+        int halfZ = template.getSize().getZ() / 2 + 1;
+        GateTerrainSurvey.Result result = GateTerrainSurvey.waterLanding(
+                centerX - halfX, centerX + halfX, centerZ - halfZ, centerZ + halfZ,
+                level.getMinBuildHeight(), level.getMaxBuildHeight(), template.getSize().getY(),
+                (x, z) -> level.getChunk(x >> 4, z >> 4)
+                        .getHeight(Heightmap.Types.WORLD_SURFACE, x & 15, z & 15) + 1);
+        return result == null ? null
+                : new PlacementSite(centerX, centerZ, result.baseY(), result.variation(), result.score());
     }
 
     private static boolean hasWaterGateNear(ServerLevel level, int chunkX, int chunkZ, UniverseStargateEntity buried) {

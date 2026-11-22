@@ -38,6 +38,14 @@ final class GateTerrainSurvey {
         return clearing;
     }
 
+    static Result waterLanding(int minX, int maxX, int minZ, int maxZ, int minY, int maxY,
+                               int structureHeight, IntBinaryOperator surfaceHeight) {
+        Result terrain = measure(minX, maxX, minZ, maxZ, minY, maxY, 0, surfaceHeight);
+        int highestBase = maxY - structureHeight;
+        if (terrain == null || highestBase <= minY) return null;
+        return new Result(Math.min(terrain.baseY(), highestBase), terrain.variation(), terrain.score());
+    }
+
     static Result measure(int minX, int maxX, int minZ, int maxZ, int minY, int maxY,
                           int structureHeight, IntBinaryOperator surfaceHeight) {
         int lowest = Integer.MAX_VALUE;

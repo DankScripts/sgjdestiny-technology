@@ -183,3 +183,24 @@ tasks.register('verifyGateTerrainSurvey', JavaExec) {
     mainClass = 'com.dankscripts.sgjdestiny_dhd.compat.GateTerrainSurveyTest'
 }
 tasks.named('check').configure { dependsOn 'verifyGateTerrainSurvey' }
+
+tasks.register('compileReportedRegressionTests', JavaCompile) {
+    dependsOn 'classes'
+    source = files('tools/tests/KinoBiomeScanTest.java', 'tools/tests/DestinyStairPlacementTest.java')
+    classpath = sourceSets.main.output + sourceSets.main.compileClasspath
+    destinationDirectory = layout.buildDirectory.dir('reported-regression-tests')
+}
+
+tasks.register('verifyKinoBiomeScan', JavaExec) {
+    dependsOn 'compileReportedRegressionTests'
+    classpath = files(layout.buildDirectory.dir('reported-regression-tests')) + sourceSets.main.runtimeClasspath
+    mainClass = 'com.dankscripts.sgjdestiny_dhd.item.KinoBiomeScanTest'
+}
+
+tasks.register('verifyStairPlacement', JavaExec) {
+    dependsOn 'compileReportedRegressionTests'
+    classpath = files(layout.buildDirectory.dir('reported-regression-tests')) + sourceSets.main.runtimeClasspath
+    mainClass = 'com.dankscripts.sgjdestiny_dhd.block.DestinyStairPlacementTest'
+}
+
+tasks.named('check').configure { dependsOn 'verifyKinoBiomeScan', 'verifyStairPlacement' }

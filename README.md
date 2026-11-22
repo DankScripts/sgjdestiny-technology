@@ -1,11 +1,24 @@
 # Stargate Journey: Destiny Technology
 
+Release: **1.0.0-beta.2** for Forge 1.20.1.
+
+Kino scans display the biome's language-file name in each player's selected
+language. Destiny items also have their own creative tab, while their existing
+vanilla-tab entries remain available. Both curved stair items start in the
+placement direction and extend an existing flight without losing its rotation.
+
 ## Gate recovery
 
 On startup, missing Jungle gates use surveyed ground and missing Destiny gates
 use SGJourney's native structure discovery. Existing gate identities are preserved.
 Jungle placement can remove vegetation within its pedestal footprint; other
 obstructions prevent placement.
+
+Missing Water Planet gates use the original landing-circle center. Its graded
+pedestal can accommodate steep terrain and leave headroom below the dimension
+ceiling. Only recognized natural terrain inside the pedestal footprint is cleared;
+block entities, other obstructions, conflicting gates and saved identities remain
+protected by the existing placement checks.
 
 A standalone Forge 1.20.1 addon for Stargate Journey that recreates Destiny's
 shipboard dialing console from *Stargate Universe*.

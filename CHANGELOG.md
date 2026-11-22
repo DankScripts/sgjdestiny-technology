@@ -20,7 +20,16 @@
 - Keep the hotfix1 dependency corrections, handheld layout adjustment, and Destiny snow protection.
 - Rotate the invisible corridor collision pieces with the ship and repair their facing in already-installed corridors, clearing the stray side collisions in ATM9 No Frills.
 
-## Unreleased
+## 1.0.0-beta.2
+
+- Allow the fixed Water Planet landing site to grade steep terrain and leave
+  pedestal headroom below the dimension ceiling. Clear only recognized natural
+  terrain inside the pedestal footprint, retaining block-entity, obstruction,
+  duplicate-gate and saved-address safeguards.
+- Display translated Kino biome names, including namespaced biome language
+  entries, rather than technical registry IDs.
+- Register the Destiny Technology creative tab without removing vanilla entries.
+- Allow both curved stair flights to be placed and extended in all four directions.
 
 - Restore SGJourney's Destiny structure preload and retry its native discovery
   when an existing world's Destiny dimension has no registered gate.

@@ -141,7 +141,7 @@ public final class WaterPlanetClimateEvents {
         if (isNaturalTerrain(level.getBlockState(cap))) level.setBlock(cap, Blocks.SNOW_BLOCK.defaultBlockState(), 2);
     }
 
-    private static boolean isNaturalTerrain(BlockState state) {
+    static boolean isNaturalTerrain(BlockState state) {
         return state.is(BlockTags.BASE_STONE_OVERWORLD) || state.is(BlockTags.DIRT)
                 || state.is(Tags.Blocks.ORES)
                 || state.is(Blocks.STONE) || state.is(Blocks.DEEPSLATE) || state.is(Blocks.DIRT)
