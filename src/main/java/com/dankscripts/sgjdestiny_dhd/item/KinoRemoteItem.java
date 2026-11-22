@@ -485,8 +485,7 @@ public final class KinoRemoteItem extends Item {
         player.displayClientMessage(Component.literal(String.format(java.util.Locale.ROOT,
                 "ATMOSPHERE: %s  TEMP INDEX: %.2f  ALTITUDE: %d", atmosphere, temperature, kino.getBlockY()))
                 .withStyle(breathable ? ChatFormatting.GREEN : ChatFormatting.GOLD), false);
-        player.displayClientMessage(Component.literal("BIOME: " + biome.unwrapKey()
-                .map(key -> key.location().toString()).orElse("unknown")), false);
+        player.displayClientMessage(KinoBiomeScan.message(biome.unwrapKey().map(ResourceKey::location)), false);
     }
 
     @Override

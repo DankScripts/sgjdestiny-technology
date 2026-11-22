@@ -22,7 +22,6 @@ public final class DestinyCurvedStairBlock extends Block {
     public static final BooleanProperty RIGHT = BooleanProperty.create("right");
     public static final IntegerProperty STEP = IntegerProperty.create("step", 0, 4);
     public static final IntegerProperty TURN = IntegerProperty.create("turn", 0, 3);
-    private static final int[][] ANCHOR_X = {{-13, -13, -13, -12, -11}, {-3, -3, -3, -4, -5}};
     private static final VoxelShape[][][] SHAPES = new VoxelShape[2][5][4];
 
     static {
@@ -32,8 +31,8 @@ public final class DestinyCurvedStairBlock extends Block {
                 for (int tread = 0; tread < 3; tread++) {
                     double start = step + tread / 3.0;
                     double end = step + (tread + 1) / 3.0;
-                    double x0 = pathX(side, start) - ANCHOR_X[side][step];
-                    double x1 = pathX(side, end) - ANCHOR_X[side][step];
+                    double x0 = pathX(side, start) - DestinyStairLayout.anchorX(side == 1, step);
+                    double x1 = pathX(side, end) - DestinyStairLayout.anchorX(side == 1, step);
                     double z0 = pathZ(start) - (-313 - step);
                     double z1 = pathZ(end) - (-313 - step);
                     shape = Shapes.or(shape, Block.box(
@@ -78,19 +77,13 @@ public final class DestinyCurvedStairBlock extends Block {
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        BlockPos pos = context.getClickedPos();
         boolean right = context.getItemInHand().is(ModItems.DESTINY_CURVED_STAIR_COUNTERCLOCKWISE.get());
-        // Advance only the flight selected by the item in hand.
-        for (int previousStep = 3; previousStep >= 0; previousStep--) {
-            int side = right ? 1 : 0;
-            int dx = ANCHOR_X[side][previousStep + 1] - ANCHOR_X[side][previousStep];
-            BlockState previous = context.getLevel().getBlockState(pos.offset(-dx, -1, 1));
-            if (previous.is(this) && previous.getValue(STEP) == previousStep
-                    && previous.getValue(RIGHT) == right) {
-                return defaultBlockState().setValue(STEP, previousStep + 1).setValue(RIGHT, right);
-            }
-        }
-        return defaultBlockState().setValue(RIGHT, right);
+        var step = DestinyStairLayout.placement(context.getClickedPos(), right, context.getHorizontalDirection(), pos -> {
+            BlockState previous = context.getLevel().getBlockState(pos);
+            return previous.is(this) ? new DestinyStairLayout.Step(previous.getValue(RIGHT),
+                    previous.getValue(STEP), previous.getValue(TURN)) : null;
+        });
+        return defaultBlockState().setValue(RIGHT, step.right()).setValue(STEP, step.index()).setValue(TURN, step.turn());
     }
 
     @Override

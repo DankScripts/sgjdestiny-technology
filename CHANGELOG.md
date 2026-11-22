@@ -1,6 +1,13 @@
 # Changelog
 
-## Unreleased
+## 1.0.0-beta.2
+
+- Skip GPU uploads for empty filtered shuttle mesh layers instead of throwing
+  while placing or loading the shuttle.
+- Display translated Kino biome names, including namespaced biome language
+  entries, rather than technical registry IDs.
+- Register the Destiny Technology creative tab without removing vanilla entries.
+- Allow both curved stair flights to be placed and extended in all four directions.
 
 - Give Destiny consoles hardwired SGJourney control, communication and power
   settings without generating or replacing crystal inventory. Existing consoles

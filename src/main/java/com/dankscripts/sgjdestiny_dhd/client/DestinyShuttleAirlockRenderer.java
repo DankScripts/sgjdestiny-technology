@@ -168,11 +168,14 @@ public final class DestinyShuttleAirlockRenderer implements BlockEntityRenderer<
                 renderQuads(identity, builder, state, model, random, side, layer, light, overlay, part);
             }
             renderQuads(identity, builder, state, model, random, null, layer, light, overlay, part);
-            VertexBuffer vertexBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
-            vertexBuffer.bind();
-            vertexBuffer.upload(builder.buildOrThrow());
-            VertexBuffer.unbind();
-            layers.add(new CachedLayer(outputLayer, vertexBuffer, twoSided));
+            // Glass layers have no door or gear quads after filtering.
+            DestinyMeshBuffers.uploadIfPresent(builder, meshData -> {
+                VertexBuffer vertexBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+                vertexBuffer.bind();
+                vertexBuffer.upload(meshData);
+                VertexBuffer.unbind();
+                layers.add(new CachedLayer(outputLayer, vertexBuffer, twoSided));
+            });
         }
         return new CachedMesh(layers);
     }

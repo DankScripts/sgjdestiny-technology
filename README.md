@@ -1,6 +1,17 @@
 # Stargate Journey: Destiny Technology
 
+Release: **1.0.0-beta.2** for NeoForge 1.21.1.
+
 ## Current NeoForge fixes
+
+Kino scans display the biome's language-file name in each player's selected
+language. Destiny items also have their own creative tab, while their existing
+vanilla-tab entries remain available. Both curved stair items start in the
+placement direction and extend an existing flight without losing its rotation.
+
+The shuttle renderer skips empty material layers for its separated hull,
+hatch and gear meshes. This avoids the empty-buffer crash when placing or
+loading a shuttle; the fix does not require deleting the placed shuttle.
 
 Destiny consoles use hardwired control, 32-block communication and gate-power
 settings without replacing crystal inventories. Native power and ownership checks

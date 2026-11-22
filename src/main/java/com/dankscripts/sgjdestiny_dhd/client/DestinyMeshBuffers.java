@@ -4,6 +4,7 @@ import com.dankscripts.sgjdestiny_dhd.DestinyDHD;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
@@ -15,6 +16,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.common.EventBusSubscriber;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 
@@ -38,6 +40,11 @@ public final class DestinyMeshBuffers {
         if (staging == null) staging = new ByteBufferBuilder(256 * 1024);
         staging.clear();
         return new BufferBuilder(staging, output.mode(), output.format());
+    }
+
+    static void uploadIfPresent(BufferBuilder builder, Consumer<MeshData> upload) {
+        MeshData mesh = builder.build();
+        if (mesh != null) upload.accept(mesh);
     }
 
     public static void register(Class<?> type, Runnable cleanup) {

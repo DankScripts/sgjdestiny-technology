@@ -231,3 +231,32 @@ tasks.register('verifyHandheldDialSymbols', JavaExec) {
     mainClass = 'com.dankscripts.sgjdestiny_dhd.compat.HandheldDialSymbolsTest'
 }
 tasks.named('check').configure { dependsOn 'verifyHandheldDialSymbols' }
+
+tasks.register('compileReportedRegressionTests', JavaCompile) {
+    dependsOn 'classes'
+    source = files('tools/tests/KinoBiomeScanTest.java', 'tools/tests/DestinyStairPlacementTest.java',
+            'tools/tests/DestinyShuttleEmptyMeshTest.java')
+    classpath = sourceSets.main.output + sourceSets.main.compileClasspath
+    destinationDirectory = layout.buildDirectory.dir('reported-regression-tests')
+}
+
+tasks.register('verifyKinoBiomeScan', JavaExec) {
+    dependsOn 'compileReportedRegressionTests'
+    classpath = files(layout.buildDirectory.dir('reported-regression-tests')) + sourceSets.main.runtimeClasspath
+    mainClass = 'com.dankscripts.sgjdestiny_dhd.item.KinoBiomeScanTest'
+}
+
+tasks.register('verifyStairPlacement', JavaExec) {
+    dependsOn 'compileReportedRegressionTests'
+    classpath = files(layout.buildDirectory.dir('reported-regression-tests')) + sourceSets.main.runtimeClasspath
+    mainClass = 'com.dankscripts.sgjdestiny_dhd.block.DestinyStairPlacementTest'
+}
+
+tasks.named('check').configure { dependsOn 'verifyKinoBiomeScan', 'verifyStairPlacement' }
+
+tasks.register('verifyShuttleEmptyMesh', JavaExec) {
+    dependsOn 'compileReportedRegressionTests'
+    classpath = files(layout.buildDirectory.dir('reported-regression-tests')) + sourceSets.main.runtimeClasspath
+    mainClass = 'com.dankscripts.sgjdestiny_dhd.client.DestinyShuttleEmptyMeshTest'
+}
+tasks.named('check').configure { dependsOn 'verifyShuttleEmptyMesh' }
