@@ -30,7 +30,7 @@ Use Stargate Journey's **Universe Stargate Chevron**, place it horizontally in t
 
 ## The handheld cannot dial
 
-The remote needs a usable registered Universe gate in the **current dimension**, but it does not require a nearby console or have a fixed distance limit. Check the message in game and confirm that the gate is registered and available. The remote cannot select a gate in another dimension.
+The remote needs a usable registered Universe gate in the **current dimension**, but it does not require a nearby console or have a fixed distance limit. Check the message in game and confirm that the gate is registered and available. The remote cannot select a non Universe gate.
 
 ## The packaged Destiny console cannot find its gate
 
