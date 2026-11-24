@@ -31,7 +31,11 @@ remote, deployable Kinos, telemetry, cross-dimensional flight, and live video.
 
 The [searchable documentation site](https://dankscripts.github.io/sgjdestiny-technology/)
 contains installation, setup, controls, recipes, configuration, and
-troubleshooting instructions. Its source is in [`docs`](docs/index.md).
+troubleshooting instructions. The editable source for the original and updated
+pages is in [`docs`](docs/); edit the Markdown there for future changes.
+The `Publish documentation` workflow builds and deploys the site when changes
+under `docs` are pushed to `main`. To preview locally, run `bundle install`
+and then `bundle exec jekyll serve` from `docs` with Ruby and Bundler installed.
 
 Previous Forge source versions are available under the
 [`forge-1.20.1-v*` tags](https://github.com/DankScripts/sgjdestiny-technology/tags).

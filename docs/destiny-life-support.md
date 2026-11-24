@@ -1,8 +1,20 @@
+---
+layout: default
+title: Life Support
+nav_order: 7
+---
+
 # Destiny life support
 
 Destiny's exterior has no breathable ambient air. Players outside need a complete Destiny environmental suit with a charged oxygen tank or a working Ad Astra suit. Enclosed ship rooms supply oxygen automatically. Survival players aboard raise the ship's shared CO2 level; Creative and Spectator players do not. At 60% CO2 players become nauseated, at 80% they slow and weaken, and at 95% they take damage.
 
 The environmental chestplate includes sealed gloves. If any piece of the suit is missing in an unbreathable area, the HUD shows **SUIT UNSEALED**, a carried oxygen tank leaks five times faster, and the incomplete suit does not prevent exposure damage. Oxygen does not leak inside breathable ship rooms.
+
+## Water Planet
+
+The Water Planet is hazardous without protection: exposure causes poison and drains air. Bring a complete Destiny environmental suit and a charged Destiny Oxygen Tank, or a working oxygen-supplied Ad Astra suit. Arrival protection is temporary, so prepare before dialing.
+
+## Scrubbers and storage
 
 An Air Scrubber is a single-tank, one-block-wide, two-block-high wall compartment. Clear a 1×2 space in a wall and place it facing the room. Previously placed taller or two-tank scrubbers shed their extra blocks automatically while keeping their stored resources. Right-click either part with any item in hand to open its service inventory: insert water buckets and calcite, then take the empty buckets from its output slot. The screen shows stored water, calcite, prepared mix, live ship CO2, and that unit's on/off button. A water bucket and one calcite prepare a 24,000-unit CO2-scrubbing batch. Water and calcite can be stocked in advance, and the bay prepares another batch when there is room.
 
@@ -10,7 +22,7 @@ Each survival player inside produces three CO2 units per second. An active scrub
 
 Destiny Oxygen Storage Tanks are craftable suit-room blocks that always contain oxygen. Hold a Destiny Oxygen Tank and right-click the storage block to refill the wearable tank immediately. The storage block never needs filling.
 
-The craftable Destiny Water Holding Tank occupies a clear 3×3×3 space, with the placement point at the center of its bottom layer. It stores 108 buckets of water. Right-click any face with a water bucket to add one bucket, with an empty bucket to withdraw one, or with an empty hand to read its level. Its water persists in the world and can also be read through a Forge fluid handler at the center base block. For now it is storage only: it does not refill Air Scrubbers automatically.
+The craftable Destiny Water Holding Tank occupies a clear 3×3×3 space, with the placement point at the center of its bottom layer. It stores 108 buckets of water. Touching tanks can form a shared bank. Right-click any face with a water bucket to add one bucket, with an empty bucket to withdraw one, or with an empty hand to read its level. Its water persists in the world and can be accessed by compatible fluid handlers at the center base block. For now it is storage only: it does not refill Air Scrubbers automatically.
 
 The control interface hub shows live CO2 buildup in the Destiny dimension, the number of loaded Air Scrubbers, and the combined water level of loaded Destiny Water Holding Tanks within 256 blocks. The water display reports its exact bucket count and capacity, and shows no tank when none is loaded nearby. Power Reserves remain fixed at 27% until a power source is implemented. Each scrubber is normally on and can be switched off individually for servicing from its own inventory screen. A scrubber that runs dry latches off; after refilling its water and calcite, use RESET on the control interface to re-arm the loaded dry units. The room detector requires a position within the captured ship's bounds, an overhead solid block, and walls in at least two horizontal directions. Outside the ship in the Destiny dimension is unbreathable, including custom rooms beyond the hull. The detector does not model airtight sealing, leaks, or pressure equalization yet.
 

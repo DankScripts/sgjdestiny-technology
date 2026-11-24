@@ -23,6 +23,8 @@ In gate mode, the remote selects the nearest registered Universe gate in the cur
 
 The remote uses the nearest registered Universe gate in the player's current dimension, regardless of distance, and does not require a Destiny console nearby. This allows a player on a destination planet to dial home. Destiny itself has a normal seven-symbol destination entry in addition to its special nine-symbol programmed address.
 
+When the gate is idle, clicking a destination in the handheld list begins dialing immediately. The stationary console uses a separate selection and **Select** step. The remote temporarily keeps the gate's chunk ticking while its direct dialing sequence completes. If no usable gate is found, check the message shown in game.
+
 ## Kino controls
 
 The Kino page provides **Deploy/Follow**, **Hold**, **Recall**, directional movement, vertical movement, telemetry scanning, and live video. The player must hold the remote for flight commands to be accepted.

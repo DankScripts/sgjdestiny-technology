@@ -6,7 +6,7 @@ nav_order: 6
 
 # Configuration
 
-This addon uses a Forge **SERVER** config, so its settings belong to a world.
+This addon uses a per-world **SERVER** config on Forge and NeoForge, so its settings belong to a world.
 They are not in the main `config` folder alongside SGJourney's client and common
 configs. After a world starts successfully with this addon installed, find the
 file here:
@@ -29,16 +29,13 @@ installCustomDestinyShip = false
 ```
 
 This defaults to `false` to protect existing Destiny ships. To opt in, back up
-the world, install Simply Light, GTCEu, Macaw's Bridges, and
-SGJourney Deco on the server and all clients, then set the value to `true` and
-restart. Forge reports a missing dependency before opening a world. The
+the world, then set the value to `true` and restart. The
 ship is installed only once per world, so the value may remain `true` afterward.
 The original Destiny gate and address are preserved; the packaged dialing
 console and a Kino Dispenser containing two Kino/handheld kits are included.
 
 An operator can reapply the packaged ship in an existing world with
-`/sgjdestiny ship reset`. This requires the option to remain `true` and all
-ship-block dependencies to be installed. The command queues a new installation
+`/sgjdestiny ship reset`. This requires the option to remain `true`. The command queues a new installation
 over the captured ship area. It clears every existing block within the bundled
 ship's capture bounds before rebuilding, including removed parts of older ship
 layouts and player additions there. The original Stargate, the block supporting
@@ -71,3 +68,7 @@ When the limit is reached, additional deployment is refused before a Kino item i
 
 {: .note }
 Each deployed Kino keeps its current chunk ticking so it can be controlled from any distance. Viewing the live feed temporarily loads additional nearby chunks and primarily affects the client rendering the video.
+
+## Elevator floor names
+
+The `[destinyElevator]` section names the eight existing stops. These settings change labels only, not the stop heights. See [Destiny elevator]({{ '/DESTINY_ELEVATOR.html' | relative_url }}) for the full list and operating instructions.

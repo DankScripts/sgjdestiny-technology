@@ -1,23 +1,21 @@
 ---
 layout: default
 title: Troubleshooting
-nav_order: 7
+nav_order: 9
 ---
 
 # Troubleshooting
 
 ## Minecraft reports a missing dependency
 
-Install matching Forge 1.20.1 builds of Stargate Journey, Immersive Portals,
-Cloth Config, Simply Light, GTCEu, Macaw's Bridges, and SGJourney
-Deco on both client and server. Forge lists the missing mod and required
-version on its error screen. Remove duplicate or incompatible versions.
+Install the matching Forge 1.20.1 or NeoForge 1.21.1 releases and required dependencies on both client and server. The loader lists missing dependencies and versions on its error screen. Remove duplicate or incompatible versions. See [Installation]({{ '/getting-started/installation.html' | relative_url }}).
 
 ## The Kino video page is blank
 
-- Confirm Immersive Portals 3.0.7 is installed and loaded.
+- Confirm the appropriate Immersive Portals release is installed and loaded.
 - Confirm a Kino is deployed and the player still holds the paired remote.
 - Wait briefly for the destination chunks to load after crossing dimensions.
+- For cross-dimensional video, keep the connecting wormhole open.
 - Check `latest.log` for errors mentioning `immersive_portals`, `sgjourney`, or `sgjdestiny_dhd`.
 
 ## The Kino will not deploy
@@ -32,8 +30,16 @@ Use Stargate Journey's **Universe Stargate Chevron**, place it horizontally in t
 
 ## The handheld cannot dial
 
-The remote still needs a usable Universe gate nearby. It does not require the Destiny console. Move within approximately 32 horizontal and 16 vertical blocks of the gate and try again.
+The remote needs a usable registered Universe gate in the **current dimension**, but it does not require a nearby console or have a fixed distance limit. Check the message in game and confirm that the gate is registered and available. The remote cannot select a gate in another dimension.
+
+## The packaged Destiny console cannot find its gate
+
+Verify the gate and console are present, the gate is powered and within the console's connection range, and neither is already linked to a different controller. On NeoForge, the hardwired console discovers eligible gates in loaded chunks; make sure both chunks are loaded and allow discovery to retry. Check the server log for link diagnostics. Do not reset the ship or replace the gate solely to troubleshoot a link.
+
+## Ship installation or reset failed
+
+Confirm the per-world `installCustomDestinyShip` setting is enabled and read the server log for the reported cause. Back up the world before installing or resetting; reset clears the ship capture area. See [Destiny ship]({{ '/guides/destiny-ship.html' | relative_url }}).
 
 ## Reporting a problem
 
-Include the addon version, Forge version, Stargate Journey version, Immersive Portals version, a short reproduction sequence, and the relevant `latest.log` section.
+Include the addon version, Minecraft and Forge or NeoForge version, Stargate Journey version, Immersive Portals version, a short reproduction sequence, and the relevant `latest.log` section.

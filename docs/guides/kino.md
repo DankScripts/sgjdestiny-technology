@@ -12,6 +12,8 @@ nav_order: 3
 
 The player must carry a Kino in their inventory. Press **Deploy** on the Kino page to consume and place it in front of the player. If the player's Kino is already deployed, Deploy changes it to Follow mode instead of creating another probe.
 
+The Kino Dispenser stores up to 64 Kino/remote pairs. Right-click it and use **Pickup** to take a pair, or **Deposit** while carrying both items to return one. Pickup in survival requires two empty inventory slots. The bundled ship's dispenser starts with two pairs.
+
 ## Flight modes
 
 | Control | Effect |
@@ -28,7 +30,7 @@ When moving horizontally, the Kino adjusts its hover height as terrain rises or 
 
 ## Keyboard flight
 
-While holding the remote, use the keyboard arrow keys to control the Kino without keeping the controls page open. When the live-video page is open, the same controls move it while the feed remains visible.
+While holding the remote with no screen open, use the arrow keys to control the Kino. In live video, use W/A/S/D to steer, Space to rise, Left Shift to descend, and Left Control to restore automatic hover height.
 
 ## Live video
 
@@ -38,6 +40,6 @@ The video is a full client-side world render supplied through Immersive Portals.
 
 ## Through a Stargate
 
-Kinos may travel through an open Stargate. The remote world and relevant chunks are loaded for the controlling player so video and telemetry can continue from the destination dimension.
+Kinos may travel through an open Stargate. Cross-dimensional live video requires an open wormhole; relevant destination chunks are loaded for the controlling player.
 
 

@@ -8,6 +8,8 @@ nav_order: 5
 
 Each row describes the three crafting-grid rows from top to bottom.
 
+The Destiny Technology creative tab groups the addon's items. The recipes below are examples; use JEI to check your exact release and any modpack changes. It also lists ship-building blocks, the air scrubber, water and oxygen storage, door controller, and elevator repair kit where recipes are available.
+
 ## Destiny DHD
 
 `AGA / IRI / ANA`
