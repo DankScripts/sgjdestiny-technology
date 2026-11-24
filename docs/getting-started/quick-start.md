@@ -14,7 +14,7 @@ nav_order: 3
 5. Use the console to select a known destination and start dialing.
 6. Craft a **Destiny Kino Remote** and **Kino** for remote exploration.
 
-The floor chevron illuminates after the final chevron locks and the connection succeeds. It remains lit while the wormhole is open. Steam vents discharge shortly after the gate completes shutdown.
+The floor chevron illuminates at the final lock or when the connection is established. It remains lit while the wormhole is open. Steam vents discharge shortly after the gate completes shutdown.
 
 To explore the optional ship, see [Destiny ship]({{ '/guides/destiny-ship.html' | relative_url }}) before enabling it in an existing world.
 

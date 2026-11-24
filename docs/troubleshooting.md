@@ -26,11 +26,13 @@ Install the matching Forge 1.20.1 or NeoForge 1.21.1 releases and required depen
 
 ## The floor chevron does not illuminate
 
-Use Stargate Journey's **Universe Stargate Chevron**, place it horizontally in the floor directly in front of the gate, and confirm the dial reaches a successful final lock. It should remain dark during incomplete or failed dialing.
+Use Stargate Journey's **Universe Stargate Chevron**, place it horizontally in the floor directly in front of the gate, and confirm the dial reaches the final lock or establishes a connection.
 
 ## The handheld cannot dial
 
 The remote needs a usable registered Universe gate in the **current dimension**, but it does not require a nearby console or have a fixed distance limit. Check the message in game and confirm that the gate is registered and available. The remote cannot select a non Universe gate.
+
+If a nearby Universe DHD is selected, check that it is linked to a usable gate. On NeoForge, an interface opened directly to Kino control has an empty gate list: close it and check the remote's tooltip. If it is in Kino Control mode, sneak-use it to select gate mode, then reopen it.
 
 ## The packaged Destiny console cannot find its gate
 

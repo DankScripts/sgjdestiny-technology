@@ -11,7 +11,7 @@ The Jungle Planet recreates the humid alien world reached after Destiny's expedi
 
 ## Dialing
 
-Open the handheld gate page and select **Jungle Planet** from the known destinations. Its Kaliem-region address uses six destination symbols plus the point of origin, forming a normal seven-chevron address.
+Open the handheld gate page and select **Jungle Planet** from the known destinations. Its Mediora galactic address uses six destination symbols plus the point of origin, forming a normal seven-chevron address.
 
 ## Squigglers
 

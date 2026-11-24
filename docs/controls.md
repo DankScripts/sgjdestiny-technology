@@ -17,20 +17,22 @@ nav_order: 4
 ## Dial with the handheld
 
 1. Hold the Destiny Kino Remote.
-2. Sneak-use it until the tooltip reports **Universe Gate Database** mode.
-3. Use it normally to open the address list.
+2. Use it normally to open the interface.
+3. If necessary, click the **GATE** side button to show the address list.
 4. Click an address once to begin dialing when the gate is idle.
 
-The remote locates the nearest registered Universe gate in the current dimension with no distance limit. A Destiny console does not need to be nearby.
+The remote can use a registered Universe gate in the current dimension without a nearby console or a fixed distance limit. It may select a nearby Universe DHD first; otherwise it looks for the nearest usable registered Universe gate.
+
+On NeoForge, opening directly to Kino control does not load the gate list. If this happens, close the interface and check the remote's tooltip. If it is in Kino Control mode, sneak-use it to select gate mode, then use it normally again. A usable gate or DHD is still needed to load the list.
 
 ## Open Kino controls
 
 1. Hold the Destiny Kino Remote.
-2. Sneak-use it until the tooltip reports **Kino Control** mode, then use it normally.
-3. The upper-right button opens gate controls; the button below opens Kino controls.
-4. The bottom-right button returns home or leaves live video.
+2. Use it normally to open the interface.
+3. Click the **KINO** side button if the Kino page is not already open.
+4. The bottom-right button goes back or leaves live video.
 
-In a dimension without a Universe gate, normal use opens Kino controls automatically. Kino deployment and flight do not require a gate nearby.
+Kino deployment and flight do not require a gate nearby. Sneak-using the remote while its interface is closed changes the page opened by the next normal use; use the side buttons to switch pages in the open interface.
 
 ## Deploy and recover a Kino
 

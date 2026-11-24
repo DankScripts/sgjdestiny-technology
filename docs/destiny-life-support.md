@@ -8,7 +8,7 @@ nav_order: 7
 
 Destiny's exterior has no breathable ambient air. Players outside need a complete Destiny environmental suit with a charged oxygen tank or a working Ad Astra suit. Enclosed ship rooms supply oxygen automatically. Survival players aboard raise the ship's shared CO2 level; Creative and Spectator players do not. At 60% CO2 players become nauseated, at 80% they slow and weaken, and at 95% they take damage.
 
-The environmental chestplate includes sealed gloves. If any piece of the suit is missing in an unbreathable area, the HUD shows **SUIT UNSEALED**, a carried oxygen tank leaks five times faster, and the incomplete suit does not prevent exposure damage. Oxygen does not leak inside breathable ship rooms.
+The environmental chestplate includes sealed gloves. If you wear some but not all suit pieces in an unbreathable area, the HUD shows **SUIT UNSEALED**, a carried oxygen tank leaks five times faster, and the incomplete suit does not prevent exposure damage. The suit HUD does not appear when none of the pieces are worn. Oxygen does not leak inside breathable ship rooms.
 
 ## Water Planet
 
@@ -18,7 +18,7 @@ The Water Planet is hazardous without protection: exposure causes poison and dra
 
 An Air Scrubber is a single-tank, one-block-wide, two-block-high wall compartment. Clear a 1×2 space in a wall and place it facing the room. Previously placed taller or two-tank scrubbers shed their extra blocks automatically while keeping their stored resources. Right-click either part with any item in hand to open its service inventory: insert water buckets and calcite, then take the empty buckets from its output slot. The screen shows stored water, calcite, prepared mix, live ship CO2, and that unit's on/off button. A water bucket and one calcite prepare a 24,000-unit CO2-scrubbing batch. Water and calcite can be stocked in advance, and the bay prepares another batch when there is room.
 
-Each survival player inside produces three CO2 units per second. An active scrubber can remove up to three units per second for one occupant, four for two to six, five for seven to ten, and six for larger crews. It consumes only the mix actually needed to remove CO2. A fully used batch therefore lasts about five Minecraft days with up to six players, four days with seven to ten, and three and a third days with larger crews. With fewer players or multiple scrubbers sharing the load, a batch lasts longer. Four to six active bays support a moderate crew; heavy occupancy can outpace them.
+Each survival player inside produces three CO2 units per second. An active scrubber can remove up to three units per second for one occupant, four for two to six, five for seven to ten, and six for larger crews. It consumes only the mix actually needed to remove CO2. At those maximum rates, a batch lasts about six and two-thirds Minecraft days with one occupant, five days with two to six, four days with seven to ten, and three and a third days with larger crews. When less CO2 needs removing or multiple scrubbers share the load, a batch lasts longer. Four to six active bays support a moderate crew; heavy occupancy can outpace them.
 
 Destiny Oxygen Storage Tanks are craftable suit-room blocks that always contain oxygen. Hold a Destiny Oxygen Tank and right-click the storage block to refill the wearable tank immediately. The storage block never needs filling.
 
